@@ -1,4 +1,4 @@
-package kr.ai.nemo.exception.global;
+package kr.ai.nemo.common.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

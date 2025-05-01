@@ -2,7 +2,7 @@ package kr.ai.nemo.group.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import kr.ai.nemo.group.domain.Category;
+import kr.ai.nemo.group.domain.enums.Category;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

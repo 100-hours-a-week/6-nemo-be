@@ -1,4 +1,4 @@
-package kr.ai.nemo.group.domain;
+package kr.ai.nemo.group.domain.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
