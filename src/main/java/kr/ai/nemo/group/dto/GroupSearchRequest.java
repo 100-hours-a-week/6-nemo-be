@@ -16,6 +16,8 @@ public class GroupSearchRequest {
 
   private Category category;
 
+  private String keyword;
+
   @Min(0)
   private Integer page = 0;
 
@@ -24,4 +26,6 @@ public class GroupSearchRequest {
   private Integer size = 10;
 
   private String sort = "createdAt";
+  
+  private String direction = "desc";
 }
