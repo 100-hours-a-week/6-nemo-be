@@ -6,11 +6,16 @@ import kr.ai.nemo.group.dto.GroupAiGenerateResponse;
 import kr.ai.nemo.group.dto.GroupCreateRequest;
 import kr.ai.nemo.group.dto.GroupCreateResponse;
 import kr.ai.nemo.group.dto.GroupDetailResponse;
+import kr.ai.nemo.group.dto.GroupListResponse;
+import kr.ai.nemo.group.dto.GroupSearchRequest;
 import kr.ai.nemo.group.service.AiGroupGenerateClient;
 import kr.ai.nemo.group.service.GroupCommandService;
+import kr.ai.nemo.group.service.GroupQueryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,10 +28,12 @@ import java.net.URI;
 @RestController
 @RequestMapping("/api/v1/groups")
 @RequiredArgsConstructor
+@Slf4j
 public class GroupController {
 
   private final AiGroupGenerateClient aiGroupGenerateClient;
   private final GroupCommandService groupCommandService;
+  private final GroupQueryService groupQueryService;
 
   @PostMapping("/ai-generate")
   public ResponseEntity<GroupAiGenerateResponse> generateGroupInfo(@Valid @RequestBody GroupAiGenerateRequest request) {
@@ -49,7 +56,13 @@ public class GroupController {
 
   @GetMapping("/{groupId}")
   public ResponseEntity<GroupDetailResponse> showGroupInfo(@PathVariable Long groupId) {
-    GroupDetailResponse reponse = groupCommandService.detailGroup(groupId);
-    return ResponseEntity.ok(reponse);
+    GroupDetailResponse response = groupQueryService.detailGroup(groupId);
+    return ResponseEntity.ok(response);
+  }
+
+  @GetMapping
+  public ResponseEntity<GroupListResponse> getGroups(@ModelAttribute GroupSearchRequest request) {
+    GroupListResponse response = groupQueryService.getGroups(request);
+    return ResponseEntity.ok(response);
   }
 }
