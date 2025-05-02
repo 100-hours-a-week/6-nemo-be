@@ -1,0 +1,27 @@
+package kr.ai.nemo.group.dto;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import kr.ai.nemo.group.domain.enums.Category;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@ToString
+public class GroupSearchRequest {
+
+  private Category category;
+
+  @Min(0)
+  private Integer page = 0;
+
+  @Min(1)
+  @Max(100)
+  private Integer size = 10;
+
+  private String sort = "createdAt";
+}
