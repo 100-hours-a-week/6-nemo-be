@@ -1,7 +1,6 @@
 package kr.ai.nemo.group.dto;
 
 import java.util.List;
-import kr.ai.nemo.group.domain.GroupTag;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,5 +18,5 @@ public class GroupDto {
   private int currentUserCount;
   private int maxUserCount;
   private String category;
-  private List<GroupTag> tags;
+  private List<String> tags;
 }
