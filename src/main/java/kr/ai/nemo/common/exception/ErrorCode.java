@@ -23,6 +23,7 @@ public enum ErrorCode {
 
   // 404 NOT FOUND
   USER_NOT_FOUND("USER_NOT_FOUND", "사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+  GROUP_NOT_FOUND("GROUP_NOT_FOUND", "모임을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
   // 500 INTERNAL SERVER ERROR
   INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", "서버 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),

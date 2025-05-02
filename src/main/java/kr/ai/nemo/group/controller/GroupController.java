@@ -5,10 +5,13 @@ import kr.ai.nemo.group.dto.GroupAiGenerateRequest;
 import kr.ai.nemo.group.dto.GroupAiGenerateResponse;
 import kr.ai.nemo.group.dto.GroupCreateRequest;
 import kr.ai.nemo.group.dto.GroupCreateResponse;
+import kr.ai.nemo.group.dto.GroupDetailResponse;
 import kr.ai.nemo.group.service.AiGroupGenerateClient;
 import kr.ai.nemo.group.service.GroupCommandService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,5 +45,11 @@ public class GroupController {
         .toUri();
 
     return ResponseEntity.created(location).body(createdGroup);
+  }
+
+  @GetMapping("/{groupId}")
+  public ResponseEntity<GroupDetailResponse> showGroupInfo(@PathVariable Long groupId) {
+    GroupDetailResponse reponse = groupCommandService.detailGroup(groupId);
+    return ResponseEntity.ok(reponse);
   }
 }
