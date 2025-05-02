@@ -6,9 +6,9 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class ErrorResponse {
-  private String errorCode;
-  private String errorMessage;
-  private int httpStatus;
+  private String code;
+  private String message;
+  private int status;
   private Object data;
 
   public static ErrorResponse of(ErrorCode errorCode) {

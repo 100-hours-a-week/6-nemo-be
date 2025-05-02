@@ -2,12 +2,14 @@ package kr.ai.nemo.group.service;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import kr.ai.nemo.common.exception.group.GroupNotFoundException;
 import kr.ai.nemo.group.domain.Group;
 import kr.ai.nemo.group.domain.enums.GroupStatus;
 import kr.ai.nemo.group.domain.GroupTag;
 import kr.ai.nemo.group.domain.Tag;
 import kr.ai.nemo.group.dto.GroupCreateRequest;
 import kr.ai.nemo.group.dto.GroupCreateResponse;
+import kr.ai.nemo.group.dto.GroupDetailResponse;
 import kr.ai.nemo.group.repository.GroupRepository;
 import kr.ai.nemo.group.repository.GroupTagRepository;
 import kr.ai.nemo.group.repository.TagRepository;
@@ -68,5 +70,11 @@ public class GroupCommandService {
 
       groupTagRepository.save(groupTag);
     }
+  }
+
+  public GroupDetailResponse detailGroup(Long groupId) {
+    Group group = groupRepository.findById(groupId)
+                        .orElseThrow(GroupNotFoundException::new);
+    return GroupDetailResponse.from(group);
   }
 }
