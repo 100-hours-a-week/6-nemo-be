@@ -52,7 +52,7 @@ jobs:
         uses: google-github-actions/upload-cloud-storage@v1
         with:
           path: ${{ steps.jar.outputs.JAR_NAME }}
-          destination: gs://6-nemo-bucket/v1/backend-deploy/dev/${{ steps.date.outputs.TAG }}.jar
+          destination: 6-nemo-bucket/v1/backend-deploy/dev/${{ steps.date.outputs.tag }}.jar
 
       # 8. GCS - previous -> latest 백업
       - name: Copy latest to previous, then upload new latest
@@ -67,4 +67,4 @@ jobs:
         uses: google-github-actions/upload-cloud-storage@v1
         with:
           path: deploy/
-          destination: gs://6-nemo-bucket/v1/backend-deploy/dev/
+          destination: 6-nemo-bucket/v1/backend-deploy/dev/
