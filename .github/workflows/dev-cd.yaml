@@ -2,6 +2,13 @@ name: CD - Deploy to Server (DEV)
 
 on:
   workflow_call:
+    secrets:
+      DEV_HOST:
+        required: true
+      DEV_USER:
+        required: true
+      DEV_SSH_KEY:
+        required: true
 
 jobs:
   deploy:

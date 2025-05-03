@@ -82,3 +82,7 @@ jobs:
     needs: build # CI Job이 build
     if: startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/ci-cd/')
     uses: ./.github/workflows/dev-cd.yaml # CD 워크플로우 실행
+    secrets:
+      DEV_HOST: ${{ secrets.DEV_HOST }}
+      DEV_USER: ${{ secrets.DEV_USER }}
+      DEV_SSH_KEY: ${{ secrets.DEV_SSH_KEY }}
