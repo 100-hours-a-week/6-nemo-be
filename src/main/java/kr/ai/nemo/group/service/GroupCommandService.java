@@ -69,6 +69,4 @@ public class GroupCommandService {
       groupTagRepository.save(groupTag);
     }
   }
-
-
 }

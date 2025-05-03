@@ -1,6 +1,5 @@
 package kr.ai.nemo.group.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.stream.Collectors;
 import kr.ai.nemo.common.exception.group.GroupNotFoundException;
@@ -35,10 +34,6 @@ public class GroupQueryService {
         request.getSize(),
         sort
     );
-    
-    log.info("검색 요청: 카테고리={}, 키워드={}, 페이지={}, 크기={}, 정렬={}",
-        request.getCategory(), request.getKeyword(), request.getPage(), 
-        request.getSize(), request.getSort() + "," + request.getDirection());
 
     Page<Group> groups = groupRepository.search(
         request.getCategory(), 
@@ -46,14 +41,12 @@ public class GroupQueryService {
         pageable
     );
 
-    List<GroupDto> groupDtos = groups.getContent().stream()
-        .map(GroupDto::from)  // convertToDto 대신 GroupDto.from 사용
+    List<GroupDto> groupDto = groups.getContent().stream()
+        .map(GroupDto::from)
         .collect(Collectors.toList());
 
-    log.info("검색 결과: 총 {}개 항목 중 {}개 조회", groups.getTotalElements(), groupDtos.size());
-
     return GroupListResponse.from(
-        groupDtos,
+        groupDto,
         (int) groups.getTotalElements(),
         groups.getNumber(),
         groups.getSize()

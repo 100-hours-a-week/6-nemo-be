@@ -1,6 +1,8 @@
 package kr.ai.nemo.group.controller;
 
 import jakarta.validation.Valid;
+import kr.ai.nemo.common.response.ApiResponse;
+import kr.ai.nemo.common.response.ResponseCode;
 import kr.ai.nemo.group.dto.GroupAiGenerateRequest;
 import kr.ai.nemo.group.dto.GroupAiGenerateResponse;
 import kr.ai.nemo.group.dto.GroupCreateRequest;
@@ -36,13 +38,13 @@ public class GroupController {
   private final GroupQueryService groupQueryService;
 
   @PostMapping("/ai-generate")
-  public ResponseEntity<GroupAiGenerateResponse> generateGroupInfo(@Valid @RequestBody GroupAiGenerateRequest request) {
+  public ResponseEntity<ApiResponse<GroupAiGenerateResponse>> generateGroupInfo(@Valid @RequestBody GroupAiGenerateRequest request) {
     GroupAiGenerateResponse aiResponse = aiGroupGenerateClient.call(request);
-    return ResponseEntity.ok(aiResponse);
+    return ResponseEntity.ok(ApiResponse.success(aiResponse));
   }
 
   @PostMapping
-  public ResponseEntity<GroupCreateResponse> createGroup(@Valid @RequestBody GroupCreateRequest request) {
+  public ResponseEntity<ApiResponse<GroupCreateResponse>> createGroup(@Valid @RequestBody GroupCreateRequest request) {
     GroupCreateResponse createdGroup = groupCommandService.createGroup(request);
 
     URI location = ServletUriComponentsBuilder
@@ -51,18 +53,26 @@ public class GroupController {
         .buildAndExpand(createdGroup.getGroupId())
         .toUri();
 
-    return ResponseEntity.created(location).body(createdGroup);
+    return ResponseEntity
+        .created(location)
+        .body(ApiResponse.success(createdGroup));
   }
 
   @GetMapping("/{groupId}")
-  public ResponseEntity<GroupDetailResponse> showGroupInfo(@PathVariable Long groupId) {
+  public ResponseEntity<ApiResponse<GroupDetailResponse>> showGroupInfo(@PathVariable Long groupId) {
     GroupDetailResponse response = groupQueryService.detailGroup(groupId);
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(ApiResponse.success(response));
   }
 
   @GetMapping
-  public ResponseEntity<GroupListResponse> getGroups(@Valid @ModelAttribute GroupSearchRequest request) {
+  public ResponseEntity<ApiResponse<GroupListResponse>> getGroups(@Valid @ModelAttribute GroupSearchRequest request) {
     GroupListResponse response = groupQueryService.getGroups(request);
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(ApiResponse.success(response));
+  }
+
+  @GetMapping("/search")
+  public ResponseEntity<ApiResponse<GroupListResponse>> searchGroups(@ModelAttribute GroupSearchRequest request) {
+    GroupListResponse response = groupQueryService.getGroups(request);
+    return ResponseEntity.ok(ApiResponse.success(response));
   }
 }
