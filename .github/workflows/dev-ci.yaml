@@ -30,7 +30,9 @@ jobs:
       # 4. 업로드할 파일명 생성 (timestamp)
       - name: Generate datetime tag
         id: date
-        run: echo "TAG=$(date +'%Y%m%d-%H%M')" >> $GITHUB_OUTPUT
+        run: |
+          tag=$(date +'%Y%m%d-%H%M')
+          echo "tag=$tag" >> $GITHUB_OUTPUT
 
       # 5. GCP 인증
       - name: Authenticate to GCP
@@ -41,7 +43,9 @@ jobs:
       # 6. Jar 파일명 추출
       - name: Get JAR file name
         id: jar
-        run: echo "JAR_NAME=$(ls build/libs/*SNAPSHOT.jar | head -n1)" >> $GITHUB_OUTPUT
+        run: |
+            jar_name=$(ls build/libs/*SNAPSHOT.jar | head -n1)
+            echo "JAR_NAME=$jar_name" >> $GITHUB_OUTPUT
 
       # 7. GCS - timestamp JAR 업로드
       - name: Upload versioned JAR to GCS
