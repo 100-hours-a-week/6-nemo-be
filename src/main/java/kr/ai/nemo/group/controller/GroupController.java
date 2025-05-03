@@ -61,7 +61,7 @@ public class GroupController {
   }
 
   @GetMapping
-  public ResponseEntity<GroupListResponse> getGroups(@ModelAttribute GroupSearchRequest request) {
+  public ResponseEntity<GroupListResponse> getGroups(@Valid @ModelAttribute GroupSearchRequest request) {
     GroupListResponse response = groupQueryService.getGroups(request);
     return ResponseEntity.ok(response);
   }
