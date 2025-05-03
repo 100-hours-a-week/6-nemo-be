@@ -1,13 +1,14 @@
 name: CI - PR Test & Lint
 on:
   pull_request:
-    branches: [dev-test]
+    branches: [develop, main]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3 # 코드 가져오기
+      - name: Checkout code
+        uses: actions/checkout@v3 # 코드 가져오기
 
       # 1. 자바 환경 세팅
       - name: Set up JDK
