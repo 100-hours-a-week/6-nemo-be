@@ -8,19 +8,24 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import javax.crypto.spec.SecretKeySpec;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class JwtProvider {
 
   @Value("${jwt.secret}")
   private String secretKeyString;
 
-  private Key secretKey;
+  @Value("${jwt.access-token-validity}")
+  private long accessTokenValidity;
 
-  private static final long ACCESS_TOKEN_VALIDITY = 60 * 60 * 1000L;
-  private static final long REFRESH_TOKEN_VALIDITY = 14 * 24 * 60 * 60 * 1000L;
+  @Value("${jwt.refresh-token-validity}")
+  private long refreshTokenValidity;
+
+  private Key secretKey;
 
   @PostConstruct
   public void init() {
@@ -31,11 +36,11 @@ public class JwtProvider {
   }
 
   public String createAccessToken(Long userId) {
-    return createToken(userId, ACCESS_TOKEN_VALIDITY);
+    return createToken(userId, accessTokenValidity);
   }
 
   public String createRefreshToken(Long userId) {
-    return createToken(userId, REFRESH_TOKEN_VALIDITY);
+    return createToken(userId, refreshTokenValidity);
   }
 
   private String createToken(Long userId, long validity) {

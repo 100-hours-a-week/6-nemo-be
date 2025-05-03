@@ -1,10 +1,9 @@
 package kr.ai.nemo.auth.controller;
 
-import kr.ai.nemo.auth.dto.KakaoTokenResponse;
-import kr.ai.nemo.auth.dto.KakaoUserResponse;
+import kr.ai.nemo.auth.exception.OAuthErrorCode;
+import kr.ai.nemo.auth.exception.OAuthException;
 import kr.ai.nemo.auth.service.OauthService;
 import kr.ai.nemo.common.exception.ApiResponse;
-import kr.ai.nemo.user.dto.UserDto;
 import kr.ai.nemo.user.dto.UserLoginResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,22 +15,27 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/oauth")
 @RequiredArgsConstructor
-public class AuthController {
+public class OauthController {
 
   private final OauthService oauthService;
 
   @GetMapping("/kakao/callback")
-  public ResponseEntity<ApiResponse<UserLoginResponse>> kakaoLogin(@RequestParam("code") String code) {
-    KakaoTokenResponse tokenResponse = oauthService.getAccessToken(code);
-    KakaoUserResponse userResponse = oauthService.getUserInfo(tokenResponse.getAccessToken());
+  public ResponseEntity<ApiResponse<UserLoginResponse>> kakaoLogin(
+      @RequestParam(value = "code", required = false) String code,
+      @RequestParam(value = "error", required = false) String error,
+      @RequestParam(value = "error_description", required = false) String errorDescription) {
 
-    UserLoginResponse response = UserLoginResponse.builder()
-        .accessToken(accessToken)
-        .refreshToken(refreshToken)
-        .refreshTokenExpiresIn(1209600)
-        .user(UserDto.from(user))
-        .build();
+    if (error != null) {
+      throw new OAuthException(OAuthErrorCode.KAKAO_AUTH_ERROR);
+    }
 
+    if (code == null || code.isEmpty()) {
+      throw new OAuthException(OAuthErrorCode.CODE_MISSING);
+    }
+
+    UserLoginResponse response = oauthService.loginWithKakao(code);
     return ResponseEntity.ok(ApiResponse.success(response));
   }
+
 }
+

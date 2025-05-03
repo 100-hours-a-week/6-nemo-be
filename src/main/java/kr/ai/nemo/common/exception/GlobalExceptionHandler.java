@@ -1,5 +1,6 @@
 package kr.ai.nemo.common.exception;
 
+import kr.ai.nemo.auth.exception.OAuthException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -7,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.RestClientException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -38,11 +40,29 @@ public class GlobalExceptionHandler {
         .status(HttpStatus.BAD_REQUEST)
         .body(ApiResponse.error(ResponseCode.INVALID_ENUM));
   }
-  
+
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ApiResponse<?>> handleGeneralException(Exception e) {
     return ResponseEntity
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(ApiResponse.error(ResponseCode.INTERNAL_SERVER_ERROR));
+  }
+
+  @ExceptionHandler(OAuthException.class)
+  public ResponseEntity<ApiResponse<Object>> handleOAuthException(OAuthException e) {
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+        .body(ApiResponse.error(e.getMessage()));
+  }
+
+  @ExceptionHandler(RestClientException.class)
+  public ResponseEntity<ApiResponse<Object>> handleRestClientException(RestClientException e) {
+    return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+        .body(ApiResponse.error("외부 API 호출 중 오류가 발생했습니다: " + e.getMessage()));
+  }
+
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ApiResponse<Object>> handleException(Exception e) {
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .body(ApiResponse.error("서버 내부 오류가 발생했습니다: " + e.getMessage()));
   }
 }
