@@ -40,21 +40,30 @@ jobs:
         with:
             credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      # 6. Jar 파일명 추출
+      # 6. gcloud 및 gsutil CLI 사용을 위한 GCP 인증 및 설정
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+
+      # 7. Jar 파일명 추출
       - name: Get JAR file name
         id: jar
         run: |
             jar_name=$(ls build/libs/*SNAPSHOT.jar | head -n1)
             echo "JAR_NAME=$jar_name" >> $GITHUB_OUTPUT
 
-      # 7. GCS - timestamp JAR 업로드
+      # 8. GCS - timestamp JAR 업로드
       - name: Upload versioned JAR to GCS
         uses: google-github-actions/upload-cloud-storage@v1
         with:
           path: ${{ steps.jar.outputs.JAR_NAME }}
           destination: 6-nemo-bucket/v1/backend-deploy/dev/${{ steps.date.outputs.tag }}.jar
 
-      # 8. GCS - previous -> latest 백업
+      # 9. GCS - previous -> latest 백업
       - name: Copy latest to previous, then upload new latest
         run: |
           gsutil cp gs://6-nemo-bucket/v1/backend-deploy/dev/latest.jar \
@@ -62,7 +71,7 @@ jobs:
           gsutil cp ${{ steps.jar.outputs.JAR_NAME }} \
                 gs://6-nemo-bucket/v1/backend-deploy/dev/latest.jar
 
-      # 9. GCS - 배포 스크립트 업로드
+      # 10. GCS - 배포 스크립트 업로드
       - name: Upload deploy scripts to GCS
         uses: google-github-actions/upload-cloud-storage@v1
         with:
