@@ -1,4 +1,4 @@
-package kr.ai.nemo.common.dto;
+package kr.ai.nemo.group.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
