@@ -27,7 +27,7 @@ public class GroupCreateRequest {
   private String description;
 
   @NotNull(message = "{group.category.notNull}")
-  private Category category;
+  private String category;
 
   @NotBlank(message = "{group.location.notBlank}")
   private String location;
@@ -42,4 +42,8 @@ public class GroupCreateRequest {
   private List<String> tags;
 
   private String plan;
+
+  public Category getCategoryEnum() {
+    return Category.fromDisplayName(this.category);
+  }
 }

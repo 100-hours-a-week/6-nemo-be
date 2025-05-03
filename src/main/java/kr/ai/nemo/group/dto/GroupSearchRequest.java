@@ -14,18 +14,26 @@ import lombok.ToString;
 @ToString
 public class GroupSearchRequest {
 
-  private Category category;
+  private String category;
 
   private String keyword;
 
   @Min(0)
-  private Integer page = 0;
+  private int page = 0;
 
   @Min(1)
   @Max(100)
-  private Integer size = 10;
+  private int size = 10;
 
   private String sort = "createdAt";
   
   private String direction = "desc";
+
+  public Category getCategoryEnum() {
+    if (this.category == null || this.category.isBlank()) {
+      return null;
+    }
+
+    return Category.fromDisplayName(this.category);
+  }
 }

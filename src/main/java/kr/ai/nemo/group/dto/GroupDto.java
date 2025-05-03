@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class GroupDto {
+
   private Long id;
   private String name;
   private String summary;
@@ -20,8 +21,8 @@ public class GroupDto {
   private int currentUserCount;
   private int maxUserCount;
   private String category;
+  private String imageUrl;
   private List<String> tags;
-
 
   public static GroupDto from(Group group) {
     List<String> tags = group.getGroupTags().stream()
@@ -35,7 +36,8 @@ public class GroupDto {
         .location(group.getLocation())
         .currentUserCount(group.getCurrentUserCount())
         .maxUserCount(group.getMaxUserCount())
-        .category(group.getCategory().name())
+        .category(group.getCategoryDisplayName())
+        .imageUrl(group.getImageUrl())
         .tags(tags)
         .build();
   }

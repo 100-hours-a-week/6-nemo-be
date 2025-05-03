@@ -12,30 +12,37 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
   @ExceptionHandler(CustomException.class)
-  public ResponseEntity<ErrorResponse> handleBaseException(CustomException e) {
+  public ResponseEntity<ApiResponse<?>> handleBaseException(CustomException e) {
     return ResponseEntity
-        .status(e.getErrorCode().getHttpStatus())
-        .body(ErrorResponse.of(e.getErrorCode()));
+        .status(e.getResponseCode().getHttpStatus())
+        .body(ApiResponse.error(e.getResponseCode()));
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException e) {
+  public ResponseEntity<ApiResponse<?>> handleValidationException(MethodArgumentNotValidException e) {
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
-        .body(ErrorResponse.of(ErrorCode.INVALID_REQUEST));
+        .body(ApiResponse.error(ResponseCode.INVALID_REQUEST));
   }
 
   @ExceptionHandler(MissingServletRequestParameterException.class)
-  public ResponseEntity<ErrorResponse> handleMissingParamException(MethodArgumentNotValidException e) {
+  public ResponseEntity<ApiResponse<?>> handleMissingParamException(MissingServletRequestParameterException e) {
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
-        .body(ErrorResponse.of(ErrorCode.MISSING_REQUIRED_PARAMETER));
+        .body(ApiResponse.error(ResponseCode.MISSING_REQUIRED_PARAMETER));
   }
 
   @ExceptionHandler(HttpMessageNotReadableException.class)
-  public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+  public ResponseEntity<ApiResponse<?>> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
-        .body(ErrorResponse.of(ErrorCode.INVALID_ENUM));
+        .body(ApiResponse.error(ResponseCode.INVALID_ENUM));
+  }
+  
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ApiResponse<?>> handleGeneralException(Exception e) {
+    return ResponseEntity
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .body(ApiResponse.error(ResponseCode.INTERNAL_SERVER_ERROR));
   }
 }

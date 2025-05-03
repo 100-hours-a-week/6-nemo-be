@@ -11,11 +11,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface GroupRepository extends JpaRepository<Group, Long> {
-  
-  @Query("SELECT g FROM Group g WHERE " +
-         "(:category IS NULL OR g.category = :category) AND " +
-         "(:keyword IS NULL OR g.name LIKE %:keyword% OR g.summary LIKE %:keyword%)")
-  Page<Group> search(@Param("category") Category category, 
-                    @Param("keyword") String keyword,
-                    Pageable pageable);
+  @Query("SELECT g FROM Group g WHERE g.name LIKE %:keyword% OR g.summary LIKE %:keyword%")
+  Page<Group> searchWithKeywordOnly(@Param("keyword") String keyword, Pageable pageable);
+
+  Page<Group> findByCategory(Category categoryEnum, Pageable pageable);
 }

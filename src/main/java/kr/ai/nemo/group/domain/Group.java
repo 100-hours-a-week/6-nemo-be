@@ -91,4 +91,13 @@ public class Group {
     this.maxUserCount = maxUserCount;
     this.status = status;
   }
+
+  public void setCategory(String categoryDisplayName) {
+    this.category = Category.fromDisplayName(categoryDisplayName);
+  }
+
+  public String getCategoryDisplayName() {
+    return Category.toDisplayName(this.category);
+  }
+
 }

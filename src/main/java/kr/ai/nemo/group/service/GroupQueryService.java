@@ -1,9 +1,9 @@
 package kr.ai.nemo.group.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.stream.Collectors;
-import kr.ai.nemo.common.exception.group.GroupNotFoundException;
+import kr.ai.nemo.common.exception.CustomException;
+import kr.ai.nemo.common.exception.ResponseCode;
 import kr.ai.nemo.group.domain.Group;
 import kr.ai.nemo.group.dto.GroupDetailResponse;
 import kr.ai.nemo.group.dto.GroupDto;
@@ -28,42 +28,49 @@ public class GroupQueryService {
   private final GroupRepository groupRepository;
 
   public GroupListResponse getGroups(GroupSearchRequest request) {
-    Sort sort = Sort.by(Sort.Direction.fromString(request.getDirection()), request.getSort());
-    
-    Pageable pageable = PageRequest.of(
-        request.getPage(),
-        request.getSize(),
-        sort
-    );
-    
-    log.info("검색 요청: 카테고리={}, 키워드={}, 페이지={}, 크기={}, 정렬={}",
-        request.getCategory(), request.getKeyword(), request.getPage(), 
-        request.getSize(), request.getSort() + "," + request.getDirection());
+    Pageable pageable = toPageable(request);
 
-    Page<Group> groups = groupRepository.search(
-        request.getCategory(), 
-        request.getKeyword(),
-        pageable
-    );
+    Page<Group> groups;
 
-    List<GroupDto> groupDtos = groups.getContent().stream()
-        .map(GroupDto::from)  // convertToDto 대신 GroupDto.from 사용
+    if (request.getCategoryEnum() != null) {
+      groups = groupRepository.findByCategory(request.getCategoryEnum(), pageable);
+
+    } else if (request.getKeyword() != null && !request.getKeyword().isBlank()) {
+      groups = groupRepository.searchWithKeywordOnly(request.getKeyword(), pageable);
+
+    } else {
+      groups = groupRepository.findAll(pageable);
+    }
+
+
+
+
+    List<GroupDto> groupDto = groups.getContent().stream()
+        .map(GroupDto::from)
         .collect(Collectors.toList());
 
-    log.info("검색 결과: 총 {}개 항목 중 {}개 조회", groups.getTotalElements(), groupDtos.size());
-
     return GroupListResponse.from(
-        groupDtos,
+        groupDto,
         (int) groups.getTotalElements(),
         groups.getNumber(),
         groups.getSize()
     );
   }
 
-  public GroupDetailResponse detailGroup(Long groupId) {
-    Group group = groupRepository.findById(groupId)
-        .orElseThrow(GroupNotFoundException::new);
-
+  private GroupDetailResponse convertToDetailResponse(Group group) {
     return GroupDetailResponse.from(group);
   }
+
+  public GroupDetailResponse detailGroup(Long groupId) {
+    Group group = groupRepository.findById(groupId)
+        .orElseThrow(() -> new CustomException(ResponseCode.GROUP_NOT_FOUND));
+
+    return convertToDetailResponse(group);
+  }
+
+  private Pageable toPageable(GroupSearchRequest request) {
+    Sort sort = Sort.by(Sort.Direction.fromString(request.getDirection()), request.getSort());
+    return PageRequest.of(request.getPage(), request.getSize(), sort);
+  }
+
 }
