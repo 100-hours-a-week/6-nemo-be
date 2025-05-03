@@ -1,15 +1,11 @@
 name: CD - Deploy to Server (DEV)
 
 on:
-  workflow_run:
-    workflows: ["CI - Build & Upload to GCS (DEV)"]
-    types:
-      - completed # dev-ci가 끝났을 때 트리거
+  workflow_call:
 
 jobs:
   deploy:
     # CI 성공한 경우에만 실행
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment: dev
 
