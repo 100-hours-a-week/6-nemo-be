@@ -25,7 +25,7 @@ jobs:
 
       # 3. 빌드 (테스트 생략)
       - name: Build without tests # pr-ci에서 테스트하므로 생략
-        run: ./gradlew clean build -x test
+        run: ./gradlew clean bootJar -x test
 
       # 4. 업로드할 파일명 생성 (timestamp)
       - name: Generate datetime tag
@@ -38,22 +38,27 @@ jobs:
         with:
             credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      # 6. GCS - timestamp JAR 업로드
+      # 6. Jar 파일명 추출
+      - name: Get JAR file name
+        id: jar
+        run: echo "JAR_NAME=$(ls build/libs/*SNAPSHOT.jar | head -n1)" >> $GITHUB_OUTPUT
+
+      # 7. GCS - timestamp JAR 업로드
       - name: Upload versioned JAR to GCS
         uses: google-github-actions/upload-cloud-storage@v1
         with:
-          path: build/libs/*SNAPSHOT.jar # 실행 가능한 JAR만 업로드
+          path: ${{ steps.jar.outputs.JAR_NAME }}
           destination: gs://6-nemo-bucket/v1/backend-deploy/dev/${{ steps.date.outputs.TAG }}.jar
 
-      # 7. GCS - previous -> latest 백업
+      # 8. GCS - previous -> latest 백업
       - name: Copy latest to previous, then upload new latest
         run: |
           gsutil cp gs://6-nemo-bucket/v1/backend-deploy/dev/latest.jar \
                 gs://6-nemo-bucket/v1/backend-deploy/dev/previous.jar || true
-          gsutil cp build/libs/*SNAPSHOT.jar \
+          gsutil cp ${{ steps.jar.outputs.JAR_NAME }} \
                 gs://6-nemo-bucket/v1/backend-deploy/dev/latest.jar
 
-      # 8. GCS - 배포 스크립트 업로드
+      # 9. GCS - 배포 스크립트 업로드
       - name: Upload deploy scripts to GCS
         uses: google-github-actions/upload-cloud-storage@v1
         with:
