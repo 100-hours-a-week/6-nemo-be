@@ -1,9 +1,12 @@
 package kr.ai.nemo.group.dto;
 
+import static kr.ai.nemo.common.enums.SuccessResponseCode.SUCCESS;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
 
 @Getter
 @NoArgsConstructor
@@ -16,8 +19,8 @@ public class ResponseDto<T> {
 
   public static <T> ResponseDto<T> success(T data) {
     return ResponseDto.<T>builder()
-        .code("200")
-        .message("Success")
+        .code(SUCCESS.getCode())
+        .message(SUCCESS.getMessage())
         .data(data)
         .build();
   }
