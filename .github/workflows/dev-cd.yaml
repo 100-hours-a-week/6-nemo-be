@@ -11,6 +11,7 @@ jobs:
     # CI 성공한 경우에만 실행
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    environment: dev
 
     steps:
       # SSH로 개발 서버에 접속 후 GCS에서 배포 스크립트 및 JAR 다운로드 후 실행
