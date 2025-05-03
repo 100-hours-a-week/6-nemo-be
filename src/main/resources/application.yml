@@ -22,3 +22,12 @@ spring:
   messages:
     basename: validation
     encoding: UTF-8
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
