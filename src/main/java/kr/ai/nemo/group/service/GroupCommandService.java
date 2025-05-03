@@ -31,7 +31,7 @@ public class GroupCommandService {
         .summary(request.getSummary())
         .description(request.getDescription())
         .plan(request.getPlan())
-        .category(request.getCategory())
+        .category(request.getCategoryEnum())
         .location(request.getLocation())
         .completedScheduleTotal(0)
         .imageUrl(request.getImageUrl())
@@ -47,7 +47,7 @@ public class GroupCommandService {
       processTags(savedGroup, request.getTags());
     }
 
-    return GroupCreateResponse.from(savedGroup);
+    return new GroupCreateResponse(savedGroup);
   }
 
   private void processTags(Group group, List<String> tagNames) {

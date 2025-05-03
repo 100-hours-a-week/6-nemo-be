@@ -14,7 +14,7 @@ import lombok.ToString;
 @ToString
 public class GroupSearchRequest {
 
-  private Category category;
+  private String category;
 
   private String keyword;
 
@@ -28,4 +28,12 @@ public class GroupSearchRequest {
   private String sort = "createdAt";
   
   private String direction = "desc";
+
+  public Category getCategoryEnum() {
+    if (this.category == null || this.category.isBlank()) {
+      return null;
+    }
+
+    return Category.fromDisplayName(this.category);
+  }
 }

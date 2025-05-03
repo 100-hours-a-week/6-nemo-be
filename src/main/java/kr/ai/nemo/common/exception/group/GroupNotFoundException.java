@@ -1,10 +1,10 @@
 package kr.ai.nemo.common.exception.group;
 
 import kr.ai.nemo.common.exception.CustomException;
-import kr.ai.nemo.common.exception.ErrorCode;
+import kr.ai.nemo.common.exception.ResponseCode;
 
 public class GroupNotFoundException extends CustomException {
   public GroupNotFoundException() {
-    super(ErrorCode.GROUP_NOT_FOUND);
+    super(ResponseCode.GROUP_NOT_FOUND);
   }
 }

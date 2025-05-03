@@ -2,7 +2,7 @@ package kr.ai.nemo.group.service;
 
 import java.time.Duration;
 import kr.ai.nemo.common.exception.CustomException;
-import kr.ai.nemo.common.exception.ErrorCode;
+import kr.ai.nemo.common.exception.ResponseCode;
 import kr.ai.nemo.group.dto.GroupAiGenerateRequest;
 import kr.ai.nemo.group.dto.GroupAiGenerateResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -44,20 +44,20 @@ public class AiGroupGenerateClient {
           .retrieve()
           .onStatus(HttpStatusCode::is4xxClientError, response -> {
             log.error("AI 서버 클라이언트 오류: {}", response.statusCode());
-            return Mono.error(new CustomException(ErrorCode.INVALID_REQUEST));
+            return Mono.error(new CustomException(ResponseCode.INVALID_REQUEST));
           })
           .onStatus(HttpStatusCode::is5xxServerError, response -> {
             log.error("AI 서버 서버 오류: {}", response.statusCode());
-            return Mono.error(new CustomException(ErrorCode.AI_SERVER_CONNECTION_FAILED));
+            return Mono.error(new CustomException(ResponseCode.AI_SERVER_CONNECTION_FAILED));
           })
           .bodyToMono(GroupAiGenerateResponse.class)
           .block();
     } catch (WebClientResponseException e) {
       log.error("AI 서버 응답 오류: {}", e.getMessage());
-      throw new CustomException(ErrorCode.AI_SERVER_CONNECTION_FAILED);
+      throw new CustomException(ResponseCode.AI_SERVER_CONNECTION_FAILED);
     } catch (Exception e) {
       log.error("AI 모임 정보 생성 중 오류 발생: {}", e.getMessage());
-      throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+      throw new CustomException(ResponseCode.INTERNAL_SERVER_ERROR);
     }
   }
 }

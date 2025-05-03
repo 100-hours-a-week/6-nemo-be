@@ -1,8 +1,7 @@
 package kr.ai.nemo.group.controller;
 
 import jakarta.validation.Valid;
-import kr.ai.nemo.common.response.ApiResponse;
-import kr.ai.nemo.common.response.ResponseCode;
+import kr.ai.nemo.common.exception.ApiResponse;
 import kr.ai.nemo.group.dto.GroupAiGenerateRequest;
 import kr.ai.nemo.group.dto.GroupAiGenerateResponse;
 import kr.ai.nemo.group.dto.GroupCreateRequest;
@@ -66,13 +65,11 @@ public class GroupController {
 
   @GetMapping
   public ResponseEntity<ApiResponse<GroupListResponse>> getGroups(@Valid @ModelAttribute GroupSearchRequest request) {
-    GroupListResponse response = groupQueryService.getGroups(request);
-    return ResponseEntity.ok(ApiResponse.success(response));
+    return ResponseEntity.ok(ApiResponse.success(groupQueryService.getGroups(request)));
   }
 
   @GetMapping("/search")
   public ResponseEntity<ApiResponse<GroupListResponse>> searchGroups(@ModelAttribute GroupSearchRequest request) {
-    GroupListResponse response = groupQueryService.getGroups(request);
-    return ResponseEntity.ok(ApiResponse.success(response));
+    return ResponseEntity.ok(ApiResponse.success(groupQueryService.getGroups(request)));
   }
 }

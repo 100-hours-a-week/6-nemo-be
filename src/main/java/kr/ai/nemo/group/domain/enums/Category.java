@@ -1,5 +1,8 @@
 package kr.ai.nemo.group.domain.enums;
 
+import java.util.Arrays;
+import kr.ai.nemo.common.exception.CustomException;
+import kr.ai.nemo.common.exception.ResponseCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -20,4 +23,15 @@ public enum Category {
   ETC("기타");
 
   private final String displayName;
+
+  public static Category fromDisplayName(String displayName) {
+    return Arrays.stream(values())
+        .filter(category -> category.displayName.equals(displayName))
+        .findFirst()
+        .orElseThrow(() -> new CustomException(ResponseCode.INVALID_ENUM));
+  }
+
+  public static String toDisplayName(Category category) {
+    return category.displayName;
+  }
 }

@@ -20,7 +20,7 @@ public class GroupCreateResponse {
   private String name;
   private String summary;
   private String description;
-  private Category category;
+  private String category;
   private String location;
   private int currentUserCount;
   private int maxUserCount;
@@ -28,21 +28,17 @@ public class GroupCreateResponse {
   private List<String> tags;
   private String plan;
 
-  public static GroupCreateResponse from(Group group) {
-    return new GroupCreateResponse(
-        group.getId(),
-        group.getName(),
-        group.getSummary(),
-        group.getDescription(),
-        group.getCategory(),
-        group.getLocation(),
-        group.getCurrentUserCount(),
-        group.getMaxUserCount(),
-        group.getImageUrl(),
-        group.getGroupTags().stream()
-            .map(groupTag -> groupTag.getTag().getName())
-            .collect(Collectors.toList()),
-        group.getPlan()
-    );
+  public GroupCreateResponse(Group group) {
+    this.groupId = group.getId();
+    this.name = group.getName();
+    this.summary = group.getSummary();
+    this.description = group.getDescription();
+    this.category = group.getCategoryDisplayName();
+    this.location = group.getLocation();
+    this.currentUserCount = group.getCurrentUserCount();
+    this.maxUserCount = group.getMaxUserCount();
+    this.imageUrl = group.getImageUrl();
+    this.tags = getTags();
+    this.plan = group.getPlan();
   }
 }

@@ -6,7 +6,11 @@ import org.springframework.http.HttpStatus;
 
 @RequiredArgsConstructor
 @Getter
-public enum ErrorCode {
+public enum ResponseCode {
+
+  SUCCESS("SUCCESS", "요청이 성공적으로 처리되었습니다.", HttpStatus.OK),
+  CREATED("CREATED", "리소스가 성공적으로 생성되었습니다.", HttpStatus.CREATED),
+  NO_CONTENT("NO_CONTENT", "응답할 내용이 없습니다.", HttpStatus.NO_CONTENT),
 
   // 400 BAD REQUEST
   INVALID_REQUEST("INVALID_REQUEST", "입력값이 유효하지 않습니다.", HttpStatus.BAD_REQUEST),
