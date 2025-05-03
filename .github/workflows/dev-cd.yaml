@@ -16,6 +16,7 @@ jobs:
           host: ${{ secrets.DEV_HOST }}            # GCP 개발 서버 IP
           username: ${{ secrets.DEV_USER }}        # SSH 사용자명
           key: ${{ secrets.DEV_SSH_KEY }}          # SSH 키 (시크릿 + BEGIN ~) + .pub은 서버 authorized_keys에 등록
+          port: 22
           script: |
             echo "SSH 접속 성공, GCS에서 최신 스크립트 및 JAR 다운로드 시작"
             
