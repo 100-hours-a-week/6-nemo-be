@@ -2,6 +2,10 @@ name: CD - Deploy to Server (DEV)
 
 on:
   workflow_call:
+    inputs:
+      JAR_TIMESTAMP:
+        required: true
+        type: string
     secrets:
       DEV_HOST:
         required: true
@@ -12,40 +16,43 @@ on:
 
 jobs:
   deploy:
-    # CI 성공한 경우에만 실행
     runs-on: ubuntu-latest
 
     steps:
-      # SSH로 개발 서버에 접속 후 GCS에서 배포 스크립트 및 JAR 다운로드 후 실행
       - name: SSH and deploy from GCS
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.DEV_HOST }}            # GCP 개발 서버 IP
-          username: ${{ secrets.DEV_USER }}        # SSH 사용자명
-          key: ${{ secrets.DEV_SSH_KEY }}          # SSH 키 (시크릿 + BEGIN ~) + .pub은 서버 authorized_keys에 등록
+          host: ${{ secrets.DEV_HOST }}
+          username: ${{ secrets.DEV_USER }}
+          key: ${{ secrets.DEV_SSH_KEY }}
           port: 22
           script: |
-            echo "SSH 접속 성공, GCS에서 최신 스크립트 및 JAR 다운로드 시작"
-            
-            # 1. 디렉토리 준비 및 이동
-            mkdir -p ~/backend && cd backend
-            
-            # 2. JAR 및 스크립트 다운로드
-            gsutil cp gs://6-nemo-bucket/v1/backend-deploy/dev/latest.jar .
-            gsutil cp gs://6-nemo-bucket/v1/backend-deploy/dev/previous.jar . || true
-            gsutil cp gs://6-nemo-bucket/v1/backend-deploy/dev/deploy/deploy.sh .
+            set -e  # 오류 발생 시 즉시 종료
+
+            echo "✅ SSH 접속 성공"
+            mkdir -p ~/backend && cd ~/backend
+
+            VERSION_TAG="${{ inputs.JAR_TIMESTAMP }}"
+            JAR_NAME="${VERSION_TAG}.jar"
+            echo "📦 배포할 버전: $JAR_NAME"
+
+            # 기존 JAR 백업
+            if [ -f latest.jar ]; then
+              echo "📁 기존 latest.jar → previous.jar 백업"
+              mv latest.jar previous.jar
+            else
+              echo "🆕 최초 배포 - 이전 버전 없음"
+            fi
+
+            echo "⬇️ JAR 다운로드"
+            gsutil cp gs://6-nemo-bucket/v1/backend-deploy/dev/${JAR_NAME} latest.jar
+
+            echo "⬇️ 배포 스크립트 및 헬스체크 다운로드"
+            gsutil cp gs://6-nemo-bucket/v1/backend-deploy/dev/deploy/dev-deploy.sh .
             gsutil cp gs://6-nemo-bucket/v1/backend-deploy/dev/deploy/validate.sh .
-            
-            # 3. 실행 권한 부여
-            chmod +x deploy.sh validate.sh
-            
-            # 4. 배포 실행
-            ./deploy.sh
-            
-            
 
-            
-            
+            echo "🔐 실행 권한 부여"
+            chmod +x dev-deploy.sh validate.sh
 
-
-
+            echo "🚀 배포 스크립트 실행"
+            ./dev-deploy.sh
