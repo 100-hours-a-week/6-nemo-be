@@ -8,11 +8,13 @@ import kr.ai.nemo.group.domain.Group;
 import kr.ai.nemo.group.participants.domain.GroupParticipants;
 import kr.ai.nemo.group.participants.domain.enums.Role;
 import kr.ai.nemo.group.participants.domain.enums.Status;
+import kr.ai.nemo.group.participants.dto.GroupParticipantDto;
 import kr.ai.nemo.group.participants.repository.GroupParticipantsRepository;
 import kr.ai.nemo.group.service.GroupQueryService;
 import kr.ai.nemo.user.service.UserQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +24,8 @@ public class GroupParticipantsService {
   private final UserQueryService userQueryService;
   private final GroupQueryService groupQueryService;
 
-  public void applyToGroup(Long groupId, Long userId) {
+  @Transactional
+  public void applyToGroup(Long groupId, Long userId, Role role, Status status) {
 
     boolean exists = groupParticipantsRepository.existsByGroupIdAndUserIdAndStatusIn(
         groupId, userId, List.of(Status.PENDING, Status.JOINED));
@@ -33,16 +36,26 @@ public class GroupParticipantsService {
       throw new CustomException(ResponseCode.ALREADY_APPLIED_OR_JOINED);
     }
 
-    GroupParticipants groupParticipants = GroupParticipants.builder()
+    GroupParticipants participant = GroupParticipants.builder()
         .user(userQueryService.findByIdOrThrow(userId))
         .group(group)
-        .role(Role.MEMBER.getDescription())
-        .status(Status.JOINED.getDisplayName())
+        .role(role)
+        .status(status)
         .appliedAt(LocalDateTime.now())
         .build();
 
-    groupParticipantsRepository.save(groupParticipants);
+    groupParticipantsRepository.save(participant);
 
     group.addCurrentCount();
+  }
+
+  public List<GroupParticipantDto> getAcceptedParticipants(Long groupId) {
+    groupQueryService.findByIdOrThrow(groupId);
+
+    List<GroupParticipants> participants = groupParticipantsRepository.findByGroupIdAndStatus(groupId, Status.JOINED);
+
+    return participants.stream()
+        .map(p -> GroupParticipantDto.from(p.getUser()))
+        .toList();
   }
 }

@@ -10,7 +10,6 @@ import kr.ai.nemo.group.dto.GroupDto;
 import kr.ai.nemo.group.dto.GroupListResponse;
 import kr.ai.nemo.group.dto.GroupSearchRequest;
 import kr.ai.nemo.group.repository.GroupRepository;
-import kr.ai.nemo.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -42,9 +41,6 @@ public class GroupQueryService {
     } else {
       groups = groupRepository.findAll(pageable);
     }
-
-
-
 
     List<GroupDto> groupDto = groups.getContent().stream()
         .map(GroupDto::from)

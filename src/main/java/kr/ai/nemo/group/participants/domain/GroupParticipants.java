@@ -2,6 +2,8 @@ package kr.ai.nemo.group.participants.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -11,6 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import kr.ai.nemo.group.domain.Group;
+import kr.ai.nemo.group.participants.domain.enums.Role;
 import kr.ai.nemo.group.participants.domain.enums.Status;
 import kr.ai.nemo.user.domain.User;
 import lombok.AccessLevel;
@@ -40,12 +43,14 @@ public class GroupParticipants {
   @JoinColumn(name = "group_id", nullable = false)
   private Group group;
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "role", nullable = false)
-  private String role;
+  private Role role;
 
   @Setter
+  @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false)
-  private String status;
+  private Status status;
 
   @Column(name = "applied_at", nullable = false)
   private LocalDateTime appliedAt;
@@ -60,11 +65,11 @@ public class GroupParticipants {
 
   public void markAsDeleted() {
     this.deletedAt = LocalDateTime.now();
-    this.status = Status.WITHDRAWN.getDisplayName();
+    this.status = Status.WITHDRAWN;
   }
 
   public void markAsJoined() {
     this.joinedAt = LocalDateTime.now();
-    this.status = Status.JOINED.getDisplayName();
+    this.status = Status.JOINED;
   }
 }
