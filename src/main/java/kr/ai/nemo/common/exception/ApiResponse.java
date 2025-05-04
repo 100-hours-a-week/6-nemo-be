@@ -9,12 +9,18 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
 @Builder
 public class ApiResponse<T> {
   private int code;
   private String message;
   private T data;
+
+  // 성공 응답 생성자 (errorCode 필드 추가로 인한 생성자 추가)
+  public ApiResponse(int code, String message, T data) {
+    this.code = code;
+    this.message = message;
+    this.data = data;
+  }
 
   // 성공 응답 (200 OK, 데이터 있음)
   public static <T> ApiResponse<T> success(T data) {
@@ -23,7 +29,7 @@ public class ApiResponse<T> {
 
   // 성공 응답 (201 Created, 데이터 있음)
   public static <T> ApiResponse<T> created(T data) {
-    return new ApiResponse<>(ResponseCode.SUCCESS.getHttpStatus().value(),ResponseCode.SUCCESS.getMessage(), data);
+    return new ApiResponse<>(ResponseCode.SUCCESS.getHttpStatus().value(),ResponseCode.CREATED.getMessage(), data);
   }
 
   // 성공 응답 (204 No Content, 데이터 없음)

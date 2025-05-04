@@ -2,6 +2,8 @@ package kr.ai.nemo.group.service;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import kr.ai.nemo.common.exception.CustomException;
+import kr.ai.nemo.common.exception.ResponseCode;
 import kr.ai.nemo.group.domain.Group;
 import kr.ai.nemo.group.domain.enums.GroupStatus;
 import kr.ai.nemo.group.domain.GroupTag;
@@ -11,6 +13,8 @@ import kr.ai.nemo.group.dto.GroupCreateResponse;
 import kr.ai.nemo.group.repository.GroupRepository;
 import kr.ai.nemo.group.repository.GroupTagRepository;
 import kr.ai.nemo.group.repository.TagRepository;
+import kr.ai.nemo.user.repository.UserRepository;
+import kr.ai.nemo.user.service.UserQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,11 +26,13 @@ public class GroupCommandService {
   private final GroupRepository groupRepository;
   private final TagRepository tagRepository;
   private final GroupTagRepository groupTagRepository;
+  private final UserQueryService userQueryService;
 
   @Transactional
-  public GroupCreateResponse createGroup(@Valid GroupCreateRequest request) {
+  public GroupCreateResponse createGroup(@Valid GroupCreateRequest request, Long userId) {
 
     Group group = Group.builder()
+        .owner(userQueryService.findByIdOrThrow(userId))
         .name(request.getName())
         .summary(request.getSummary())
         .description(request.getDescription())
