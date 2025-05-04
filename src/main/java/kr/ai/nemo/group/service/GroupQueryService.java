@@ -10,6 +10,7 @@ import kr.ai.nemo.group.dto.GroupDto;
 import kr.ai.nemo.group.dto.GroupListResponse;
 import kr.ai.nemo.group.dto.GroupSearchRequest;
 import kr.ai.nemo.group.repository.GroupRepository;
+import kr.ai.nemo.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -62,9 +63,7 @@ public class GroupQueryService {
   }
 
   public GroupDetailResponse detailGroup(Long groupId) {
-    Group group = groupRepository.findById(groupId)
-        .orElseThrow(() -> new CustomException(ResponseCode.GROUP_NOT_FOUND));
-
+    Group group = findByIdOrThrow(groupId);
     return convertToDetailResponse(group);
   }
 
@@ -73,4 +72,8 @@ public class GroupQueryService {
     return PageRequest.of(request.getPage(), request.getSize(), sort);
   }
 
+  public Group findByIdOrThrow(Long groupId) {
+    return groupRepository.findById(groupId)
+        .orElseThrow(() -> new CustomException(ResponseCode.GROUP_NOT_FOUND));
+  }
 }

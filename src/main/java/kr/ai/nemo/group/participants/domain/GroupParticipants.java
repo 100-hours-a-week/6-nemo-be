@@ -11,6 +11,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import kr.ai.nemo.group.domain.Group;
+import kr.ai.nemo.group.participants.domain.enums.Role;
+import kr.ai.nemo.group.participants.domain.enums.Status;
 import kr.ai.nemo.user.domain.User;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -40,11 +42,11 @@ public class GroupParticipants {
   private Group group;
 
   @Column(name = "role", nullable = false)
-  private String role;
+  private Role role;
 
   @Setter
   @Column(name = "status", nullable = false)
-  private String status;
+  private Status status;
 
   @Column(name = "applied_at", nullable = false)
   private LocalDateTime appliedAt;

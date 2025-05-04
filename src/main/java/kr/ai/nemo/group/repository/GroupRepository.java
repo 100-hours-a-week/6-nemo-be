@@ -15,4 +15,6 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
   Page<Group> searchWithKeywordOnly(@Param("keyword") String keyword, Pageable pageable);
 
   Page<Group> findByCategory(Category categoryEnum, Pageable pageable);
+
+  Group getGroupById(Long id);
 }

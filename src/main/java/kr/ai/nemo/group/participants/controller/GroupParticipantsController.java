@@ -1,5 +1,6 @@
 package kr.ai.nemo.group.participants.controller;
 
+import kr.ai.nemo.group.participants.service.GroupParticipantsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PathVariable;
