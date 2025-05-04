@@ -1,5 +1,6 @@
 package kr.ai.nemo.auth.controller;
 
+import kr.ai.nemo.auth.dto.TokenRefreshResponse;
 import kr.ai.nemo.auth.exception.OAuthErrorCode;
 import kr.ai.nemo.auth.exception.OAuthException;
 import kr.ai.nemo.auth.service.OauthService;
@@ -8,18 +9,18 @@ import kr.ai.nemo.user.dto.UserLoginResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/oauth")
 @RequiredArgsConstructor
 public class OauthController {
 
   private final OauthService oauthService;
 
-  @GetMapping("/kakao/callback")
+  @GetMapping("auth/login/kakao")
   public ResponseEntity<ApiResponse<UserLoginResponse>> kakaoLogin(
       @RequestParam(value = "code", required = false) String code,
       @RequestParam(value = "error", required = false) String error,
@@ -37,5 +38,12 @@ public class OauthController {
     return ResponseEntity.ok(ApiResponse.success(response));
   }
 
+  @PostMapping("api/v1/auth/token/refresh")
+  public ResponseEntity<ApiResponse<TokenRefreshResponse>> tokenRefresh(
+      @RequestHeader("Authorization") String refreshToken
+  ) {
+    TokenRefreshResponse response = oauthService.reissueAccessToken(refreshToken);
+    return ResponseEntity.ok(ApiResponse.success(response));
+  }
 }
 

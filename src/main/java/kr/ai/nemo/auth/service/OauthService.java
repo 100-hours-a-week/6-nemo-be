@@ -2,11 +2,13 @@ package kr.ai.nemo.auth.service;
 
 import java.time.LocalDateTime;
 
+import kr.ai.nemo.auth.domain.UserToken;
 import kr.ai.nemo.auth.domain.enums.DefaultUserValue;
 import kr.ai.nemo.auth.domain.enums.LoginDevice;
 import kr.ai.nemo.auth.domain.enums.OAuthProvider;
 import kr.ai.nemo.auth.dto.KakaoTokenResponse;
 import kr.ai.nemo.auth.dto.KakaoUserResponse;
+import kr.ai.nemo.auth.dto.TokenRefreshResponse;
 import kr.ai.nemo.auth.exception.OAuthErrorCode;
 import kr.ai.nemo.auth.exception.OAuthException;
 import kr.ai.nemo.auth.jwt.JwtProvider;
@@ -61,7 +63,7 @@ public class OauthService {
       return UserLoginResponse.builder()
           .accessToken(accessToken)
           .refreshToken(refreshToken)
-          .refreshTokenExpiresIn(1209600)
+          .refreshTokenExpiresIn(jwtProvider.getRefreshTokenValidity())
           .user(UserDto.from(user))
           .build();
     } catch (OAuthException e) {
@@ -120,14 +122,15 @@ public class OauthService {
           KakaoUserResponse.class
       );
 
-      if (response.getBody() == null) {
+      KakaoUserResponse body = response.getBody();
+
+      if (body == null) {
         throw new OAuthException(OAuthErrorCode.EMPTY_USER_INFO);
       }
-      if (response.getBody().getId() == null) {
+      if (body.getId() == null) {
         throw new OAuthException(OAuthErrorCode.MISSING_USER_ID);
       }
-
-      return response.getBody();
+      return body;
     } catch (HttpClientErrorException e) {
       if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
         throw new OAuthException(OAuthErrorCode.INVALID_ACCESS_TOKEN, e);
@@ -179,4 +182,13 @@ public class OauthService {
         .build();
   }
 
+  public TokenRefreshResponse reissueAccessToken(String refreshToken) {
+    UserToken userToken = userTokenService.findValidToken(refreshToken);
+    User user = userToken.getUser();
+
+    String newAccessToken = jwtProvider.createAccessToken(user.getId());
+    long expiresIn = jwtProvider.getAccessTokenValidity();
+
+    return new TokenRefreshResponse(newAccessToken, expiresIn);
+  }
 }
