@@ -15,6 +15,7 @@ import kr.ai.nemo.group.service.GroupQueryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,7 +45,8 @@ public class GroupController {
 
   @PostMapping
   public ResponseEntity<ApiResponse<GroupCreateResponse>> createGroup(@Valid @RequestBody GroupCreateRequest request) {
-    GroupCreateResponse createdGroup = groupCommandService.createGroup(request);
+    Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
+    GroupCreateResponse createdGroup = groupCommandService.createGroup(request, userId);
 
     URI location = ServletUriComponentsBuilder
         .fromCurrentRequest()
