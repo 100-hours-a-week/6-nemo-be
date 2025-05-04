@@ -7,6 +7,7 @@ import kr.ai.nemo.common.exception.ResponseCode;
 import kr.ai.nemo.group.participants.domain.GroupParticipants;
 import kr.ai.nemo.group.participants.domain.enums.Role;
 import kr.ai.nemo.group.participants.domain.enums.Status;
+import kr.ai.nemo.group.participants.repository.GroupParticipantsRepository;
 import kr.ai.nemo.group.service.GroupQueryService;
 import kr.ai.nemo.user.service.UserQueryService;
 import lombok.RequiredArgsConstructor;
@@ -32,8 +33,8 @@ public class GroupParticipantsService {
     GroupParticipants groupParticipants = GroupParticipants.builder()
         .user(userQueryService.findByIdOrThrow(userId))
         .group(groupQueryService.findByIdOrThrow(groupId))
-        .role(Role.MEMBER)
-        .status(Status.JOINED)
+        .role(Role.MEMBER.getDescription())
+        .status(Status.JOINED.getDisplayName())
         .appliedAt(LocalDateTime.now())
         .build();
 

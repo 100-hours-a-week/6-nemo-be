@@ -42,11 +42,11 @@ public class GroupParticipants {
   private Group group;
 
   @Column(name = "role", nullable = false)
-  private Role role;
+  private String role;
 
   @Setter
   @Column(name = "status", nullable = false)
-  private Status status;
+  private String status;
 
   @Column(name = "applied_at", nullable = false)
   private LocalDateTime appliedAt;
@@ -61,11 +61,11 @@ public class GroupParticipants {
 
   public void markAsDeleted() {
     this.deletedAt = LocalDateTime.now();
-    this.status = "WITHDRAWN";
+    this.status = Status.WITHDRAWN.getDisplayName();
   }
 
   public void markAsJoined() {
     this.joinedAt = LocalDateTime.now();
-    this.status = "JOINED";
+    this.status = Status.JOINED.getDisplayName();
   }
 }
