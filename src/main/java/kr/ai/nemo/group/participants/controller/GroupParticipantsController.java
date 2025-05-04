@@ -6,6 +6,8 @@ import kr.ai.nemo.group.participants.domain.enums.Role;
 import kr.ai.nemo.group.participants.domain.enums.Status;
 import kr.ai.nemo.group.participants.dto.GroupParticipantDto;
 import kr.ai.nemo.group.participants.dto.GroupParticipantsListResponse;
+import kr.ai.nemo.group.participants.dto.MyGroupDto;
+import kr.ai.nemo.group.participants.dto.MyGroupListResponse;
 import kr.ai.nemo.group.participants.service.GroupParticipantsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -33,5 +35,12 @@ public class GroupParticipantsController {
   public ResponseEntity<ApiResponse<GroupParticipantsListResponse>> getGroupParticipants(@PathVariable Long groupId) {
     List<GroupParticipantDto> list = groupParticipantsService.getAcceptedParticipants(groupId);
     return ResponseEntity.ok(ApiResponse.success(new GroupParticipantsListResponse(list)));
+  }
+
+  @GetMapping("/groups/me")
+  public ResponseEntity<ApiResponse<MyGroupListResponse>> getMyGroups() {
+    Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
+    List<MyGroupDto> groupList = groupParticipantsService.getMyGroups(userId);
+    return ResponseEntity.ok(ApiResponse.success(new MyGroupListResponse(groupList)));
   }
 }

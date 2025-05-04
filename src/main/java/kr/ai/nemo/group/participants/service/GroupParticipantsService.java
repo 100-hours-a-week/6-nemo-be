@@ -9,6 +9,7 @@ import kr.ai.nemo.group.participants.domain.GroupParticipants;
 import kr.ai.nemo.group.participants.domain.enums.Role;
 import kr.ai.nemo.group.participants.domain.enums.Status;
 import kr.ai.nemo.group.participants.dto.GroupParticipantDto;
+import kr.ai.nemo.group.participants.dto.MyGroupDto;
 import kr.ai.nemo.group.participants.repository.GroupParticipantsRepository;
 import kr.ai.nemo.group.service.GroupQueryService;
 import kr.ai.nemo.user.service.UserQueryService;
@@ -26,7 +27,6 @@ public class GroupParticipantsService {
 
   @Transactional
   public void applyToGroup(Long groupId, Long userId, Role role, Status status) {
-
     boolean exists = groupParticipantsRepository.existsByGroupIdAndUserIdAndStatusIn(
         groupId, userId, List.of(Status.PENDING, Status.JOINED));
 
@@ -45,17 +45,21 @@ public class GroupParticipantsService {
         .build();
 
     groupParticipantsRepository.save(participant);
-
     group.addCurrentCount();
   }
 
   public List<GroupParticipantDto> getAcceptedParticipants(Long groupId) {
     groupQueryService.findByIdOrThrow(groupId);
-
     List<GroupParticipants> participants = groupParticipantsRepository.findByGroupIdAndStatus(groupId, Status.JOINED);
-
     return participants.stream()
         .map(p -> GroupParticipantDto.from(p.getUser()))
+        .toList();
+  }
+
+  public List<MyGroupDto> getMyGroups(Long userId) {
+    List<GroupParticipants> participants = groupParticipantsRepository.findByUserIdAndStatus(userId, Status.JOINED);
+    return participants.stream()
+        .map(p -> MyGroupDto.from(p.getGroup()))
         .toList();
   }
 }
