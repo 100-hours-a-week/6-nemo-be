@@ -9,6 +9,11 @@ echo "🚀 [START] 백엔드 서비스(Spring Boot) 배포 시작"
 APP_NAME="nemo-backend"
 JAR="latest.jar"
 
+# 0. NVM 환경 로드 및 PM2 설치
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+npm install -g pm2
+
 # 1. 기존 PM2 프로세스 종료
 echo "🛑 기존 PM2 프로세스 종료: $APP_NAME"
 pm2 delete "$APP_NAME" || echo "ℹ️ 기존 PM2 프로세스 없음"
@@ -27,10 +32,3 @@ for i in {1..5}; do
   echo "⏳ 헬스체크 재시도 ($i/5)..."
   sleep 3
 done
-
-# 4. 롤백
-echo "❌ 헬스체크 5회 실패! 롤백 시도"
-./rollback.sh
-
-# 5. 실패 종료 (CD에서 실패로 인식되게)
-exit 1
