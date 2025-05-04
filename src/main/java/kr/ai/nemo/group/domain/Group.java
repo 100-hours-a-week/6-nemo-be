@@ -9,6 +9,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -52,18 +53,23 @@ public class Group {
   @Column(name = "location", nullable = false)
   private String location;
 
+  @Setter
   @Column(name = "image_url")
   private String imageUrl;
 
+  @Setter
   @Column(name = "completed_schedule_total", nullable = false)
   private int completedScheduleTotal;
 
+  @Setter
   @Column(name = "current_user_count", nullable = false)
   private int currentUserCount;
 
+  @Setter
   @Column(name = "max_user_count", nullable = false)
   private int maxUserCount;
 
+  @Setter
   @Column(name = "status", nullable = false)
   @Enumerated(EnumType.STRING)
   private GroupStatus status;
@@ -82,6 +88,7 @@ public class Group {
   @Column(name = "updated_at")
   private LocalDateTime updatedAt;
 
+  @Setter
   @Column(name = "deleted_at")
   private LocalDateTime deletedAt;
 
@@ -111,4 +118,7 @@ public class Group {
     return Category.toDisplayName(this.category);
   }
 
+  public void addCurrentCount() {
+    this.currentUserCount++;
+  }
 }

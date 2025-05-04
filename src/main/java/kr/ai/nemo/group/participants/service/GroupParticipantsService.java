@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import kr.ai.nemo.common.exception.CustomException;
 import kr.ai.nemo.common.exception.ResponseCode;
+import kr.ai.nemo.group.domain.Group;
 import kr.ai.nemo.group.participants.domain.GroupParticipants;
 import kr.ai.nemo.group.participants.domain.enums.Role;
 import kr.ai.nemo.group.participants.domain.enums.Status;
@@ -26,18 +27,22 @@ public class GroupParticipantsService {
     boolean exists = groupParticipantsRepository.existsByGroupIdAndUserIdAndStatusIn(
         groupId, userId, List.of(Status.PENDING, Status.JOINED));
 
+    Group group = groupQueryService.findByIdOrThrow(groupId);
+
     if (exists) {
       throw new CustomException(ResponseCode.ALREADY_APPLIED_OR_JOINED);
     }
 
     GroupParticipants groupParticipants = GroupParticipants.builder()
         .user(userQueryService.findByIdOrThrow(userId))
-        .group(groupQueryService.findByIdOrThrow(groupId))
+        .group(group)
         .role(Role.MEMBER.getDescription())
         .status(Status.JOINED.getDisplayName())
         .appliedAt(LocalDateTime.now())
         .build();
 
     groupParticipantsRepository.save(groupParticipants);
+
+    group.addCurrentCount();
   }
 }

@@ -11,7 +11,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import kr.ai.nemo.group.domain.Group;
-import kr.ai.nemo.group.participants.domain.enums.Role;
 import kr.ai.nemo.group.participants.domain.enums.Status;
 import kr.ai.nemo.user.domain.User;
 import lombok.AccessLevel;
