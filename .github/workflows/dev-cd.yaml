@@ -34,11 +34,10 @@ jobs:
             gsutil cp gs://6-nemo-bucket/v1/backend-deploy/dev/latest.jar .
             gsutil cp gs://6-nemo-bucket/v1/backend-deploy/dev/previous.jar . || true
             gsutil cp gs://6-nemo-bucket/v1/backend-deploy/dev/deploy/deploy.sh .
-            gsutil cp gs://6-nemo-bucket/v1/backend-deploy/dev/deploy/rollback.sh .
             gsutil cp gs://6-nemo-bucket/v1/backend-deploy/dev/deploy/validate.sh .
             
             # 3. 실행 권한 부여
-            chmod +x deploy.sh rollback.sh validate.sh
+            chmod +x deploy.sh validate.sh
             
             # 4. 배포 실행
             ./deploy.sh
