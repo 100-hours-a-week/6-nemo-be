@@ -2,7 +2,7 @@ name: CI - Build & Upload to GCS (DEV)
 
 on:
   push:
-    branches: [develop, ci-cd/setup-dev-pipeline]
+    branches: [ci-cd/setup-dev-pipeline]
 
 jobs:
   build:
