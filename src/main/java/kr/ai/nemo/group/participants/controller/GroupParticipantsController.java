@@ -4,6 +4,7 @@ import kr.ai.nemo.common.exception.ApiResponse;
 import kr.ai.nemo.group.participants.service.GroupParticipantsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,5 +21,11 @@ public class GroupParticipantsController {
     Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
     groupParticipantsService.applyToGroup(groupId, userId);
     return ApiResponse.noContent();
+  }
+
+  @GetMapping("/groups/{groupId}/participants")
+  public ResponseEntity<ApiResponse<GroupParticipantsListResponse>> getGroupParticipants(@PathVariable Long groupId) {
+    List<GroupParticipantDto> list = groupParticipantsService.getAcceptedParticipants(groupId);
+    return ResponseEntity.ok(ApiResponse.success(new GroupParticipantsListResponse(list)));
   }
 }
