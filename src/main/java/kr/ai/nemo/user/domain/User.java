@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import kr.ai.nemo.group.domain.Group;
+import kr.ai.nemo.group.participants.domain.GroupParticipants;
 import kr.ai.nemo.user.domain.enums.UserStatus;
 import lombok.*;
 
@@ -58,4 +60,7 @@ public class User {
 
   @OneToMany(mappedBy = "owner")
   private List<Group> ownedGroups = new ArrayList<>();
+
+  @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+  private List<GroupParticipants> groupParticipants = new ArrayList<>();
 }

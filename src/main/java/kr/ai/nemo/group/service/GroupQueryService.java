@@ -42,9 +42,6 @@ public class GroupQueryService {
       groups = groupRepository.findAll(pageable);
     }
 
-
-
-
     List<GroupDto> groupDto = groups.getContent().stream()
         .map(GroupDto::from)
         .collect(Collectors.toList());
@@ -62,9 +59,7 @@ public class GroupQueryService {
   }
 
   public GroupDetailResponse detailGroup(Long groupId) {
-    Group group = groupRepository.findById(groupId)
-        .orElseThrow(() -> new CustomException(ResponseCode.GROUP_NOT_FOUND));
-
+    Group group = findByIdOrThrow(groupId);
     return convertToDetailResponse(group);
   }
 
@@ -73,4 +68,8 @@ public class GroupQueryService {
     return PageRequest.of(request.getPage(), request.getSize(), sort);
   }
 
+  public Group findByIdOrThrow(Long groupId) {
+    return groupRepository.findById(groupId)
+        .orElseThrow(() -> new CustomException(ResponseCode.GROUP_NOT_FOUND));
+  }
 }

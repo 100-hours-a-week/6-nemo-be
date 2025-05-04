@@ -1,19 +1,17 @@
 package kr.ai.nemo.group.service;
 
 import jakarta.validation.Valid;
-import java.util.List;
-import kr.ai.nemo.common.exception.CustomException;
-import kr.ai.nemo.common.exception.ResponseCode;
+import java.time.LocalDateTime;
 import kr.ai.nemo.group.domain.Group;
 import kr.ai.nemo.group.domain.enums.GroupStatus;
-import kr.ai.nemo.group.domain.GroupTag;
-import kr.ai.nemo.group.domain.Tag;
 import kr.ai.nemo.group.dto.GroupCreateRequest;
 import kr.ai.nemo.group.dto.GroupCreateResponse;
+import kr.ai.nemo.group.participants.domain.GroupParticipants;
+import kr.ai.nemo.group.participants.domain.enums.Role;
+import kr.ai.nemo.group.participants.domain.enums.Status;
+import kr.ai.nemo.group.participants.service.GroupParticipantsService;
 import kr.ai.nemo.group.repository.GroupRepository;
-import kr.ai.nemo.group.repository.GroupTagRepository;
-import kr.ai.nemo.group.repository.TagRepository;
-import kr.ai.nemo.user.repository.UserRepository;
+import kr.ai.nemo.user.domain.User;
 import kr.ai.nemo.user.service.UserQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,15 +22,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class GroupCommandService {
 
   private final GroupRepository groupRepository;
-  private final TagRepository tagRepository;
-  private final GroupTagRepository groupTagRepository;
   private final UserQueryService userQueryService;
+  private final GroupTagService groupTagService;
+  private final GroupParticipantsService groupParticipantsService;
 
   @Transactional
   public GroupCreateResponse createGroup(@Valid GroupCreateRequest request, Long userId) {
+    User user = userQueryService.findByIdOrThrow(userId);
 
     Group group = Group.builder()
-        .owner(userQueryService.findByIdOrThrow(userId))
+        .owner(user)
         .name(request.getName())
         .summary(request.getSummary())
         .description(request.getDescription())
@@ -46,33 +45,14 @@ public class GroupCommandService {
         .status(GroupStatus.ACTIVE)
         .build();
 
-
     Group savedGroup = groupRepository.save(group);
 
     if (request.getTags() != null && !request.getTags().isEmpty()) {
-      processTags(savedGroup, request.getTags());
+      groupTagService.assignTags(savedGroup, request.getTags());
     }
+
+    groupParticipantsService.applyToGroup(savedGroup.getId(), user.getId(), Role.LEADER, Status.JOINED);
 
     return new GroupCreateResponse(savedGroup);
-  }
-
-  private void processTags(Group group, List<String> tagNames) {
-    for (String tagName : tagNames) {
-
-      Tag tag = tagRepository.findByName(tagName)
-          .orElseGet(() -> {
-            Tag newTag = new Tag(tagName);
-            return tagRepository.save(newTag);
-          });
-
-      GroupTag groupTag = GroupTag.builder()
-          .group(group)
-          .tag(tag)
-          .build();
-
-      group.getGroupTags().add(groupTag);
-
-      groupTagRepository.save(groupTag);
-    }
   }
 }

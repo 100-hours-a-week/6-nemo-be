@@ -3,11 +3,13 @@ package kr.ai.nemo.group.domain;
 import jakarta.persistence.*;
 import kr.ai.nemo.group.domain.enums.Category;
 import kr.ai.nemo.group.domain.enums.GroupStatus;
+import kr.ai.nemo.group.participants.domain.GroupParticipants;
 import kr.ai.nemo.user.domain.User;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -51,24 +53,32 @@ public class Group {
   @Column(name = "location", nullable = false)
   private String location;
 
+  @Setter
   @Column(name = "image_url")
   private String imageUrl;
 
+  @Setter
   @Column(name = "completed_schedule_total", nullable = false)
   private int completedScheduleTotal;
 
+  @Setter
   @Column(name = "current_user_count", nullable = false)
   private int currentUserCount;
 
+  @Setter
   @Column(name = "max_user_count", nullable = false)
   private int maxUserCount;
 
+  @Setter
   @Column(name = "status", nullable = false)
   @Enumerated(EnumType.STRING)
   private GroupStatus status;
 
   @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
   private final List<GroupTag> groupTags = new ArrayList<>();
+
+  @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+  private final List<GroupParticipants> groupParticipants = new ArrayList<>();
 
   @CreatedDate
   @Column(name = "created_at", updatable = false)
@@ -78,6 +88,7 @@ public class Group {
   @Column(name = "updated_at")
   private LocalDateTime updatedAt;
 
+  @Setter
   @Column(name = "deleted_at")
   private LocalDateTime deletedAt;
 
@@ -107,4 +118,7 @@ public class Group {
     return Category.toDisplayName(this.category);
   }
 
+  public void addCurrentCount() {
+    this.currentUserCount++;
+  }
 }
