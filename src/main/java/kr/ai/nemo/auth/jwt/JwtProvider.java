@@ -24,6 +24,7 @@ public class JwtProvider {
   @Value("${jwt.access-token-validity}")
   private long accessTokenValidity;
 
+  @Getter
   @Value("${jwt.refresh-token-validity}")
   private long refreshTokenValidity;
 
