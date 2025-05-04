@@ -34,4 +34,11 @@ public class GroupParticipantsController {
     List<GroupParticipantDto> list = groupParticipantsService.getAcceptedParticipants(groupId);
     return ResponseEntity.ok(ApiResponse.success(new GroupParticipantsListResponse(list)));
   }
+
+  @GetMapping("/groups/me")
+  public ResponseEntity<ApiResponse<MyGroupListResponse>> getMyGroups() {
+    Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
+    List<MyGroupDto> groupList = groupParticipantsService.getMyGroups(userId);
+    return ResponseEntity.ok(ApiResponse.success(new MyGroupListResponse(groupList)))
+  }
 }
