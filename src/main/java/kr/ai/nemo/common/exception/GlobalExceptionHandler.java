@@ -51,18 +51,12 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(OAuthException.class)
   public ResponseEntity<ApiResponse<Object>> handleOAuthException(OAuthException e) {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-        .body(ApiResponse.error(e.getMessage()));
+        .body(ApiResponse.error(ResponseCode.UNAUTHORIZED));
   }
 
   @ExceptionHandler(RestClientException.class)
   public ResponseEntity<ApiResponse<Object>> handleRestClientException(RestClientException e) {
     return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-        .body(ApiResponse.error("외부 API 호출 중 오류가 발생했습니다: " + e.getMessage()));
-  }
-
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<ApiResponse<Object>> handleException(Exception e) {
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(ApiResponse.error("서버 내부 오류가 발생했습니다: " + e.getMessage()));
+        .body(ApiResponse.error(ResponseCode.EXTERNAL_API_ERROR));
   }
 }

@@ -3,6 +3,7 @@ package kr.ai.nemo.group.domain;
 import jakarta.persistence.*;
 import kr.ai.nemo.group.domain.enums.Category;
 import kr.ai.nemo.group.domain.enums.GroupStatus;
+import kr.ai.nemo.user.domain.User;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,6 +26,11 @@ public class Group {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "id")
   private Long id;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "owner_id", nullable = false)
+  private User owner;
+
 
   @Column(name = "name", nullable = false)
   private String name;
@@ -76,9 +82,10 @@ public class Group {
   private LocalDateTime deletedAt;
 
   @Builder
-  public Group(String name, String summary, String description, String plan,
+  public Group(User owner, String name, String summary, String description, String plan,
       Category category, String location, String imageUrl,
       int completedScheduleTotal, int currentUserCount, int maxUserCount, GroupStatus status) {
+    this.owner = owner;
     this.name = name;
     this.summary = summary;
     this.description = description;
