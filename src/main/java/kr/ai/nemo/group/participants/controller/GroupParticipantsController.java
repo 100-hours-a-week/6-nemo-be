@@ -6,6 +6,7 @@ import kr.ai.nemo.group.participants.domain.enums.Role;
 import kr.ai.nemo.group.participants.domain.enums.Status;
 import kr.ai.nemo.group.participants.dto.GroupParticipantDto;
 import kr.ai.nemo.group.participants.dto.GroupParticipantsListResponse;
+import kr.ai.nemo.group.participants.dto.MyGroupDto;
 import kr.ai.nemo.group.participants.service.GroupParticipantsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
