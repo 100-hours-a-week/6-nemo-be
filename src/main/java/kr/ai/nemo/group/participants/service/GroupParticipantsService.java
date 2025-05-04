@@ -8,6 +8,7 @@ import kr.ai.nemo.group.domain.Group;
 import kr.ai.nemo.group.participants.domain.GroupParticipants;
 import kr.ai.nemo.group.participants.domain.enums.Role;
 import kr.ai.nemo.group.participants.domain.enums.Status;
+import kr.ai.nemo.group.participants.dto.GroupParticipantDto;
 import kr.ai.nemo.group.participants.repository.GroupParticipantsRepository;
 import kr.ai.nemo.group.service.GroupQueryService;
 import kr.ai.nemo.user.service.UserQueryService;
@@ -44,5 +45,15 @@ public class GroupParticipantsService {
     groupParticipantsRepository.save(groupParticipants);
 
     group.addCurrentCount();
+  }
+
+  public List<GroupParticipantDto> getAcceptedParticipants(Long groupId) {
+    groupQueryService.findByIdOrThrow(groupId);
+
+    List<GroupParticipants> participants = groupParticipantsRepository.findByGroupIdAndStatus(groupId, Status.JOINED);
+
+    return participants.stream()
+        .map(p -> GroupParticipantDto.from(p.getUser()))
+        .toList();
   }
 }
