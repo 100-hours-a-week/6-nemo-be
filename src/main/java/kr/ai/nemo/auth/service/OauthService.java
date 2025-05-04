@@ -1,12 +1,15 @@
 package kr.ai.nemo.auth.service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
+import kr.ai.nemo.auth.domain.UserToken;
 import kr.ai.nemo.auth.domain.enums.DefaultUserValue;
 import kr.ai.nemo.auth.domain.enums.LoginDevice;
 import kr.ai.nemo.auth.domain.enums.OAuthProvider;
 import kr.ai.nemo.auth.dto.KakaoTokenResponse;
 import kr.ai.nemo.auth.dto.KakaoUserResponse;
+import kr.ai.nemo.auth.dto.TokenRefreshResponse;
 import kr.ai.nemo.auth.exception.OAuthErrorCode;
 import kr.ai.nemo.auth.exception.OAuthException;
 import kr.ai.nemo.auth.jwt.JwtProvider;
@@ -179,4 +182,13 @@ public class OauthService {
         .build();
   }
 
+  public TokenRefreshResponse reissueAccessToken(String refreshToken) {
+    UserToken userToken = userTokenService.findValidToken(refreshToken);
+    User user = userToken.getUser();
+
+    String newAccessToken = jwtProvider.createAccessToken(user.getId());
+    long expiresIn = jwtProvider.getAccessTokenValidity();
+
+    return new TokenRefreshResponse(newAccessToken, expiresIn);
+  }
 }

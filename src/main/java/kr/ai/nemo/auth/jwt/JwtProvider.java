@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import javax.crypto.spec.SecretKeySpec;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,7 @@ public class JwtProvider {
   @Value("${jwt.secret}")
   private String secretKeyString;
 
+  @Getter
   @Value("${jwt.access-token-validity}")
   private long accessTokenValidity;
 
@@ -65,7 +67,6 @@ public class JwtProvider {
           .parseClaimsJws(token);
       return true;
     } catch (Exception e) {
-      log.warn("Invalid JWT Token: {}", e.getMessage());
       return false;
     }
   }
@@ -79,5 +80,4 @@ public class JwtProvider {
 
     return Long.parseLong(claims.getSubject());
   }
-
 }

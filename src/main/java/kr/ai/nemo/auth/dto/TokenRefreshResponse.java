@@ -7,5 +7,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class TokenRefreshResponse {
   private String accessToken;
-  private int accessTokenExpiresIn;
+  private long accessTokenExpiresIn;
 }

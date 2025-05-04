@@ -13,6 +13,6 @@ public class UserLoginResponse {
 
   private String accessToken;
   private String refreshToken;
-  private int refreshTokenExpiresIn;
+  private Long refreshTokenExpiresIn;
   private UserDto user;
 }
