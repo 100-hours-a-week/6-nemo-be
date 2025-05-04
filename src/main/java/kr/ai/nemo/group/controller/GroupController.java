@@ -62,7 +62,7 @@ public class GroupController {
   @GetMapping("/{groupId}")
   public ResponseEntity<ApiResponse<GroupDetailResponse>> showGroupInfo(@PathVariable Long groupId) {
     GroupDetailResponse response = groupQueryService.detailGroup(groupId);
-    return ResponseEntity.ok(ApiResponse.success(response));
+    return ResponseEntity.ok(ApiResponse.created(response));
   }
 
   @GetMapping
