@@ -2,6 +2,7 @@ package kr.ai.nemo.auth.service;
 
 import java.time.LocalDateTime;
 
+import java.util.Optional;
 import kr.ai.nemo.auth.domain.UserToken;
 import kr.ai.nemo.auth.repository.UserTokenRepository;
 import kr.ai.nemo.common.exception.CustomException;
@@ -48,7 +49,7 @@ public class UserTokenService {
         .provider(provider)
         .refreshToken(refreshToken)
         .deviceInfo(deviceInfo)
-        .isRevoked(false)
+        .revoked(false)
         .expiresAt(expiresAt)
         .createdAt(LocalDateTime.now())
         .updatedAt(LocalDateTime.now())
@@ -58,8 +59,11 @@ public class UserTokenService {
   }
 
   public UserToken findValidToken(String refreshToken) {
-    return userTokenRepository.findByRefreshTokenAndIsRevokedFalse(refreshToken)
-        .filter((UserToken t) -> t.getExpiresAt().isAfter(LocalDateTime.now()))
+    if (refreshToken.startsWith("Bearer ")) {
+      refreshToken = refreshToken.substring(7);  // 꼭 제거해야 DB 값과 비교 가능
+    }
+    return userTokenRepository.findByRefreshTokenAndRevokedFalse(refreshToken)
+        .filter(t -> t.getExpiresAt().isAfter(LocalDateTime.now()))
         .orElseThrow(() -> new CustomException(ResponseCode.INVALID_TOKEN));
   }
 }

@@ -43,7 +43,7 @@ public class UserToken {
 
   @Setter
   @Column(name = "is_revoked", nullable = false)
-  private boolean isRevoked;
+  private boolean revoked;
 
   @Setter
   @Column(name = "expires_at", nullable = false)
