@@ -2,6 +2,8 @@ package kr.ai.nemo.group.participants.controller;
 
 import java.util.List;
 import kr.ai.nemo.common.exception.ApiResponse;
+import kr.ai.nemo.group.participants.domain.enums.Role;
+import kr.ai.nemo.group.participants.domain.enums.Status;
 import kr.ai.nemo.group.participants.dto.GroupParticipantDto;
 import kr.ai.nemo.group.participants.dto.GroupParticipantsListResponse;
 import kr.ai.nemo.group.participants.service.GroupParticipantsService;
@@ -23,7 +25,7 @@ public class GroupParticipantsController {
   @PostMapping("/groups/{groupId}/applications")
   public ResponseEntity<Object> applyToGroup(@PathVariable Long groupId){
     Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
-    groupParticipantsService.applyToGroup(groupId, userId);
+    groupParticipantsService.applyToGroup(groupId, userId, Role.MEMBER, Status.JOINED);
     return ResponseEntity.noContent().build();
   }
 

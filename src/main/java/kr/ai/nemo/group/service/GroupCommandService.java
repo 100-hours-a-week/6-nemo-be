@@ -1,11 +1,17 @@
 package kr.ai.nemo.group.service;
 
 import jakarta.validation.Valid;
+import java.time.LocalDateTime;
 import kr.ai.nemo.group.domain.Group;
 import kr.ai.nemo.group.domain.enums.GroupStatus;
 import kr.ai.nemo.group.dto.GroupCreateRequest;
 import kr.ai.nemo.group.dto.GroupCreateResponse;
+import kr.ai.nemo.group.participants.domain.GroupParticipants;
+import kr.ai.nemo.group.participants.domain.enums.Role;
+import kr.ai.nemo.group.participants.domain.enums.Status;
+import kr.ai.nemo.group.participants.service.GroupParticipantsService;
 import kr.ai.nemo.group.repository.GroupRepository;
+import kr.ai.nemo.user.domain.User;
 import kr.ai.nemo.user.service.UserQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,11 +24,14 @@ public class GroupCommandService {
   private final GroupRepository groupRepository;
   private final UserQueryService userQueryService;
   private final GroupTagService groupTagService;
+  private final GroupParticipantsService groupParticipantsService;
 
   @Transactional
   public GroupCreateResponse createGroup(@Valid GroupCreateRequest request, Long userId) {
+    User user = userQueryService.findByIdOrThrow(userId);
+
     Group group = Group.builder()
-        .owner(userQueryService.findByIdOrThrow(userId))
+        .owner(user)
         .name(request.getName())
         .summary(request.getSummary())
         .description(request.getDescription())
@@ -41,6 +50,8 @@ public class GroupCommandService {
     if (request.getTags() != null && !request.getTags().isEmpty()) {
       groupTagService.assignTags(savedGroup, request.getTags());
     }
+
+    groupParticipantsService.applyToGroup(savedGroup.getId(), user.getId(), Role.LEADER, Status.JOINED);
 
     return new GroupCreateResponse(savedGroup);
   }
