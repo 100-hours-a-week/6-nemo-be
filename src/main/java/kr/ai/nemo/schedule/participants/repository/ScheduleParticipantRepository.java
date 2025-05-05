@@ -1,6 +1,7 @@
 package kr.ai.nemo.schedule.participants.repository;
 
 import java.util.List;
+import java.util.Optional;
 import kr.ai.nemo.schedule.domain.Schedule;
 import kr.ai.nemo.schedule.participants.domain.ScheduleParticipant;
 import kr.ai.nemo.user.domain.User;
@@ -11,4 +12,6 @@ public interface ScheduleParticipantRepository extends JpaRepository<SchedulePar
   List<ScheduleParticipant> findByScheduleId(Long scheduleId);
 
   boolean existsByScheduleAndUser(Schedule schedule, User user);
+
+  Optional<ScheduleParticipant> findByScheduleIdAndUserId(Long scheduleId, Long userId);
 }

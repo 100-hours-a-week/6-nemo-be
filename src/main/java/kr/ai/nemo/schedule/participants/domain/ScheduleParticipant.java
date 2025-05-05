@@ -32,10 +32,12 @@ public class ScheduleParticipant {
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
+  @Setter
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private ScheduleParticipantStatus status;
 
+  @Setter
   @Column(name = "joined_at")
   private LocalDateTime joinedAt;
 
@@ -63,11 +65,6 @@ public class ScheduleParticipant {
 
   public void reject() {
     this.status = ScheduleParticipantStatus.REJECTED;
-    this.joinedAt = null;
-  }
-
-  public void cancel() {
-    this.status = ScheduleParticipantStatus.CANCELED;
     this.joinedAt = null;
   }
 }

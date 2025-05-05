@@ -2,6 +2,8 @@ package kr.ai.nemo.schedule.participants.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import kr.ai.nemo.common.exception.CustomException;
+import kr.ai.nemo.common.exception.ResponseCode;
 import kr.ai.nemo.group.domain.Group;
 import kr.ai.nemo.group.participants.domain.GroupParticipants;
 import kr.ai.nemo.schedule.domain.Schedule;
@@ -60,5 +62,19 @@ public class ScheduleParticipantsService {
         scheduleParticipantRepository.save(participant);
       }
     }
+  }
+
+  @Transactional
+  public void decideParticipation(Long scheduleId, Long userId, ScheduleParticipantStatus status) {
+    ScheduleParticipant participant = scheduleParticipantRepository
+        .findByScheduleIdAndUserId(scheduleId, userId)
+        .orElseThrow(() -> new CustomException(ResponseCode.SCHEDULE_ALREADY_DECIDED));
+
+    if (participant.getStatus() != ScheduleParticipantStatus.PENDING) {
+      throw new CustomException(ResponseCode.SCHEDULE_ALREADY_DECIDED);
+    }
+
+    participant.setStatus(status);
+    participant.setJoinedAt(LocalDateTime.now());
   }
 }

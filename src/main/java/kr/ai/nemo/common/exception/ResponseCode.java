@@ -37,6 +37,7 @@ public enum ResponseCode {
 
   // 409 Conflict
   ALREADY_APPLIED_OR_JOINED("ALREADY_APPLIED_OR_JOINED", "이미 신청했거나 참여 중인 사용자입니다.", HttpStatus.CONFLICT),
+  SCHEDULE_ALREADY_DECIDED("SCHEDULE_ALREADY_DECIDED", "이미 응답하셨습니다.", HttpStatus.CONFLICT),
 
   // 500 INTERNAL SERVER ERROR
   INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", "서버 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
