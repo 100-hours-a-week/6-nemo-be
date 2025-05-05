@@ -118,7 +118,11 @@ public class Group {
     return Category.toDisplayName(this.category);
   }
 
-  public void addCurrentCount() {
+  public void addCurrentUserCount() {
     this.currentUserCount++;
+  }
+
+  public void addCompleteSchedule() {
+    this.completedScheduleTotal++;
   }
 }

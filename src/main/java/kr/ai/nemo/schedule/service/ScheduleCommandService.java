@@ -3,12 +3,14 @@ package kr.ai.nemo.schedule.service;
 import java.time.LocalDateTime;
 import kr.ai.nemo.common.exception.CustomException;
 import kr.ai.nemo.common.exception.ResponseCode;
+import kr.ai.nemo.group.domain.Group;
 import kr.ai.nemo.group.participants.service.GroupParticipantsService;
 import kr.ai.nemo.group.service.GroupQueryService;
 import kr.ai.nemo.schedule.domain.Schedule;
 import kr.ai.nemo.schedule.domain.enums.ScheduleStatus;
 import kr.ai.nemo.schedule.dto.ScheduleCreateRequest;
 import kr.ai.nemo.schedule.dto.ScheduleCreateResponse;
+import kr.ai.nemo.schedule.participants.service.ScheduleParticipantsService;
 import kr.ai.nemo.schedule.repository.ScheduleRepository;
 import kr.ai.nemo.user.service.UserQueryService;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +24,14 @@ public class ScheduleCommandService {
   private final GroupQueryService groupQueryService;
   private final UserQueryService userQueryService;
   private final GroupParticipantsService groupParticipantsService;
+  private final ScheduleParticipantsService scheduleParticipantsService;
 
+  @Transactional
   public ScheduleCreateResponse createSchedule(Long userId, ScheduleCreateRequest request){
     groupParticipantsService.validateJoinedParticipant(request.groupId(), userId);
+    Group group = groupQueryService.findByIdOrThrow(request.groupId());
     Schedule schedule = Schedule.builder()
-        .group(groupQueryService.findByIdOrThrow(request.groupId()))
+        .group(group)
         .owner(userQueryService.findByIdOrThrow(userId))
         .title(request.title())
         .description(request.description())
@@ -37,7 +42,7 @@ public class ScheduleCommandService {
         .build();
 
     scheduleRepository.save(schedule);
-
+    scheduleParticipantsService.addAllParticipantsForNewSchedule(schedule);
     return ScheduleCreateResponse.from(schedule);
   }
 
