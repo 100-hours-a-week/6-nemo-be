@@ -43,8 +43,7 @@ public class ScheduleCommandService {
 
   @Transactional
   public void deleteSchedule(Long userId, Long scheduleId) {
-    Schedule schedule = scheduleRepository.findById(scheduleId)
-        .orElseThrow(() -> new CustomException(ResponseCode.SCHEDULE_NOT_FOUND));
+    Schedule schedule = findByIdOrThrow(scheduleId);
 
     if (schedule.getStartAt().isBefore(LocalDateTime.now())) {
       throw new CustomException(ResponseCode.SCHEDULE_ALREADY_ENDED);
@@ -55,5 +54,10 @@ public class ScheduleCommandService {
     }
 
     schedule.cancel();
+  }
+
+  public Schedule findByIdOrThrow(Long scheduleId) {
+    return scheduleRepository.findById(scheduleId)
+        .orElseThrow(() -> new CustomException(ResponseCode.SCHEDULE_NOT_FOUND));
   }
 }

@@ -7,6 +7,7 @@ import kr.ai.nemo.schedule.dto.ScheduleCreateRequest;
 import kr.ai.nemo.schedule.dto.ScheduleCreateResponse;
 import kr.ai.nemo.schedule.dto.ScheduleDetailResponse;
 import kr.ai.nemo.schedule.service.ScheduleCommandService;
+import kr.ai.nemo.schedule.service.ScheduleQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ScheduleController {
   private final ScheduleCommandService scheduleCommandService;
+  private final ScheduleQueryService scheduleQueryService;
 
   @PostMapping
   public ResponseEntity<ApiResponse<ScheduleCreateResponse>> schedule(@RequestBody ScheduleCreateRequest request) {
