@@ -1,27 +1,22 @@
 package kr.ai.nemo.group.dto;
 
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Page;
 
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class GroupListResponse {
-  private List<GroupDto> groups;
-  private int totalCount;
-  private int page;
-  private int size;
-
-  public static GroupListResponse from(List<GroupDto> groups, int totalCount, int page, int size) {
-    return GroupListResponse.builder()
-        .groups(groups)
-        .totalCount(totalCount)
-        .page(page)
-        .size(size)
-        .build();
+public record GroupListResponse(
+    List<GroupDto> groups,
+    int totalPages,
+    long totalElements,
+    int pageNumber,
+    boolean isLast
+) {
+  public static GroupListResponse from(Page<GroupDto> page) {
+    return new GroupListResponse(
+        page.getContent(),
+        page.getTotalPages(),
+        page.getTotalElements(),
+        page.getNumber(),
+        page.isLast()
+    );
   }
 }

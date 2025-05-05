@@ -16,6 +16,8 @@ public enum ResponseCode {
   INVALID_REQUEST("INVALID_REQUEST", "입력값이 유효하지 않습니다.", HttpStatus.BAD_REQUEST),
   INVALID_ENUM("INVALID_ENUM", "올바르지 않은 타입입니다.", HttpStatus.BAD_REQUEST),
   MISSING_REQUIRED_PARAMETER("MISSING_REQUIRED_PARAMETER", "필수 요청 파라미터가 누락되었습니다.", HttpStatus.BAD_REQUEST),
+  SCHEDULE_ALREADY_ENDED("SCHEDULE_ALREADY_ENDED", "이미 종료된 일정은 취소할 수 없습니다.", HttpStatus.BAD_REQUEST),
+
 
   // 401 UNAUTHORIZED
   UNAUTHORIZED("UNAUTHORIZED", "인증이 필요합니다.", HttpStatus.UNAUTHORIZED),
@@ -24,10 +26,14 @@ public enum ResponseCode {
 
   // 403 FORBIDDEN
   ACCESS_DENIED("NO_PERMISSION", "접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
+  SCHEDULE_DELETE_FORBIDDEN("SCHEDULE_DELETE_FORBIDDEN", "일정 생성자만 취소할 수 있습니다.", HttpStatus.FORBIDDEN),
+
 
   // 404 NOT FOUND
   USER_NOT_FOUND("USER_NOT_FOUND", "사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
   GROUP_NOT_FOUND("GROUP_NOT_FOUND", "모임을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+  NOT_GROUP_MEMBER("PARTICIPANT+NOT_FOUND", "모임원이 아닙니다.", HttpStatus.NOT_FOUND),
+  SCHEDULE_NOT_FOUND("SCHEDULE_NOT_FOUND", "일정이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
 
   // 409 Conflict
   ALREADY_APPLIED_OR_JOINED("ALREADY_APPLIED_OR_JOINED", "이미 신청했거나 참여 중인 사용자입니다.", HttpStatus.CONFLICT),

@@ -12,6 +12,9 @@ import kr.ai.nemo.group.dto.GroupSearchRequest;
 import kr.ai.nemo.group.service.AiGroupGenerateClient;
 import kr.ai.nemo.group.service.GroupCommandService;
 import kr.ai.nemo.group.service.GroupQueryService;
+import kr.ai.nemo.schedule.dto.PageRequestDto;
+import kr.ai.nemo.schedule.dto.ScheduleListResponse;
+import kr.ai.nemo.schedule.service.ScheduleQueryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +39,7 @@ public class GroupController {
   private final AiGroupGenerateClient aiGroupGenerateClient;
   private final GroupCommandService groupCommandService;
   private final GroupQueryService groupQueryService;
+  private final ScheduleQueryService scheduleQueryService;
 
   @PostMapping("/ai-generate")
   public ResponseEntity<ApiResponse<GroupAiGenerateResponse>> generateGroupInfo(@Valid @RequestBody GroupAiGenerateRequest request) {
@@ -73,5 +77,15 @@ public class GroupController {
   @GetMapping("/search")
   public ResponseEntity<ApiResponse<GroupListResponse>> searchGroups(@ModelAttribute GroupSearchRequest request) {
     return ResponseEntity.ok(ApiResponse.success(groupQueryService.getGroups(request)));
+  }
+
+  @GetMapping("/{groupId}/schedules")
+  public ResponseEntity<ApiResponse<ScheduleListResponse>> getGroupSchedules(
+      @PathVariable Long groupId,
+      @Valid PageRequestDto pageRequestDto
+  ) {
+    return ResponseEntity.ok(ApiResponse.success(
+        scheduleQueryService.getGroupSchedules(groupId, pageRequestDto.toPageRequest())
+    ));
   }
 }
