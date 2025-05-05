@@ -1,1 +1,41 @@
-spring.application.name=nemo
+spring:
+  application:
+    name: nemo
+
+  datasource:
+    url: jdbc:mysql://${db_url}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ${username}
+    password: ${password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+
+  messages:
+    basename: validation
+    encoding: UTF-8
+
+oauth:
+  kakao:
+    rest-api-key: ${KAKAO_REST_API_KEY}
+    redirect-uri: ${KAKAO_REDIRECT_URI}
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-validity: 3600000
+  refresh-token-validity: 1209600000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      show-details: never
