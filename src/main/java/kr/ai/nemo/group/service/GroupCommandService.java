@@ -1,12 +1,10 @@
 package kr.ai.nemo.group.service;
 
 import jakarta.validation.Valid;
-import java.time.LocalDateTime;
 import kr.ai.nemo.group.domain.Group;
 import kr.ai.nemo.group.domain.enums.GroupStatus;
 import kr.ai.nemo.group.dto.GroupCreateRequest;
 import kr.ai.nemo.group.dto.GroupCreateResponse;
-import kr.ai.nemo.group.participants.domain.GroupParticipants;
 import kr.ai.nemo.group.participants.domain.enums.Role;
 import kr.ai.nemo.group.participants.domain.enums.Status;
 import kr.ai.nemo.group.participants.service.GroupParticipantsService;
@@ -40,7 +38,7 @@ public class GroupCommandService {
         .location(request.getLocation())
         .completedScheduleTotal(0)
         .imageUrl(request.getImageUrl())
-        .currentUserCount(1)
+        .currentUserCount(0)
         .maxUserCount(request.getMaxUserCount())
         .status(GroupStatus.ACTIVE)
         .build();
