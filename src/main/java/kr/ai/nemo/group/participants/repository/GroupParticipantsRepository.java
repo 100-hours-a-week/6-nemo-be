@@ -23,4 +23,6 @@ public interface GroupParticipantsRepository extends JpaRepository<GroupParticip
     AND gp.status = :status
 """)
   List<GroupParticipants> findByUserIdAndStatus(Long userId, Status status);
+
+  boolean existsByGroupIdAndUserIdAndStatus(Long groupId, Long userId, Status status);
 }

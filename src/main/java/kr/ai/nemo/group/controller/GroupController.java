@@ -56,7 +56,7 @@ public class GroupController {
 
     return ResponseEntity
         .created(location)
-        .body(ApiResponse.success(createdGroup));
+        .body(ApiResponse.created(createdGroup));
   }
 
   @GetMapping("/{groupId}")

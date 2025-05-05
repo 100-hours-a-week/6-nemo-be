@@ -28,6 +28,7 @@ public enum ResponseCode {
   // 404 NOT FOUND
   USER_NOT_FOUND("USER_NOT_FOUND", "사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
   GROUP_NOT_FOUND("GROUP_NOT_FOUND", "모임을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+  NOT_GROUP_MEMBER("PARTICIPANT+NOT_FOUND", "모임원이 아닙니다.", HttpStatus.NOT_FOUND),
 
   // 409 Conflict
   ALREADY_APPLIED_OR_JOINED("ALREADY_APPLIED_OR_JOINED", "이미 신청했거나 참여 중인 사용자입니다.", HttpStatus.CONFLICT),
