@@ -14,4 +14,6 @@ public interface ScheduleParticipantRepository extends JpaRepository<SchedulePar
   boolean existsByScheduleAndUser(Schedule schedule, User user);
 
   Optional<ScheduleParticipant> findByScheduleIdAndUserId(Long scheduleId, Long userId);
+
+  List<ScheduleParticipant> findByUserId(Long userId);
 }

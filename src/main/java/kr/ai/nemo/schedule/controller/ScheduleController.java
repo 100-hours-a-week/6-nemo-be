@@ -3,6 +3,7 @@ package kr.ai.nemo.schedule.controller;
 import java.net.URI;
 import kr.ai.nemo.common.UriGenerator;
 import kr.ai.nemo.common.exception.ApiResponse;
+import kr.ai.nemo.schedule.dto.MySchedulesResponse;
 import kr.ai.nemo.schedule.dto.ScheduleCreateRequest;
 import kr.ai.nemo.schedule.dto.ScheduleCreateResponse;
 import kr.ai.nemo.schedule.dto.ScheduleDetailResponse;
@@ -10,6 +11,7 @@ import kr.ai.nemo.schedule.service.ScheduleCommandService;
 import kr.ai.nemo.schedule.service.ScheduleQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,5 +47,12 @@ public class ScheduleController {
   public ResponseEntity<ApiResponse<ScheduleDetailResponse>> getScheduleDetail(@PathVariable Long scheduleId) {
     ScheduleDetailResponse response = scheduleQueryService.getScheduleDetail(scheduleId);
     return ResponseEntity.ok(ApiResponse.success(response));
+  }
+
+  @GetMapping("/me")
+  public ResponseEntity<ApiResponse<MySchedulesResponse>> getMySchedules(
+      @AuthenticationPrincipal Long userId
+  ) {
+    return ResponseEntity.ok(ApiResponse.success(scheduleQueryService.getMySchedules(userId)));
   }
 }
