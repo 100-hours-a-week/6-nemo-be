@@ -1,7 +1,5 @@
 package kr.ai.nemo.group.service;
 
-import java.util.List;
-import java.util.stream.Collectors;
 import kr.ai.nemo.common.exception.CustomException;
 import kr.ai.nemo.common.exception.ResponseCode;
 import kr.ai.nemo.group.domain.Group;
