@@ -1,11 +1,14 @@
 package kr.ai.nemo.schedule.controller;
 
+import jakarta.validation.Valid;
 import java.net.URI;
 import kr.ai.nemo.common.UriGenerator;
 import kr.ai.nemo.common.exception.ApiResponse;
+import kr.ai.nemo.schedule.dto.PageRequestDto;
 import kr.ai.nemo.schedule.dto.ScheduleCreateRequest;
 import kr.ai.nemo.schedule.dto.ScheduleCreateResponse;
 import kr.ai.nemo.schedule.dto.ScheduleDetailResponse;
+import kr.ai.nemo.schedule.dto.ScheduleListResponse;
 import kr.ai.nemo.schedule.service.ScheduleCommandService;
 import kr.ai.nemo.schedule.service.ScheduleQueryService;
 import lombok.RequiredArgsConstructor;
