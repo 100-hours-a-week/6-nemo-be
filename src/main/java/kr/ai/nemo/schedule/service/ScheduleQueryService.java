@@ -1,11 +1,15 @@
 package kr.ai.nemo.schedule.service;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import kr.ai.nemo.schedule.domain.Schedule;
+import kr.ai.nemo.schedule.dto.MySchedulesResponse;
+import kr.ai.nemo.schedule.dto.MySchedulesResponse.ScheduleParticipation;
 import kr.ai.nemo.schedule.dto.ScheduleDetailResponse;
 import kr.ai.nemo.schedule.dto.ScheduleListResponse;
 import kr.ai.nemo.schedule.participants.domain.ScheduleParticipant;
+import kr.ai.nemo.schedule.participants.domain.enums.ScheduleParticipantStatus;
 import kr.ai.nemo.schedule.participants.repository.ScheduleParticipantRepository;
 import kr.ai.nemo.schedule.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
@@ -50,4 +54,28 @@ public class ScheduleQueryService {
     );
   }
 
+  public MySchedulesResponse getMySchedules(Long userId) {
+    List<ScheduleParticipant> participants = scheduleParticipantRepository.findByUserId(userId);
+
+    LocalDateTime now = LocalDateTime.now();
+
+    List<ScheduleParticipation> pending = participants.stream()
+        .filter(p -> p.getStatus() == ScheduleParticipantStatus.PENDING)
+        .map(ScheduleParticipation::from)
+        .toList();
+
+    List<ScheduleParticipation> upcoming = participants.stream()
+        .filter(p -> p.getStatus() == ScheduleParticipantStatus.ACCEPTED
+            && p.getSchedule().getStartAt().isAfter(now))
+        .map(ScheduleParticipation::from)
+        .toList();
+
+    List<ScheduleParticipation> completed = participants.stream()
+        .filter(p -> p.getStatus() == ScheduleParticipantStatus.ACCEPTED
+            && p.getSchedule().getStartAt().isBefore(now))
+        .map(ScheduleParticipation::from)
+        .toList();
+
+    return new MySchedulesResponse(pending, upcoming, completed);
+    }
 }

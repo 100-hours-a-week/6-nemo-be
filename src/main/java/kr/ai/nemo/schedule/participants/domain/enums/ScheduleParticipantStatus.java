@@ -3,5 +3,13 @@ package kr.ai.nemo.schedule.participants.domain.enums;
 public enum ScheduleParticipantStatus {
   PENDING,
   ACCEPTED,
-  REJECTED
+  REJECTED;
+
+  public boolean isPending() {
+    return this == PENDING;
+  }
+
+  public boolean isAccepted() {
+    return this == ACCEPTED;
+  }
 }
