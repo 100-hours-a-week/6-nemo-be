@@ -1,7 +1,5 @@
 package kr.ai.nemo.group.service;
 
-import java.util.List;
-import java.util.stream.Collectors;
 import kr.ai.nemo.common.exception.CustomException;
 import kr.ai.nemo.common.exception.ResponseCode;
 import kr.ai.nemo.group.domain.Group;
@@ -34,24 +32,15 @@ public class GroupQueryService {
 
     if (request.getCategoryEnum() != null) {
       groups = groupRepository.findByCategory(request.getCategoryEnum(), pageable);
-
     } else if (request.getKeyword() != null && !request.getKeyword().isBlank()) {
       groups = groupRepository.searchWithKeywordOnly(request.getKeyword(), pageable);
-
     } else {
       groups = groupRepository.findAll(pageable);
     }
 
-    List<GroupDto> groupDto = groups.getContent().stream()
-        .map(GroupDto::from)
-        .collect(Collectors.toList());
+    Page<GroupDto> groupDtoPage = groups.map(GroupDto::from);
 
-    return GroupListResponse.from(
-        groupDto,
-        (int) groups.getTotalElements(),
-        groups.getNumber(),
-        groups.getSize()
-    );
+    return GroupListResponse.from(groupDtoPage);
   }
 
   private GroupDetailResponse convertToDetailResponse(Group group) {
