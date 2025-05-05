@@ -13,4 +13,8 @@ public enum Status {
   REJECTED("거절됨");
 
   private final String displayName;
+
+  public boolean isJoined() {
+    return this == JOINED;
+  }
 }

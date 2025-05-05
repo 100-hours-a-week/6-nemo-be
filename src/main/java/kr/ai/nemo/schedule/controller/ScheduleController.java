@@ -27,7 +27,7 @@ public class ScheduleController {
   private final ScheduleQueryService scheduleQueryService;
 
   @PostMapping
-  public ResponseEntity<ApiResponse<ScheduleCreateResponse>> schedule(@RequestBody ScheduleCreateRequest request) {
+  public ResponseEntity<ApiResponse<ScheduleCreateResponse>> createSchedule(@RequestBody ScheduleCreateRequest request) {
     Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
     ScheduleCreateResponse response = scheduleCommandService.createSchedule(userId, request);
     URI location = UriGenerator.scheduleDetail(response.group().groupId());

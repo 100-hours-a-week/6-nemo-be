@@ -12,6 +12,8 @@ import kr.ai.nemo.group.participants.dto.GroupParticipantDto;
 import kr.ai.nemo.group.participants.dto.MyGroupDto;
 import kr.ai.nemo.group.participants.repository.GroupParticipantsRepository;
 import kr.ai.nemo.group.service.GroupQueryService;
+import kr.ai.nemo.schedule.participants.service.ScheduleParticipantsService;
+import kr.ai.nemo.user.domain.User;
 import kr.ai.nemo.user.service.UserQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,7 @@ public class GroupParticipantsService {
   private final GroupParticipantsRepository groupParticipantsRepository;
   private final UserQueryService userQueryService;
   private final GroupQueryService groupQueryService;
+  private final ScheduleParticipantsService scheduleParticipantsService;
 
   @Transactional
   public void applyToGroup(Long groupId, Long userId, Role role, Status status) {
@@ -31,13 +34,13 @@ public class GroupParticipantsService {
         groupId, userId, List.of(Status.PENDING, Status.JOINED));
 
     Group group = groupQueryService.findByIdOrThrow(groupId);
-
+    User user =userQueryService.findByIdOrThrow(userId);
     if (exists) {
       throw new CustomException(ResponseCode.ALREADY_APPLIED_OR_JOINED);
     }
 
     GroupParticipants participant = GroupParticipants.builder()
-        .user(userQueryService.findByIdOrThrow(userId))
+        .user(user)
         .group(group)
         .role(role)
         .status(status)
@@ -45,7 +48,8 @@ public class GroupParticipantsService {
         .build();
 
     groupParticipantsRepository.save(participant);
-    group.addCurrentCount();
+    group.addCurrentUserCount();
+    scheduleParticipantsService.addParticipantToUpcomingSchedules(group, user);
   }
 
   public List<GroupParticipantDto> getAcceptedParticipants(Long groupId) {
