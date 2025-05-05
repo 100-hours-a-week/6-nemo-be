@@ -1,11 +1,8 @@
 package kr.ai.nemo.common.exception;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.http.HttpStatus;
-
 
 @Getter
 @NoArgsConstructor
@@ -29,12 +26,12 @@ public class ApiResponse<T> {
 
   // 성공 응답 (201 Created, 데이터 있음)
   public static <T> ApiResponse<T> created(T data) {
-    return new ApiResponse<>(ResponseCode.SUCCESS.getHttpStatus().value(),ResponseCode.CREATED.getMessage(), data);
+    return new ApiResponse<>(ResponseCode.CREATED.getHttpStatus().value(),ResponseCode.CREATED.getMessage(), data);
   }
 
   // 성공 응답 (204 No Content, 데이터 없음)
   public static <T> ApiResponse<T> noContent() {
-    return new ApiResponse<>(ResponseCode.SUCCESS.getHttpStatus().value(), ResponseCode.NO_CONTENT.getMessage(), null);
+    return new ApiResponse<>(ResponseCode.NO_CONTENT.getHttpStatus().value(), ResponseCode.NO_CONTENT.getMessage(), null);
   }
 
   // 오류 응답 (ErrorCode 사용)

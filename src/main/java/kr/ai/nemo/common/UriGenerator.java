@@ -1,17 +1,15 @@
 package kr.ai.nemo.common;
 
 import java.net.URI;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 public class UriGenerator {
 
-  public URI getUri(Long id) {
-    return ServletUriComponentsBuilder
-        .fromCurrentRequest()
-        .path("/{id}")
-        .buildAndExpand(id)
-        .toUri();
+  public static URI scheduleDetail(Long scheduleId) {
+    return URI.create(String.format("https://nemo.ai/api/v1/schedules/%d", scheduleId));
   }
 
-
+  public static URI groupDetail(Long groupId) {
+    return URI.create(String.format("https://nemo.ai/api/v1/groups/%d", groupId));
+  }
 }
+

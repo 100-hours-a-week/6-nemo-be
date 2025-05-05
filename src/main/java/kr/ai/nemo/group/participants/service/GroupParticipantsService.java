@@ -62,4 +62,14 @@ public class GroupParticipantsService {
         .map(p -> MyGroupDto.from(p.getGroup()))
         .toList();
   }
+
+  public void validateJoinedParticipant(Long groupId, Long userId) {
+    boolean exists = groupParticipantsRepository.existsByGroupIdAndUserIdAndStatus(
+        groupId, userId, Status.JOINED);
+
+    if (!exists) {
+      throw new CustomException(ResponseCode.NOT_GROUP_MEMBER);
+    }
+  }
+
 }
