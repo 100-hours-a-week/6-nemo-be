@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 import kr.ai.nemo.group.domain.Group;
 import kr.ai.nemo.group.participants.domain.GroupParticipants;
+import kr.ai.nemo.schedule.domain.Schedule;
+import kr.ai.nemo.schedule.participants.domain.ScheduleParticipant;
 import kr.ai.nemo.user.domain.enums.UserStatus;
 import lombok.*;
 
@@ -63,4 +65,10 @@ public class User {
 
   @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
   private List<GroupParticipants> groupParticipants = new ArrayList<>();
+
+  @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY)
+  private List<Schedule> schedule = new ArrayList<>();
+
+  @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+  private List<ScheduleParticipant> scheduleParticipants = new ArrayList<>();
 }
