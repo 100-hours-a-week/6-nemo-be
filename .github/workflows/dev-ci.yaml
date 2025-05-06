@@ -52,8 +52,8 @@ jobs:
       - name: Rename JAR to timestamp
         id: jar
         run: |
-          jar_path=$(ls build/libs/*SNAPSHOT.jar | head -n1)
           timestamp=${{ steps.date.outputs.tag }}
+          jar_path=$(find build/libs -type f -name "*SNAPSHOT.jar" ! -name "*plain*" | head -n1)
           new_jar="build/libs/${timestamp}.jar"
           mv "$jar_path" "$new_jar"
           echo "JAR_PATH=$new_jar" >> $GITHUB_OUTPUT
