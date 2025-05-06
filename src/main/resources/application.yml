@@ -39,6 +39,3 @@ management:
   endpoint:
     health:
       show-details: never
-
-schedule:
-  update-fixed-rate: 300000
