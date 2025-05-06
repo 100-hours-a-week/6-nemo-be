@@ -50,8 +50,10 @@ public class ScheduleCommandService {
   public void deleteSchedule(Long userId, Long scheduleId) {
     Schedule schedule = findByIdOrThrow(scheduleId);
 
-    if (schedule.getStartAt().isBefore(LocalDateTime.now())) {
+    if (schedule.getStatus() == ScheduleStatus.CLOSED) {
       throw new CustomException(ResponseCode.SCHEDULE_ALREADY_ENDED);
+    } else if (schedule.getStatus() == ScheduleStatus.CANCELED) {
+      throw new CustomException(ResponseCode.SCHEDULE_ALREADY_CANCELED);
     }
 
     if (!schedule.getOwner().getId().equals(userId)) {
