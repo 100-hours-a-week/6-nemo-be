@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ScheduleStatusUpdater {
 
-  @Scheduled(fixedRateString = "${schedule.update-fixed-rate}")
+  @Scheduled(cron = "0 0/5 * * * *")
   public void updateClosedSchedules() {
     log.info("Scheduler Status Updater: Updating closed schedules");
   }
