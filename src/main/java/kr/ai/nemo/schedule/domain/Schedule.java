@@ -80,4 +80,9 @@ public class Schedule {
     this.status = ScheduleStatus.CANCELED;
     this.deletedAt = LocalDateTime.now();
   }
+
+  public void complete() {
+    this.status = ScheduleStatus.CLOSED;
+    this.deletedAt = LocalDateTime.now();
+  }
 }
