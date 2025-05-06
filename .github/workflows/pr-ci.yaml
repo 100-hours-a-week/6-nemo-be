@@ -1,7 +1,7 @@
 name: CI - PR Test & Lint
 on:
   pull_request:
-    branches: [develop, main]
+    branches: [ci-cd/setup-dev-pipeline]
 
 jobs:
   test:

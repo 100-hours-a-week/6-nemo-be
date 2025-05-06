@@ -2,60 +2,87 @@ name: CI - Build & Upload to GCS (DEV)
 
 on:
   push:
-    branches: [develop]
+    branches: [develop, ci-cd/setup-dev-pipeline]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.date.outputs.tag }}
 
     steps:
+      # 1. 저장소 코드 체크아웃
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 1. 자바 환경 세팅
+      # 2. Java 21 환경 설정
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           java-version: '21'
           distribution: 'temurin'
 
-      # 2. gradlew 실행 권한 부여
+      # 3. gradlew 실행 권한 부여
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      # 3. 빌드 (테스트 생략)
-      - name: Build without tests # pr-ci에서 테스트하므로 생략
-        run: ./gradlew clean build -x test
+      # 4. 애플리케이션 빌드 (테스트 제외)
+      - name: Build without tests
+        run: ./gradlew clean bootJar -x test
 
-      # 4. 업로드할 파일명 생성 (timestamp)
+      # 5. JAR 파일명용 타임스탬프 생성
       - name: Generate datetime tag
         id: date
-        run: echo "TAG=$(date +'%Y%m%d-%H%M')" >> $GITHUB_OUTPUT
+        run: |
+          export TZ=Asia/Seoul
+          tag=$(date +'%Y%m%d-%H%M')
+          echo "tag=$tag" >> $GITHUB_OUTPUT
 
-      # 5. GCP 인증
+      # 6. GCP 인증 (서비스 계정 키 사용)
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v1
         with:
-            credentials_json: ${{ secrets.GCP_SA_KEY }}
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      # 6. GCS - timestamp JAR 업로드
+      # 7. gcloud CLI 사용을 위한 환경 설정
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+
+      # 8. JAR 파일명을 타임스탬프 기반으로 변경
+      - name: Rename JAR to timestamp
+        id: jar
+        run: |
+          timestamp=${{ steps.date.outputs.tag }}
+          jar_path=$(find build/libs -type f -name "*SNAPSHOT.jar" ! -name "*plain*" | head -n1)
+          new_jar="build/libs/${timestamp}.jar"
+          mv "$jar_path" "$new_jar"
+          echo "JAR_PATH=$new_jar" >> $GITHUB_OUTPUT
+
+      # 9. GCS에 버전 태그된 JAR 업로드
       - name: Upload versioned JAR to GCS
         uses: google-github-actions/upload-cloud-storage@v1
         with:
-          path: build/libs/*SNAPSHOT.jar # 실행 가능한 JAR만 업로드
-          destination: gs://6-nemo-bucket/v1/backend-deploy/dev/${{ steps.date.outputs.TAG }}.jar
+          path: ${{ steps.jar.outputs.JAR_PATH }}
+          destination: 6-nemo-bucket/v1/backend-deploy/dev/
+          process_gcloudignore: false
 
-      # 7. GCS - previous -> latest 백업
-      - name: Copy latest to previous, then upload new latest
-        run: |
-          gsutil cp gs://6-nemo-bucket/v1/backend-deploy/dev/latest.jar \
-                gs://6-nemo-bucket/v1/backend-deploy/dev/previous.jar || true
-          gsutil cp build/libs/*SNAPSHOT.jar \
-                gs://6-nemo-bucket/v1/backend-deploy/dev/latest.jar
-
-      # 8. GCS - 배포 스크립트 업로드
+      # 10. GCS에 배포 스크립트(deploy/) 업로드
       - name: Upload deploy scripts to GCS
         uses: google-github-actions/upload-cloud-storage@v1
         with:
           path: deploy/
-          destination: gs://6-nemo-bucket/v1/backend-deploy/dev/
+          destination: 6-nemo-bucket/v1/backend-deploy/dev/
+          process_gcloudignore: false
+
+  cd-deploy:
+    # CI 완료 후 CD 워크플로우 트리거
+    name: Trigger CD after successful CI
+    needs: build
+    if: startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/ci-cd/')
+    uses: ./.github/workflows/dev-cd.yaml
+    with:
+      JAR_TIMESTAMP: ${{ needs.build.outputs.tag }}
+    secrets:
+      DEV_HOST: ${{ secrets.DEV_HOST }}
+      DEV_USER: ${{ secrets.DEV_USER }}
+      DEV_SSH_KEY: ${{ secrets.DEV_SSH_KEY }}
