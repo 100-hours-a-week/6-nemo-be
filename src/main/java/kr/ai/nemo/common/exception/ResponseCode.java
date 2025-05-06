@@ -36,6 +36,8 @@ public enum ResponseCode {
   SCHEDULE_NOT_FOUND("SCHEDULE_NOT_FOUND", "일정이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
 
   // 409 Conflict
+  GROUP_DISBANDED("GROUP_DISBANDED", "해체된 모임입니다.", HttpStatus.CONFLICT),
+  USER_WITHDRAWN("USER_WITHDRAWN", "탈퇴한 사용자입니다.", HttpStatus.CONFLICT),
   ALREADY_APPLIED_OR_JOINED("ALREADY_APPLIED_OR_JOINED", "이미 신청했거나 참여 중인 사용자입니다.", HttpStatus.CONFLICT),
   SCHEDULE_ALREADY_DECIDED("SCHEDULE_ALREADY_DECIDED", "이미 응답하셨습니다.", HttpStatus.CONFLICT),
 

@@ -2,6 +2,7 @@ package kr.ai.nemo.group.dto;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import kr.ai.nemo.group.domain.enums.Category;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,7 @@ public class GroupSearchRequest {
 
   private String category;
 
+  @Size(min = 2, max = 64)
   private String keyword;
 
   @Min(0)

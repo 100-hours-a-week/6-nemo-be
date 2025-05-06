@@ -11,6 +11,7 @@ import kr.ai.nemo.group.participants.dto.MyGroupListResponse;
 import kr.ai.nemo.group.participants.service.GroupParticipantsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,8 +26,9 @@ public class GroupParticipantsController {
   private final GroupParticipantsService groupParticipantsService;
 
   @PostMapping("/groups/{groupId}/applications")
-  public ResponseEntity<Object> applyToGroup(@PathVariable Long groupId){
-    Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
+  public ResponseEntity<Object> applyToGroup(
+      @PathVariable Long groupId,
+      @AuthenticationPrincipal Long userId){
     groupParticipantsService.applyToGroup(groupId, userId, Role.MEMBER, Status.JOINED);
     return ResponseEntity.noContent().build();
   }
@@ -38,8 +40,7 @@ public class GroupParticipantsController {
   }
 
   @GetMapping("/groups/me")
-  public ResponseEntity<ApiResponse<MyGroupListResponse>> getMyGroups() {
-    Long userId = Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
+  public ResponseEntity<ApiResponse<MyGroupListResponse>> getMyGroups(@AuthenticationPrincipal Long userId) {
     List<MyGroupDto> groupList = groupParticipantsService.getMyGroups(userId);
     return ResponseEntity.ok(ApiResponse.success(new MyGroupListResponse(groupList)));
   }

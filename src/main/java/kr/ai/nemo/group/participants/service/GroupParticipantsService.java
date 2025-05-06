@@ -5,6 +5,7 @@ import java.util.List;
 import kr.ai.nemo.common.exception.CustomException;
 import kr.ai.nemo.common.exception.ResponseCode;
 import kr.ai.nemo.group.domain.Group;
+import kr.ai.nemo.group.domain.enums.GroupStatus;
 import kr.ai.nemo.group.participants.domain.GroupParticipants;
 import kr.ai.nemo.group.participants.domain.enums.Role;
 import kr.ai.nemo.group.participants.domain.enums.Status;
@@ -30,11 +31,13 @@ public class GroupParticipantsService {
 
   @Transactional
   public void applyToGroup(Long groupId, Long userId, Role role, Status status) {
+    User user =userQueryService.findByIdOrThrow(userId);
+
+    Group group = groupQueryService.findByIdOrThrow(groupId);
+
     boolean exists = groupParticipantsRepository.existsByGroupIdAndUserIdAndStatusIn(
         groupId, userId, List.of(Status.PENDING, Status.JOINED));
 
-    Group group = groupQueryService.findByIdOrThrow(groupId);
-    User user =userQueryService.findByIdOrThrow(userId);
     if (exists) {
       throw new CustomException(ResponseCode.ALREADY_APPLIED_OR_JOINED);
     }
