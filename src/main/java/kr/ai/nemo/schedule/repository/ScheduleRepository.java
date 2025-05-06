@@ -2,6 +2,7 @@ package kr.ai.nemo.schedule.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import kr.ai.nemo.group.domain.Group;
 import kr.ai.nemo.schedule.domain.Schedule;
 import kr.ai.nemo.schedule.domain.enums.ScheduleStatus;
@@ -18,4 +19,6 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
   List<Schedule> findByGroupAndStatus(Group group, ScheduleStatus scheduleStatus);
 
   List<Schedule> findByStartAtBeforeAndStatus(LocalDateTime now, ScheduleStatus scheduleStatus);
+
+  Optional<Schedule> findByIdAndStatusNot(Long scheduleId, ScheduleStatus scheduleStatus);
 }

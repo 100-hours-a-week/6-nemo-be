@@ -64,7 +64,7 @@ public class ScheduleCommandService {
   }
 
   public Schedule findByIdOrThrow(Long scheduleId) {
-    return scheduleRepository.findById(scheduleId)
+    return scheduleRepository.findByIdAndStatusNot(scheduleId, ScheduleStatus.CANCELED)
         .orElseThrow(() -> new CustomException(ResponseCode.SCHEDULE_NOT_FOUND));
   }
 }
