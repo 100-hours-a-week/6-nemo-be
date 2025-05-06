@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ScheduleCommandService {
   private final ScheduleRepository scheduleRepository;
+  private final ScheduleQueryService scheduleQueryService;
   private final GroupQueryService groupQueryService;
   private final UserQueryService userQueryService;
   private final GroupParticipantsService groupParticipantsService;
@@ -48,10 +49,12 @@ public class ScheduleCommandService {
 
   @Transactional
   public void deleteSchedule(Long userId, Long scheduleId) {
-    Schedule schedule = findByIdOrThrow(scheduleId);
+    Schedule schedule = scheduleQueryService.findByIdOrThrow(scheduleId);
 
-    if (schedule.getStartAt().isBefore(LocalDateTime.now())) {
+    if (schedule.getStatus() == ScheduleStatus.CLOSED) {
       throw new CustomException(ResponseCode.SCHEDULE_ALREADY_ENDED);
+    } else if (schedule.getStatus() == ScheduleStatus.CANCELED) {
+      throw new CustomException(ResponseCode.SCHEDULE_ALREADY_CANCELED);
     }
 
     if (!schedule.getOwner().getId().equals(userId)) {
@@ -59,10 +62,5 @@ public class ScheduleCommandService {
     }
 
     schedule.cancel();
-  }
-
-  public Schedule findByIdOrThrow(Long scheduleId) {
-    return scheduleRepository.findById(scheduleId)
-        .orElseThrow(() -> new CustomException(ResponseCode.SCHEDULE_NOT_FOUND));
   }
 }

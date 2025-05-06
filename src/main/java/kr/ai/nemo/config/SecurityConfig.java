@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -22,8 +23,10 @@ public class SecurityConfig {
   }
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain securityFilterChain(HttpSecurity http,
+      CorsConfigurationSource corsConfigurationSource) throws Exception {
     return http
+        .cors(cors -> cors.configurationSource(corsConfigurationSource))
         .csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/auth/**").permitAll()
@@ -32,10 +35,15 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/api/v1/groups/**").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/v1/schedules/**").permitAll()
             .requestMatchers("/test/token/**").permitAll()
+            .requestMatchers(
+                "/auth/kakao/callback",
+                "/api/v1/auth/token/refresh",
+                "/public/**",
+                "/error"
+            ).permitAll()
             .anyRequest().authenticated()
         )
         .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class)
         .build();
   }
 }
-

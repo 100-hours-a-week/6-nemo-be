@@ -20,7 +20,7 @@ public class OauthController {
 
   private final OauthService oauthService;
 
-  @GetMapping("auth/login/kakao")
+  @GetMapping("/auth/kakao/callback")
   public ResponseEntity<ApiResponse<UserLoginResponse>> kakaoLogin(
       @RequestParam(value = "code", required = false) String code,
       @RequestParam(value = "error", required = false) String error,
@@ -38,7 +38,7 @@ public class OauthController {
     return ResponseEntity.ok(ApiResponse.success(response));
   }
 
-  @PostMapping("api/v1/auth/token/refresh")
+  @PostMapping("/api/v1/auth/token/refresh")
   public ResponseEntity<ApiResponse<TokenRefreshResponse>> tokenRefresh(
       @RequestHeader("Authorization") String refreshToken
   ) {

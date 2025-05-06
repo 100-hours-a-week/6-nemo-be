@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @JsonInclude(Include.NON_EMPTY)
 public class GroupDetailResponse {
+  private String ownerName;
   private String name;
   private String summary;
   private String description;
@@ -29,6 +30,7 @@ public class GroupDetailResponse {
 
   public static GroupDetailResponse from(Group group) {
     return new GroupDetailResponse(
+        group.getOwner().getNickname(),
         group.getName(),
         group.getSummary(),
         group.getDescription(),

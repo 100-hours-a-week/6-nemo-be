@@ -72,7 +72,7 @@ public class Schedule {
     this.startAt = startAt;
   }
 
-  public void increaseCurrentUserCount() {
+  public void addCurrentUserCount() {
     this.currentUserCount++;
   }
 
