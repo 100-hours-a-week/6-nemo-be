@@ -65,8 +65,11 @@ public class GroupParticipantsService {
 
   public List<MyGroupDto> getMyGroups(Long userId) {
     List<GroupParticipants> participants = groupParticipantsRepository.findByUserIdAndStatus(userId, Status.JOINED);
+
     return participants.stream()
-        .map(p -> MyGroupDto.from(p.getGroup()))
+        .map(GroupParticipants::getGroup)
+        .filter(group -> group.getStatus() != GroupStatus.DISBANDED)
+        .map(MyGroupDto::from)
         .toList();
   }
 
