@@ -3,6 +3,7 @@ package kr.ai.nemo.schedule.service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import kr.ai.nemo.group.service.GroupQueryService;
 import kr.ai.nemo.schedule.domain.Schedule;
 import kr.ai.nemo.schedule.dto.MySchedulesResponse;
 import kr.ai.nemo.schedule.dto.MySchedulesResponse.ScheduleParticipation;
@@ -23,6 +24,7 @@ public class ScheduleQueryService {
   private final ScheduleCommandService scheduleCommandService;
   private final ScheduleRepository scheduleRepository;
   private final ScheduleParticipantRepository scheduleParticipantRepository;
+  private final GroupQueryService groupQueryService;
 
   public ScheduleDetailResponse getScheduleDetail(Long scheduleId) {
     Schedule schedule = scheduleCommandService.findByIdOrThrow(scheduleId);
@@ -31,6 +33,7 @@ public class ScheduleQueryService {
   }
 
   public ScheduleListResponse getGroupSchedules(Long groupId, PageRequest pageRequest) {
+    groupQueryService.findByIdOrThrow(groupId);
     Page<Schedule> page = scheduleRepository.findByGroupId(groupId, pageRequest);
 
     List<ScheduleListResponse.ScheduleSummary> summaries = page.getContent().stream()
