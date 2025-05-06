@@ -12,6 +12,7 @@ import kr.ai.nemo.schedule.participants.domain.ScheduleParticipant;
 import kr.ai.nemo.schedule.participants.domain.enums.ScheduleParticipantStatus;
 import kr.ai.nemo.schedule.participants.repository.ScheduleParticipantRepository;
 import kr.ai.nemo.schedule.repository.ScheduleRepository;
+import kr.ai.nemo.schedule.service.ScheduleQueryService;
 import kr.ai.nemo.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ScheduleParticipantsService {
   private final ScheduleParticipantRepository scheduleParticipantRepository;
   private final ScheduleRepository scheduleRepository;
+  private final ScheduleQueryService scheduleQueryService;
 
   @Transactional
   public void addAllParticipantsForNewSchedule(Schedule schedule) {
@@ -66,12 +68,17 @@ public class ScheduleParticipantsService {
 
   @Transactional
   public void decideParticipation(Long scheduleId, Long userId, ScheduleParticipantStatus status) {
+
+
     ScheduleParticipant participant = scheduleParticipantRepository
         .findByScheduleIdAndUserId(scheduleId, userId)
-        .orElseThrow(() -> new CustomException(ResponseCode.SCHEDULE_ALREADY_DECIDED));
+        .orElseThrow(() -> new CustomException(ResponseCode.ACCESS_DENIED));
 
     if (participant.getStatus() != ScheduleParticipantStatus.PENDING) {
       throw new CustomException(ResponseCode.SCHEDULE_ALREADY_DECIDED);
+    }
+    if (status == ScheduleParticipantStatus.ACCEPTED) {
+      scheduleQueryService.findByIdOrThrow(scheduleId);
     }
 
     participant.setStatus(status);

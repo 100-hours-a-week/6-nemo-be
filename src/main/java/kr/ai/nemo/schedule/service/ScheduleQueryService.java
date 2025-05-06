@@ -3,8 +3,11 @@ package kr.ai.nemo.schedule.service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import kr.ai.nemo.common.exception.CustomException;
+import kr.ai.nemo.common.exception.ResponseCode;
 import kr.ai.nemo.group.service.GroupQueryService;
 import kr.ai.nemo.schedule.domain.Schedule;
+import kr.ai.nemo.schedule.domain.enums.ScheduleStatus;
 import kr.ai.nemo.schedule.dto.MySchedulesResponse;
 import kr.ai.nemo.schedule.dto.MySchedulesResponse.ScheduleParticipation;
 import kr.ai.nemo.schedule.dto.ScheduleDetailResponse;
@@ -21,13 +24,12 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class ScheduleQueryService {
-  private final ScheduleCommandService scheduleCommandService;
   private final ScheduleRepository scheduleRepository;
   private final ScheduleParticipantRepository scheduleParticipantRepository;
   private final GroupQueryService groupQueryService;
 
   public ScheduleDetailResponse getScheduleDetail(Long scheduleId) {
-    Schedule schedule = scheduleCommandService.findByIdOrThrow(scheduleId);
+    Schedule schedule = findByIdOrThrow(scheduleId);
     List<ScheduleParticipant> participants = scheduleParticipantRepository.findByScheduleId(scheduleId);
     return ScheduleDetailResponse.from(schedule, participants);
   }
@@ -44,6 +46,7 @@ public class ScheduleQueryService {
             schedule.getAddress(),
             schedule.getDescription(),
             schedule.getOwner().getNickname(),
+            schedule.getStatus().name(),
             schedule.getCurrentUserCount()
         ))
         .toList();
@@ -80,5 +83,14 @@ public class ScheduleQueryService {
         .toList();
 
     return new MySchedulesResponse(pending, upcoming, completed);
+    }
+
+    public Schedule findByIdOrThrow(Long scheduleId) {
+      Schedule schedule = scheduleRepository.findById(scheduleId)
+          .orElseThrow(() -> new CustomException(ResponseCode.SCHEDULE_NOT_FOUND));
+      if(schedule.getStatus() == ScheduleStatus.CANCELED){
+        throw new CustomException(ResponseCode.SCHEDULE_ALREADY_CANCELED);
+      }
+      return schedule;
     }
 }
