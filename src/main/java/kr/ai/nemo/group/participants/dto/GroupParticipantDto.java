@@ -1,5 +1,6 @@
 package kr.ai.nemo.group.participants.dto;
 
+import kr.ai.nemo.group.participants.domain.GroupParticipants;
 import kr.ai.nemo.user.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,9 +11,10 @@ public class GroupParticipantDto {
   private Long userId;
   private String nickname;
   private String profileImageUrl;
+  private String role;
 
-  public static GroupParticipantDto from(User user) {
-    return new GroupParticipantDto(user.getId(), user.getNickname(), user.getProfileImageUrl());
+  public static GroupParticipantDto from(GroupParticipants participants) {
+    User user = participants.getUser();
+    return new GroupParticipantDto(user.getId(), user.getNickname(), user.getProfileImageUrl(), participants.getRole().name());
   }
-
 }
