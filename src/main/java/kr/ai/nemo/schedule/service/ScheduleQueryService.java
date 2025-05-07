@@ -36,7 +36,7 @@ public class ScheduleQueryService {
 
   public ScheduleListResponse getGroupSchedules(Long groupId, PageRequest pageRequest) {
     groupQueryService.findByIdOrThrow(groupId);
-    Page<Schedule> page = scheduleRepository.findByGroupId(groupId, pageRequest);
+    Page<Schedule> page = scheduleRepository.findByGroupIdAndStatusNot(groupId, pageRequest, ScheduleStatus.CANCELED);
 
     List<ScheduleListResponse.ScheduleSummary> summaries = page.getContent().stream()
         .map(schedule -> new ScheduleListResponse.ScheduleSummary(

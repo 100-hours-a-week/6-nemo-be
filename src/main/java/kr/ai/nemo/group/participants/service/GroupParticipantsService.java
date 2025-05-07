@@ -59,7 +59,7 @@ public class GroupParticipantsService {
     groupQueryService.findByIdOrThrow(groupId);
     List<GroupParticipants> participants = groupParticipantsRepository.findByGroupIdAndStatus(groupId, Status.JOINED);
     return participants.stream()
-        .map(p -> GroupParticipantDto.from(p.getUser()))
+        .map(GroupParticipantDto::from)
         .toList();
   }
 
@@ -81,5 +81,4 @@ public class GroupParticipantsService {
       throw new CustomException(ResponseCode.NOT_GROUP_MEMBER);
     }
   }
-
 }
