@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
-  Page<Schedule> findByGroupId(Long groupId, PageRequest pageRequest);
+  Page<Schedule> findByGroupIdAndStatusNot(Long groupId, PageRequest pageRequest, ScheduleStatus scheduleStatus);
 
   List<Schedule> findByGroupAndStatus(Group group, ScheduleStatus scheduleStatus);
 
