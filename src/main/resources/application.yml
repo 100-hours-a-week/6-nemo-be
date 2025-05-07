@@ -39,3 +39,6 @@ management:
   endpoint:
     health:
       show-details: never
+
+server:
+  forward-headers-strategy: framework
