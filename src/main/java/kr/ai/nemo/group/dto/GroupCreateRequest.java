@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.util.List;
-import kr.ai.nemo.group.domain.enums.Category;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -42,8 +41,4 @@ public class GroupCreateRequest {
   private List<String> tags;
 
   private String plan;
-
-  public Category getCategoryEnum() {
-    return Category.fromDisplayName(this.category);
-  }
 }

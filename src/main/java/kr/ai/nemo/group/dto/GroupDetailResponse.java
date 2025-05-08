@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.util.List;
 import java.util.stream.Collectors;
 import kr.ai.nemo.group.domain.Group;
-import kr.ai.nemo.group.domain.enums.Category;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,7 +19,7 @@ public class GroupDetailResponse {
   private String name;
   private String summary;
   private String description;
-  private Category category;
+  private String category;
   private String location;
   private int currentUserCount;
   private int maxUserCount;

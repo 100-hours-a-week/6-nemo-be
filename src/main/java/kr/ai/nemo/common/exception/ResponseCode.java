@@ -16,6 +16,7 @@ public enum ResponseCode {
   INVALID_REQUEST("INVALID_REQUEST", "입력값이 유효하지 않습니다.", HttpStatus.BAD_REQUEST),
   INVALID_ENUM("INVALID_ENUM", "올바르지 않은 타입입니다.", HttpStatus.BAD_REQUEST),
   MISSING_REQUIRED_PARAMETER("MISSING_REQUIRED_PARAMETER", "필수 요청 파라미터가 누락되었습니다.", HttpStatus.BAD_REQUEST),
+  INVALID_CATEGORY("INVALID_CATEGOTY","올바르지 않은 모임 카테고리입니다.", HttpStatus.BAD_REQUEST ),
 
 
   // 401 UNAUTHORIZED

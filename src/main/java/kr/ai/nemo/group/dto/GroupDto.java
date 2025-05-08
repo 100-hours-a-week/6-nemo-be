@@ -36,7 +36,7 @@ public class GroupDto {
         .location(group.getLocation())
         .currentUserCount(group.getCurrentUserCount())
         .maxUserCount(group.getMaxUserCount())
-        .category(group.getCategoryDisplayName())
+        .category(group.getCategory())
         .imageUrl(group.getImageUrl())
         .tags(tags)
         .build();

@@ -1,7 +1,10 @@
 package kr.ai.nemo.group.service;
 
 import jakarta.validation.Valid;
+import kr.ai.nemo.common.exception.CustomException;
+import kr.ai.nemo.common.exception.ResponseCode;
 import kr.ai.nemo.group.domain.Group;
+import kr.ai.nemo.group.domain.enums.CategoryConstants;
 import kr.ai.nemo.group.domain.enums.GroupStatus;
 import kr.ai.nemo.group.dto.GroupCreateRequest;
 import kr.ai.nemo.group.dto.GroupCreateResponse;
@@ -28,13 +31,17 @@ public class GroupCommandService {
   public GroupCreateResponse createGroup(@Valid GroupCreateRequest request, Long userId) {
     User user = userQueryService.findByIdOrThrow(userId);
 
+    if (!CategoryConstants.VALID_CATEGORIES.contains(request.getCategory())) {
+      throw new CustomException(ResponseCode.INVALID_CATEGORY);
+    }
+
     Group group = Group.builder()
         .owner(user)
         .name(request.getName())
         .summary(request.getSummary())
         .description(request.getDescription())
         .plan(request.getPlan())
-        .category(request.getCategoryEnum())
+        .category(request.getCategory())
         .location(request.getLocation())
         .completedScheduleTotal(0)
         .imageUrl(request.getImageUrl())
