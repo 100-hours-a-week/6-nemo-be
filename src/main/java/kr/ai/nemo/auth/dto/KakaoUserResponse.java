@@ -24,5 +24,8 @@ public class KakaoUserResponse {
 
     @JsonProperty("profile_image_url")
     private String profileImageUrl;
+
+    @JsonProperty("is_default_image")
+    private boolean isDefaultImage;
   }
 }
