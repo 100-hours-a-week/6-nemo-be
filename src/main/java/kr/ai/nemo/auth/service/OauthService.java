@@ -12,6 +12,7 @@ import kr.ai.nemo.auth.dto.TokenRefreshResponse;
 import kr.ai.nemo.auth.exception.OAuthErrorCode;
 import kr.ai.nemo.auth.exception.OAuthException;
 import kr.ai.nemo.auth.jwt.JwtProvider;
+import kr.ai.nemo.image.service.ImageService;
 import kr.ai.nemo.user.domain.User;
 import kr.ai.nemo.user.domain.enums.UserStatus;
 import kr.ai.nemo.user.dto.UserDto;
@@ -36,6 +37,7 @@ public class OauthService {
   private final UserRepository userRepository;
   private final JwtProvider jwtProvider;
   private final UserTokenService userTokenService;
+  private final ImageService imageService;
 
   @Value("${oauth.kakao.rest-api-key}")
   private String restApiKey;
@@ -166,9 +168,13 @@ public class OauthService {
         ? profile.getNickname()
         : DefaultUserValue.UNKNOWN_NICKNAME;
 
-    final String profileImageUrl = (profile != null && profile.getProfileImageUrl() != null)
-        ? profile.getProfileImageUrl()
-        : DefaultUserValue.DEFAULT_PROFILE_URL;
+    String profileImageUrl;
+    if (profile.isDefaultImage()) {
+      profileImageUrl = profile.getProfileImageUrl();
+    } else {
+      profileImageUrl = imageService.uploadKakaoProfileImage(profile.getProfileImageUrl(), userResponse.getId());
+    }
+
 
     return User.builder()
         .provider(OAuthProvider.KAKAO.name())

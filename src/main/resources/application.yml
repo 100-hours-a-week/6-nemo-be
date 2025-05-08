@@ -42,3 +42,13 @@ management:
 
 server:
   forward-headers-strategy: framework
+
+cloud:
+  aws:
+    s3:
+      bucket: ${BUCKET-NAME}
+    credentials:
+      access-key: ${CLOUD_AWS_CREDENTIALS_ACCESS_KEY}
+      secret-key: ${CLOUD_AWS_CREDENTIALS_SECRET_KEY}
+    region:
+      static: ap-northeast-2
