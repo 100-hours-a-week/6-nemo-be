@@ -31,8 +31,8 @@ public class GroupQueryService {
 
     Page<Group> groups;
 
-    if (request.getCategoryEnum() != null) {
-      groups = groupRepository.findByCategory(request.getCategoryEnum(), pageable);
+    if (request.getCategory() != null) {
+      groups = groupRepository.findByCategory(request.getCategory(), pageable);
     } else if (request.getKeyword() != null && !request.getKeyword().isBlank()) {
       groups = groupRepository.searchWithKeywordOnly(request.getKeyword(), pageable);
     } else {

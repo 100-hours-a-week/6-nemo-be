@@ -1,7 +1,6 @@
 package kr.ai.nemo.group.domain;
 
 import jakarta.persistence.*;
-import kr.ai.nemo.group.domain.enums.Category;
 import kr.ai.nemo.group.domain.enums.GroupStatus;
 import kr.ai.nemo.group.participants.domain.GroupParticipants;
 import kr.ai.nemo.user.domain.User;
@@ -47,8 +46,7 @@ public class Group {
   private String plan;
 
   @Column(name = "category", nullable = false)
-  @Enumerated(EnumType.STRING)
-  private Category category;
+  private String category;
 
   @Column(name = "location", nullable = false)
   private String location;
@@ -94,7 +92,7 @@ public class Group {
 
   @Builder
   public Group(User owner, String name, String summary, String description, String plan,
-      Category category, String location, String imageUrl,
+      String category, String location, String imageUrl,
       int completedScheduleTotal, int currentUserCount, int maxUserCount, GroupStatus status) {
     this.owner = owner;
     this.name = name;
@@ -108,14 +106,6 @@ public class Group {
     this.currentUserCount = currentUserCount;
     this.maxUserCount = maxUserCount;
     this.status = status;
-  }
-
-  public void setCategory(String categoryDisplayName) {
-    this.category = Category.fromDisplayName(categoryDisplayName);
-  }
-
-  public String getCategoryDisplayName() {
-    return Category.toDisplayName(this.category);
   }
 
   public void addCurrentUserCount() {

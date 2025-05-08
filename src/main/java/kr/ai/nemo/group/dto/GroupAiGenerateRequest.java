@@ -2,7 +2,6 @@ package kr.ai.nemo.group.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import kr.ai.nemo.group.domain.enums.Category;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -17,7 +16,7 @@ public class GroupAiGenerateRequest {
   private String goal;
 
   @NotNull(message = "모임 카테고리는 필수입니다.")
-  private Category category;
+  private String category;
 
   @NotBlank(message = "기간 선택은 필수입니다.")
   private String period;

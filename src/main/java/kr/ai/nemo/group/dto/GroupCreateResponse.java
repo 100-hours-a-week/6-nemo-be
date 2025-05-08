@@ -3,8 +3,6 @@ package kr.ai.nemo.group.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.util.List;
-import java.util.stream.Collectors;
-import kr.ai.nemo.group.domain.enums.Category;
 import kr.ai.nemo.group.domain.Group;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -33,7 +31,7 @@ public class GroupCreateResponse {
     this.name = group.getName();
     this.summary = group.getSummary();
     this.description = group.getDescription();
-    this.category = group.getCategoryDisplayName();
+    this.category = group.getCategory();
     this.location = group.getLocation();
     this.currentUserCount = group.getCurrentUserCount();
     this.maxUserCount = group.getMaxUserCount();
