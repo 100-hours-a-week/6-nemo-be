@@ -10,13 +10,13 @@ public record ScheduleDetailResponse(
     String title,
     String startAt,
     String address,
-    Long ownerId,
+    String ownerName,
     String createdAt,
     String description,
     GroupInfo group,
     List<ParticipantInfo> participants
 ) {
-  public record GroupInfo(Long groupId, String name, int currentUser) {}
+  public record GroupInfo(Long groupId, String name, int currentUserCount, int maxUserCount) {}
 
   public record ParticipantInfo(Long id, UserInfo user, String status) {}
 
@@ -28,13 +28,14 @@ public record ScheduleDetailResponse(
         schedule.getTitle(),
         schedule.getStartAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
         schedule.getAddress(),
-        schedule.getOwner().getId(),
+        schedule.getOwner().getNickname(),
         schedule.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
         schedule.getDescription(),
         new GroupInfo(
             schedule.getGroup().getId(),
             schedule.getGroup().getName(),
-            schedule.getGroup().getCurrentUserCount()
+            schedule.getGroup().getCurrentUserCount(),
+            schedule.getGroup().getMaxUserCount()
         ),
         participants.stream()
             .map(p -> new ParticipantInfo(
