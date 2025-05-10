@@ -25,4 +25,14 @@ public class GroupAiGenerateRequest {
   @JsonProperty("isPlanCreated")
   @NotNull(message = "학습계획 생성 여부 선택은 필수입니다.")
   private boolean isPlanCreated;
+
+  public static GroupAiGenerateRequest from(GroupGenerateRequest req) {
+    return new GroupAiGenerateRequest(
+        req.name(),
+        req.goal(),
+        req.category(),
+        req.period(),
+        req.isPlanCreated()
+    );
+  }
 }
