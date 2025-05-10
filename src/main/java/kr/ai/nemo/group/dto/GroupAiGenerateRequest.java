@@ -1,5 +1,6 @@
 package kr.ai.nemo.group.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,7 @@ public class GroupAiGenerateRequest {
   @NotBlank(message = "기간 선택은 필수입니다.")
   private String period;
 
+  @JsonProperty(value = "isPlanCreated")
   @NotNull(message = "학습계획 생성 여부 선택은 필수입니다.")
   private boolean isPlanCreated;
 }

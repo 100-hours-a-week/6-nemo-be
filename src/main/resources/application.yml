@@ -42,3 +42,9 @@ management:
 
 server:
   forward-headers-strategy: framework
+
+
+ai:
+  service:
+    url: http://34.64.57.185:8000
+    timeout: 15000
