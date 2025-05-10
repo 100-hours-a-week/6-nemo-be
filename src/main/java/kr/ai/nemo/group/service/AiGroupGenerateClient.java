@@ -1,12 +1,10 @@
 package kr.ai.nemo.group.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.ai.nemo.common.exception.ApiResponse;
 import kr.ai.nemo.common.exception.CustomException;
 import kr.ai.nemo.common.exception.ResponseCode;
 import kr.ai.nemo.group.dto.GroupAiGenerateRequest;
 import kr.ai.nemo.group.dto.GroupAiGenerateResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -16,14 +14,18 @@ import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class AiGroupGenerateClient {
 
   private final RestTemplate restTemplate;
-  private final ObjectMapper objectMapper;
+  private final String baseUrl;
 
-  @Value("${ai.service.url:http://localhost:8000}")
-  private String baseUrl;
+  public AiGroupGenerateClient(
+      RestTemplate restTemplate,
+      @Value("${ai.service.url:http://localhost:8000}") String baseUrl
+  ) {
+    this.restTemplate = restTemplate;
+    this.baseUrl = baseUrl;
+  }
 
   public GroupAiGenerateResponse call(GroupAiGenerateRequest request) {
     try {

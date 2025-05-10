@@ -52,3 +52,7 @@ cloud:
       secret-key: ${CLOUD_AWS_CREDENTIALS_SECRET_KEY}
     region:
       static: ap-northeast-2
+
+ai:
+  service:
+    url: ${AI_SERVICE_URL}
