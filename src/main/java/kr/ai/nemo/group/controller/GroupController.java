@@ -7,10 +7,13 @@ import kr.ai.nemo.group.dto.GroupAiGenerateResponse;
 import kr.ai.nemo.group.dto.GroupCreateRequest;
 import kr.ai.nemo.group.dto.GroupCreateResponse;
 import kr.ai.nemo.group.dto.GroupDetailResponse;
+import kr.ai.nemo.group.dto.GroupGenerateRequest;
+import kr.ai.nemo.group.dto.GroupGenerateResponse;
 import kr.ai.nemo.group.dto.GroupListResponse;
 import kr.ai.nemo.group.dto.GroupSearchRequest;
 import kr.ai.nemo.group.service.AiGroupGenerateClient;
 import kr.ai.nemo.group.service.GroupCommandService;
+import kr.ai.nemo.group.service.GroupGenerateService;
 import kr.ai.nemo.group.service.GroupQueryService;
 import kr.ai.nemo.schedule.dto.PageRequestDto;
 import kr.ai.nemo.schedule.dto.ScheduleListResponse;
@@ -36,16 +39,19 @@ import java.net.URI;
 @Slf4j
 public class GroupController {
 
-  private final AiGroupGenerateClient aiGroupGenerateClient;
+  private final GroupGenerateService groupGenerateService;
   private final GroupCommandService groupCommandService;
   private final GroupQueryService groupQueryService;
   private final ScheduleQueryService scheduleQueryService;
 
   @PostMapping("/ai-generate")
-  public ResponseEntity<ApiResponse<GroupAiGenerateResponse>> generateGroupInfo(@Valid @RequestBody GroupAiGenerateRequest request) {
-    GroupAiGenerateResponse aiResponse = aiGroupGenerateClient.call(request);
-    return ResponseEntity.ok(ApiResponse.success(aiResponse));
+  public ResponseEntity<ApiResponse<GroupGenerateResponse>> generateGroupInfo(
+      @Valid @RequestBody GroupGenerateRequest request
+  ) {
+    GroupGenerateResponse result = groupGenerateService.generate(request);
+    return ResponseEntity.ok(ApiResponse.success(result));
   }
+
 
   @PostMapping
   public ResponseEntity<ApiResponse<GroupCreateResponse>> createGroup(

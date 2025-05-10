@@ -47,8 +47,8 @@ public enum ResponseCode {
   INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", "서버 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
   AI_SERVER_CONNECTION_FAILED("AI_SERVER_CONNECTION_FAILED", "AI 서버 연결에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
   EXTERNAL_API_ERROR("EXTERNAL_API_ERROR", "외부 API 호출 중 오류가 발생했습니다.", HttpStatus.SERVICE_UNAVAILABLE),
-  S3_UPLOAD_FAILED("S3_UPLOAD_FAILED", "이미지 업로드에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
-
+  S3_UPLOAD_FAILED("S3_UPLOAD_FAILED", "이미지 업로드에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+  AI_RESPONSE_PARSE_ERROR("AI_RESPONSE_PARSE_ERROR", "AI 서버로부터 받은 응답을 처리할 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
 
   private final String code;
