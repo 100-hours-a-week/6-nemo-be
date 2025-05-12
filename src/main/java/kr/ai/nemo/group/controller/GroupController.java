@@ -2,8 +2,6 @@ package kr.ai.nemo.group.controller;
 
 import jakarta.validation.Valid;
 import kr.ai.nemo.common.exception.ApiResponse;
-import kr.ai.nemo.group.dto.GroupAiGenerateRequest;
-import kr.ai.nemo.group.dto.GroupAiGenerateResponse;
 import kr.ai.nemo.group.dto.GroupCreateRequest;
 import kr.ai.nemo.group.dto.GroupCreateResponse;
 import kr.ai.nemo.group.dto.GroupDetailResponse;
@@ -11,7 +9,6 @@ import kr.ai.nemo.group.dto.GroupGenerateRequest;
 import kr.ai.nemo.group.dto.GroupGenerateResponse;
 import kr.ai.nemo.group.dto.GroupListResponse;
 import kr.ai.nemo.group.dto.GroupSearchRequest;
-import kr.ai.nemo.group.service.AiGroupGenerateClient;
 import kr.ai.nemo.group.service.GroupCommandService;
 import kr.ai.nemo.group.service.GroupGenerateService;
 import kr.ai.nemo.group.service.GroupQueryService;
