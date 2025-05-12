@@ -1,7 +1,8 @@
 package kr.ai.nemo.auth.service;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
-
 import kr.ai.nemo.auth.domain.UserToken;
 import kr.ai.nemo.auth.domain.enums.DefaultUserValue;
 import kr.ai.nemo.auth.domain.enums.LoginDevice;
@@ -46,7 +47,7 @@ public class OauthService {
   private String redirectUri;
 
   @Transactional
-  public UserLoginResponse loginWithKakao(String code) {
+  public UserLoginResponse loginWithKakao(String code, HttpServletResponse response) {
     try {
       KakaoTokenResponse kakaoToken = getAccessToken(code);
       if (kakaoToken.getAccessToken() == null || kakaoToken.getAccessToken().isEmpty()) {
@@ -59,13 +60,18 @@ public class OauthService {
       String accessToken = jwtProvider.createAccessToken(user.getId());
       String refreshToken = jwtProvider.createRefreshToken(user.getId());
 
-      userTokenService.saveOrUpdateToken(user,
-          OAuthProvider.KAKAO.name(), refreshToken, LoginDevice.WEB.name(), LocalDateTime.now().plusDays(30));
+      userTokenService.saveOrUpdateToken(
+          user,
+          OAuthProvider.KAKAO.name(),
+          refreshToken,
+          LoginDevice.WEB.name(),
+          LocalDateTime.now().plusDays(30)
+      );
+
+      setRefreshTokenInCookie(response, refreshToken);
 
       return UserLoginResponse.builder()
           .accessToken(accessToken)
-          .refreshToken(refreshToken)
-          .refreshTokenExpiresIn(jwtProvider.getRefreshTokenValidity())
           .user(UserDto.from(user))
           .build();
     } catch (OAuthException e) {
@@ -110,6 +116,16 @@ public class OauthService {
       throw new OAuthException(OAuthErrorCode.CONNECTION_ERROR, e);
     }
   }
+
+  private void setRefreshTokenInCookie(HttpServletResponse response, String refreshToken) {
+    Cookie cookie = new Cookie("refresh_token", refreshToken);
+    cookie.setHttpOnly(true);
+    cookie.setSecure(true);
+    cookie.setPath("/");
+    cookie.setMaxAge((int) (jwtProvider.getRefreshTokenValidity() / 1000)); // 초 단위
+    response.addCookie(cookie);
+  }
+
 
   public KakaoUserResponse getUserInfo(String accessToken) {
     HttpHeaders headers = new HttpHeaders();

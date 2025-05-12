@@ -46,8 +46,7 @@ public class ScheduleController {
 
   @GetMapping("/{scheduleId}")
   public ResponseEntity<ApiResponse<ScheduleDetailResponse>> getScheduleDetail(@PathVariable Long scheduleId) {
-    ScheduleDetailResponse response = scheduleQueryService.getScheduleDetail(scheduleId);
-    return ResponseEntity.ok(ApiResponse.success(response));
+    return ResponseEntity.ok(ApiResponse.success(scheduleQueryService.getScheduleDetail(scheduleId)));
   }
 
   @GetMapping("/me")

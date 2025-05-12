@@ -13,6 +13,7 @@ public record ScheduleDetailResponse(
     String ownerName,
     String createdAt,
     String description,
+    String scheduleStatus,
     GroupInfo group,
     List<ParticipantInfo> participants
 ) {
@@ -31,6 +32,7 @@ public record ScheduleDetailResponse(
         schedule.getOwner().getNickname(),
         schedule.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
         schedule.getDescription(),
+        schedule.getStatus().name(),
         new GroupInfo(
             schedule.getGroup().getId(),
             schedule.getGroup().getName(),
