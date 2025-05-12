@@ -46,4 +46,3 @@ public class OauthController {
     return ResponseEntity.ok(ApiResponse.success(response));
   }
 }
-
