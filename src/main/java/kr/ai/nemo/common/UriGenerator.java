@@ -5,10 +5,10 @@ import java.net.URI;
 public class UriGenerator {
 
   public static URI scheduleDetail(Long scheduleId) {
-    return URI.create(String.format("https://nemo.ai/api/v1/schedules/%d", scheduleId));
+    return URI.create(String.format("https://dev.nemo.ai.kr/api/v1/schedules/%d", scheduleId));
   }
 
-  public static URI groupDetail(Long groupId) {
-    return URI.create(String.format("https://nemo.ai/api/v1/groups/%d", groupId));
+  public static URI login() {
+    return URI.create("https://dev.nemo.ai.kr/login");
   }
 }

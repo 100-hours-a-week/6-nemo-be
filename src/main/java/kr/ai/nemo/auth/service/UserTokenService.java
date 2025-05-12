@@ -2,7 +2,6 @@ package kr.ai.nemo.auth.service;
 
 import java.time.LocalDateTime;
 
-import java.util.Optional;
 import kr.ai.nemo.auth.domain.UserToken;
 import kr.ai.nemo.auth.repository.UserTokenRepository;
 import kr.ai.nemo.common.exception.CustomException;
