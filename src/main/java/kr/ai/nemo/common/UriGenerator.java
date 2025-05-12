@@ -12,4 +12,3 @@ public class UriGenerator {
     return URI.create(String.format("https://nemo.ai/api/v1/groups/%d", groupId));
   }
 }
-
