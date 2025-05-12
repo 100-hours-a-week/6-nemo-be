@@ -88,7 +88,7 @@ public class GroupController {
       @Valid PageRequestDto pageRequestDto
   ) {
     return ResponseEntity.ok(ApiResponse.success(
-        scheduleQueryService.getGroupSchedules(groupId, pageRequestDto.toPageRequest())
+        scheduleQueryService.getGroupSchedules(groupId, pageRequestDto.toPageRequest("startAt", "desc"))
     ));
   }
 }

@@ -10,16 +10,14 @@ public record PageRequestDto(
     String sort,
     String direction
 ) {
-  public PageRequestDto {
-    if (sort == null || sort.isBlank()) sort = "createdAt";
-    if (direction == null || direction.isBlank()) direction = "desc";
-  }
+  public PageRequest toPageRequest(String defaultSort, String defaultDirection) {
+    String finalSort = (sort == null || sort.isBlank()) ? defaultSort : sort;
+    String finalDirection = (direction == null || direction.isBlank()) ? defaultDirection : direction;
 
-  public PageRequest toPageRequest() {
     return PageRequest.of(
         page,
         size,
-        Sort.by(Sort.Direction.fromString(direction), sort)
+        Sort.by(Sort.Direction.fromString(finalDirection), finalSort)
     );
   }
 }
