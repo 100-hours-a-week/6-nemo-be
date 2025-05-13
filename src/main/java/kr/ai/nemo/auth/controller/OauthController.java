@@ -27,9 +27,9 @@ public class OauthController {
       @RequestParam(value = "code", required = false) String code,
       @RequestParam(value = "error", required = false) String error,
       HttpServletResponse response) {
-    oauthService.handleKakaoCallback(code, error, response);
+    String accessToken = oauthService.handleKakaoCallback(code, error, response);
     try {
-      response.sendRedirect(UriGenerator.login().toString());
+      response.sendRedirect(UriGenerator.login(accessToken).toString());
     } catch (IOException e) {
       throw new CustomException(ResponseCode.REDIRECT_FAIL);
     }
