@@ -12,6 +12,7 @@ import kr.ai.nemo.group.participants.domain.enums.Role;
 import kr.ai.nemo.group.participants.domain.enums.Status;
 import kr.ai.nemo.group.participants.service.GroupParticipantsService;
 import kr.ai.nemo.group.repository.GroupRepository;
+import kr.ai.nemo.image.service.ImageService;
 import kr.ai.nemo.user.domain.User;
 import kr.ai.nemo.user.service.UserQueryService;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class GroupCommandService {
   private final UserQueryService userQueryService;
   private final GroupTagService groupTagService;
   private final GroupParticipantsService groupParticipantsService;
+  private final ImageService imageService;
 
   @Transactional
   public GroupCreateResponse createGroup(@Valid GroupCreateRequest request, Long userId) {
@@ -44,7 +46,7 @@ public class GroupCommandService {
         .category(request.getCategory())
         .location(request.getLocation())
         .completedScheduleTotal(0)
-        .imageUrl(request.getImageUrl())
+        .imageUrl(imageService.uploadGroupImage(request.getImageUrl()))
         .currentUserCount(0)
         .maxUserCount(request.getMaxUserCount())
         .status(GroupStatus.ACTIVE)

@@ -3,9 +3,9 @@ spring:
     name: nemo
 
   datasource:
-    url: jdbc:mysql://${db_url}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: ${username}
-    password: ${password}
+    url: jdbc:mysql://${DB_URL}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ${USERNAME}
+    password: ${PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -46,12 +46,12 @@ server:
 cloud:
   aws:
     s3:
-      bucket: ${BUCKET-NAME}
+      bucket: ${BUCKET_NAME}
     credentials:
       access-key: ${CLOUD_AWS_CREDENTIALS_ACCESS_KEY}
       secret-key: ${CLOUD_AWS_CREDENTIALS_SECRET_KEY}
     region:
-      static: ap-northeast-2
+      static: ${AWS_REGION}
 
 ai:
   service:
