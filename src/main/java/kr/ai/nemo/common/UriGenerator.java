@@ -8,7 +8,7 @@ public class UriGenerator {
     return URI.create(String.format("https://dev.nemo.ai.kr/api/v1/schedules/%d", scheduleId));
   }
 
-  public static URI login() {
-    return URI.create("https://dev.nemo.ai.kr/login");
+  public static URI login(String accessToken) {
+    return URI.create("https://dev.nemo.ai.kr/login?token=" + accessToken);
   }
 }
