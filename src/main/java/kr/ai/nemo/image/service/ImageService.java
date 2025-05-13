@@ -36,4 +36,19 @@ public class ImageService {
       throw new CustomException(ResponseCode.S3_UPLOAD_FAILED);
     }
   }
+
+  public String uploadGroupImage(String imageUrl) {
+    try (InputStream inputStream = URI.create(imageUrl).toURL().openStream()) {
+      String fileName = String.format("groups/profile_%s.jpg", UUID.randomUUID());
+
+      ObjectMetadata metadata = new ObjectMetadata();
+      metadata.setContentType("image/jpeg");
+
+      amazonS3.putObject(bucket, fileName, inputStream, metadata);
+
+      return amazonS3.getUrl(bucket, fileName).toString();
+    } catch (IOException e) {
+      throw new CustomException(ResponseCode.S3_UPLOAD_FAILED);
+    }
+  }
 }
