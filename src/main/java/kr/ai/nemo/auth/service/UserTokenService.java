@@ -23,7 +23,7 @@ public class UserTokenService {
   public void saveOrUpdateToken(User user, String provider, String refreshToken,
       String deviceInfo, LocalDateTime expiresAt) {
 
-    userTokenRepository.findByUserAndProvider(user, provider)
+    userTokenRepository.findByUserIdAndProvider(user.getId(), provider)
         .ifPresentOrElse(
             existingToken -> updateExistingToken(existingToken, refreshToken, deviceInfo, expiresAt),
             () -> createAndSaveRefreshToken(user, provider, refreshToken, deviceInfo, expiresAt)

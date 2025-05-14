@@ -41,6 +41,9 @@ public class GroupParticipantsService {
     if (exists) {
       throw new CustomException(ResponseCode.ALREADY_APPLIED_OR_JOINED);
     }
+    if (group.getMaxUserCount() <= group.getCurrentUserCount()) {
+      throw new CustomException(ResponseCode.GROUP_FULL);
+    }
 
     GroupParticipants participant = GroupParticipants.builder()
         .user(user)
