@@ -10,6 +10,7 @@ import kr.ai.nemo.schedule.dto.ScheduleDetailResponse;
 import kr.ai.nemo.schedule.service.ScheduleCommandService;
 import kr.ai.nemo.schedule.service.ScheduleQueryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,9 +32,8 @@ public class ScheduleController {
   public ResponseEntity<ApiResponse<ScheduleCreateResponse>> createSchedule(
       @RequestBody ScheduleCreateRequest request,
       @AuthenticationPrincipal Long userId) {
-    ScheduleCreateResponse response = scheduleCommandService.createSchedule(userId, request);
-    URI location = UriGenerator.scheduleDetail(response.group().groupId());
-    return ResponseEntity.created(location).body(ApiResponse.created(response));
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(ApiResponse.created(scheduleCommandService.createSchedule(userId, request)));
   }
 
   @DeleteMapping("/{scheduleId}")

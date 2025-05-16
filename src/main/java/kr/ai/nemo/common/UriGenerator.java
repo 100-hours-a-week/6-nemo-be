@@ -14,10 +14,6 @@ public class UriGenerator {
   @Value("${oauth.kakao.redirect-uri}")
   private String redirectUri;
 
-  public static URI scheduleDetail(Long scheduleId) {
-    return URI.create(String.format("https://dev.nemo.ai.kr/api/v1/schedules/%d", scheduleId));
-  }
-
   public URI kakaoLogin(String state) {
     return UriComponentsBuilder
         .fromUriString("https://kauth.kakao.com/oauth/authorize")
