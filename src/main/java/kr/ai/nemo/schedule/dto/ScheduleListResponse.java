@@ -16,7 +16,7 @@ public record ScheduleListResponse(
       String address,
       String description,
       String ownerName,
-      String ScheduleStatus,
+      String scheduleStatus,
       int currentUserCount
   ) {}
 }
