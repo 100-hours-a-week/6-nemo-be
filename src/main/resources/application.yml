@@ -28,8 +28,8 @@ oauth:
 
 jwt:
   secret: ${JWT_SECRET}
-  access-token-validity: 90000
-  refresh-token-validity: 604800000
+  access-token-validity: ${ACCESS_TOKEN_EXPIRATION}
+  refresh-token-validity: ${REFRESH_TOKEN_EXPIRATION}
 
 management:
   endpoints:
