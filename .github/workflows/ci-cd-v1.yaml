@@ -38,3 +38,4 @@ jobs:
           script: |
             cd ~/nemo/backend/scripts
             bash deploy_ci_cd.sh
+# ci/cd test
