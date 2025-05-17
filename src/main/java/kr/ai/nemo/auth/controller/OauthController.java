@@ -4,7 +4,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import kr.ai.nemo.auth.dto.TokenRefreshResponse;
+import kr.ai.nemo.auth.service.KakaoOauthClient;
 import kr.ai.nemo.auth.service.OauthService;
+import kr.ai.nemo.auth.service.TokenManager;
 import kr.ai.nemo.common.UriGenerator;
 import kr.ai.nemo.common.exception.ApiResponse;
 import kr.ai.nemo.common.exception.CustomException;
@@ -12,6 +14,7 @@ import kr.ai.nemo.common.exception.ResponseCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,6 +26,8 @@ public class OauthController {
 
   private final OauthService oauthService;
   private final UriGenerator uriGenerator;
+  private final TokenManager tokenManager;
+  private final KakaoOauthClient kakaoOauthClient;
 
   @GetMapping("/api/v1/auth/login/kakao")
   public void kakaoLogin(
@@ -57,4 +62,19 @@ public class OauthController {
   ) {
     return ResponseEntity.ok(ApiResponse.success(oauthService.reissueAccessToken(refreshToken)));
   }
+
+  @DeleteMapping("/api/v1/auth/logout/kakao")
+  public ResponseEntity<ApiResponse<?>> logout(
+      @CookieValue(name = "refresh_token", required = false) String refreshToken,
+      HttpServletResponse response
+  ) {
+    if (refreshToken != null && !refreshToken.isEmpty()) {
+      oauthService.invalidateRefreshToken(refreshToken);
+    }
+
+    tokenManager.clearRefreshTokenCookie(response);
+
+    return ResponseEntity.ok(ApiResponse.success(ResponseCode.SUCCESS));
+  }
 }
+

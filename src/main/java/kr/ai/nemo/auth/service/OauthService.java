@@ -20,6 +20,7 @@ public class OauthService {
   private final KakaoOauthClient kakaoClient;
   private final OauthUserService userService;
   private final TokenManager tokenManager;
+  private final UserTokenService userTokenService;
 
   @Transactional
   public String loginWithKakao(String code, HttpServletResponse response) {
@@ -70,4 +71,8 @@ public class OauthService {
     return loginWithKakao(code, response);
   }
 
+  @Transactional
+  public void invalidateRefreshToken(String refreshToken) {
+    userTokenService.revokeToken(refreshToken);
+  }
 }
