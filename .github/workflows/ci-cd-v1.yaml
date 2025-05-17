@@ -1,4 +1,4 @@
-name: Backend CI/CD for v1
+name: Backend CI/CD for dev-v1
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: dev
 
     steps:
       - name: Checkout Code
