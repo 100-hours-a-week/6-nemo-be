@@ -26,7 +26,7 @@ jobs:
 
       - name: Upload JAR to Server
         run: |
-          scp ./build/libs/nemo-server-0.0.1-SNAPSHOT.jar \
+          scp -o StrictHostKeyChecking=no ./build/libs/nemo-server-0.0.1-SNAPSHOT.jar \
           ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:~/nemo/backend/jar-backups/
 
       - name: Deploy to Server
