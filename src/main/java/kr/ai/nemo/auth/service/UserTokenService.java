@@ -57,6 +57,13 @@ public class UserTokenService {
     userTokenRepository.save(newToken);
   }
 
+  public void revokeToken(String refreshToken) {
+    UserToken token = findValidToken(refreshToken);
+    token.setRevoked(true);
+    token.setUpdatedAt(LocalDateTime.now());
+    userTokenRepository.save(token);
+  }
+
   public UserToken findValidToken(String refreshToken) {
     if (refreshToken.startsWith("Bearer ")) {
       refreshToken = refreshToken.substring(7);  // 꼭 제거해야 DB 값과 비교 가능
