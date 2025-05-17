@@ -1,7 +1,5 @@
 package kr.ai.nemo.auth.controller;
 
-import kr.ai.nemo.common.constants.AuthConstants;
-
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
@@ -19,7 +17,6 @@ import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -77,7 +74,7 @@ public class OauthController {
 
     tokenManager.clearRefreshTokenCookie(response);
 
-    return ResponseEntity.ok(ApiResponse.success("로그아웃 성공"));
+    return ResponseEntity.ok(ApiResponse.success(ResponseCode.SUCCESS));
   }
 }
 
