@@ -27,14 +27,14 @@ jobs:
       - name: Upload JAR to Server
         run: |
           scp -o StrictHostKeyChecking=no ./build/libs/nemo-server-0.0.1-SNAPSHOT.jar \
-          ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:~/nemo/backend/jar-backups/
+          ${{ secrets.DEV_USER }}@${{ secrets.DEV_HOST }}:~/nemo/backend/jar-backups/
 
       - name: Deploy to Server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
+          host: ${{ secrets.DEV_HOST }}
+          username: ${{ secrets.DEV_USER }}
+          key: ${{ secrets.DEV_SSH_KEY }}
           script: |
             cd ~/nemo/backend/scripts
             bash deploy_ci_cd.sh
