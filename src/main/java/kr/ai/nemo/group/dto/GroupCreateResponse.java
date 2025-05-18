@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @JsonInclude(Include.NON_EMPTY)
 public class GroupCreateResponse {
-  private Long groupId;
+  private Long id;
   private String name;
   private String summary;
   private String description;
@@ -27,7 +27,7 @@ public class GroupCreateResponse {
   private String plan;
 
   public GroupCreateResponse(Group group) {
-    this.groupId = group.getId();
+    this.id = group.getId();
     this.name = group.getName();
     this.summary = group.getSummary();
     this.description = group.getDescription();
