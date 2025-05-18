@@ -32,11 +32,11 @@ public class GroupQueryService {
     Page<Group> groups;
 
     if (request.getCategory() != null) {
-      groups = groupRepository.findByCategory(request.getCategory(), pageable);
+      groups = groupRepository.findByCategoryAndStatusNot(request.getCategory(), GroupStatus.DISBANDED, pageable);
     } else if (request.getKeyword() != null && !request.getKeyword().isBlank()) {
       groups = groupRepository.searchWithKeywordOnly(request.getKeyword(), pageable);
     } else {
-      groups = groupRepository.findAll(pageable);
+      groups = groupRepository.findByStatusNot(GroupStatus.DISBANDED, pageable);
     }
 
     Page<GroupDto> groupDtoPage = groups.map(GroupDto::from);
