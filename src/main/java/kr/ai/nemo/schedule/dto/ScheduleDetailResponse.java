@@ -8,12 +8,12 @@ import kr.ai.nemo.schedule.participants.domain.ScheduleParticipant;
 public record ScheduleDetailResponse(
     Long id,
     String title,
-    String startAt,
     String address,
     String ownerName,
-    String createdAt,
     String description,
     String scheduleStatus,
+    String startAt,
+    String createdAt,
     GroupInfo group,
     List<ParticipantInfo> participants
 ) {
@@ -27,12 +27,12 @@ public record ScheduleDetailResponse(
     return new ScheduleDetailResponse(
         schedule.getId(),
         schedule.getTitle(),
-        schedule.getStartAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
         schedule.getAddress(),
         schedule.getOwner().getNickname(),
-        schedule.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
         schedule.getDescription(),
         schedule.getStatus().name(),
+        schedule.getStartAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+        schedule.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
         new GroupInfo(
             schedule.getGroup().getId(),
             schedule.getGroup().getName(),
