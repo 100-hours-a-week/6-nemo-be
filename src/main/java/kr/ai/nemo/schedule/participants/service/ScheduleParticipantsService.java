@@ -68,17 +68,20 @@ public class ScheduleParticipantsService {
 
   @Transactional
   public void decideParticipation(Long scheduleId, Long userId, ScheduleParticipantStatus status) {
+    Schedule schedule = scheduleQueryService.findByIdOrThrow(scheduleId);
     ScheduleParticipant participant = scheduleParticipantRepository
         .findByScheduleIdAndUserId(scheduleId, userId)
         .orElseThrow(() -> new CustomException(ResponseCode.ACCESS_DENIED));
+
+    if (schedule.getStartAt().isBefore(LocalDateTime.now())) {
+      throw new CustomException(ResponseCode.SCHEDULE_ALREADY_STARTED_OR_ENDED);
+    }
 
     ScheduleParticipantStatus currentStatus = participant.getStatus();
 
     if (currentStatus == status) {
       throw new CustomException(ResponseCode.SCHEDULE_ALREADY_DECIDED);
     }
-
-    Schedule schedule = scheduleQueryService.findByIdOrThrow(scheduleId);
 
     if (currentStatus == ScheduleParticipantStatus.ACCEPTED && status == ScheduleParticipantStatus.REJECTED) {
       schedule.subtractCurrentUserCount();

@@ -30,6 +30,9 @@ public class ScheduleQueryService {
 
   public ScheduleDetailResponse getScheduleDetail(Long scheduleId) {
     Schedule schedule = findByIdOrThrow(scheduleId);
+    if (schedule.getStartAt().isBefore(LocalDateTime.now())) {
+      throw new CustomException(ResponseCode.SCHEDULE_ALREADY_STARTED_OR_ENDED);
+    }
     List<ScheduleParticipant> participants = scheduleParticipantRepository.findByScheduleId(scheduleId);
     return ScheduleDetailResponse.from(schedule, participants);
   }
