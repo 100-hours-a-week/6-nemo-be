@@ -76,6 +76,12 @@ public class Schedule {
     this.currentUserCount++;
   }
 
+  public void subtractCurrentUserCount() {
+    if (this.currentUserCount > 0) {
+      this.currentUserCount--;
+    }
+  }
+
   public void cancel() {
     this.status = ScheduleStatus.CANCELED;
     this.deletedAt = LocalDateTime.now();

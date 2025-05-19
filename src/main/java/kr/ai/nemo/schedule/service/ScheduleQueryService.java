@@ -30,6 +30,7 @@ public class ScheduleQueryService {
 
   public ScheduleDetailResponse getScheduleDetail(Long scheduleId) {
     Schedule schedule = findByIdOrThrow(scheduleId);
+
     List<ScheduleParticipant> participants = scheduleParticipantRepository.findByScheduleId(scheduleId);
     return ScheduleDetailResponse.from(schedule, participants);
   }
