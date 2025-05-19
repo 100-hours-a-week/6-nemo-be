@@ -21,7 +21,7 @@ public record ScheduleDetailResponse(
 
   public record ParticipantInfo(Long id, UserInfo user, String status) {}
 
-  public record UserInfo(Long userId, String nickname, String profileImage) {}
+  public record UserInfo(Long userId, String nickname, String profileImageUrl) {}
 
   public static ScheduleDetailResponse from(Schedule schedule, List<ScheduleParticipant> participants) {
     return new ScheduleDetailResponse(
