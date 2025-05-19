@@ -12,6 +12,7 @@ import kr.ai.nemo.user.domain.enums.UserStatus;
 import kr.ai.nemo.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +20,7 @@ public class OauthUserService {
   private final UserRepository userRepository;
   private final ImageService imageService;
 
+  @Transactional
   public User handleUser(KakaoUserResponse userResponse) {
     if (userResponse == null || userResponse.getId() == null) {
       throw new OAuthException(OAuthErrorCode.INVALID_USER_RESPONSE);

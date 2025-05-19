@@ -57,6 +57,7 @@ public class UserTokenService {
     userTokenRepository.save(newToken);
   }
 
+  @Transactional
   public void revokeToken(String refreshToken) {
     UserToken token = findValidToken(refreshToken);
     token.setRevoked(true);

@@ -78,7 +78,8 @@ public class ScheduleParticipantsService {
       throw new CustomException(ResponseCode.SCHEDULE_ALREADY_DECIDED);
     }
     if (status == ScheduleParticipantStatus.ACCEPTED) {
-      scheduleQueryService.findByIdOrThrow(scheduleId);
+      Schedule schedule = scheduleQueryService.findByIdOrThrow(scheduleId);
+      schedule.addCurrentUserCount();
     }
 
     participant.setStatus(status);
