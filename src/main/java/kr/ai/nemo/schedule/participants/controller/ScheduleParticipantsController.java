@@ -1,6 +1,7 @@
 package kr.ai.nemo.schedule.participants.controller;
 
 import jakarta.validation.Valid;
+import kr.ai.nemo.common.exception.ApiResponse;
 import kr.ai.nemo.schedule.participants.dto.ScheduleParticipantDecisionRequest;
 import kr.ai.nemo.schedule.participants.service.ScheduleParticipantsService;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +20,8 @@ public class ScheduleParticipantsController {
   private final ScheduleParticipantsService scheduleParticipantsService;
 
   @PatchMapping("/{scheduleId}/participants")
-  public ResponseEntity<Object> updateParticipants(@PathVariable Long scheduleId, @Valid @RequestBody ScheduleParticipantDecisionRequest request, @AuthenticationPrincipal Long userId) {
+  public ResponseEntity<ApiResponse<Void>> updateParticipants(@PathVariable Long scheduleId, @Valid @RequestBody ScheduleParticipantDecisionRequest request, @AuthenticationPrincipal Long userId) {
     scheduleParticipantsService.decideParticipation(scheduleId, userId, request.status());
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(ApiResponse.noContent());
   }
 }
