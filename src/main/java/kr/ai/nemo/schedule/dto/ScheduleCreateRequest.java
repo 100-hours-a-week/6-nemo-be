@@ -16,7 +16,6 @@ public record ScheduleCreateRequest(
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
     LocalDateTime startAt
 
-
 ) {
   public String fullAddress() {
     return addressDetail == null || addressDetail.isBlank()

@@ -1,7 +1,5 @@
 package kr.ai.nemo.schedule.controller;
 
-import java.net.URI;
-import kr.ai.nemo.common.UriGenerator;
 import kr.ai.nemo.common.exception.ApiResponse;
 import kr.ai.nemo.schedule.dto.MySchedulesResponse;
 import kr.ai.nemo.schedule.dto.ScheduleCreateRequest;
