@@ -23,16 +23,34 @@ repositories {
 	mavenCentral()
 }
 
+val jjwtVersion = "0.11.5"
+val awsSpringCloud = "3.0.2"
+val awsSdkVersion = "1.12.700"
+
 dependencies {
-	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	implementation("org.springframework.boot:spring-boot-starter-validation")
+
 	implementation("org.springframework.boot:spring-boot-starter-web")
-	compileOnly("org.projectlombok:lombok")
+	implementation("org.springframework.boot:spring-boot-starter-validation")
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	implementation("org.springframework.boot:spring-boot-starter-security")
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:$awsSpringCloud")
+	implementation("com.amazonaws:aws-java-sdk-s3:$awsSdkVersion")
+	implementation("com.amazonaws:aws-java-sdk-s3")
+
+	implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
+	runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
+	runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
+
 	runtimeOnly("com.mysql:mysql-connector-j")
-	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
+	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
+	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
 }
 
 tasks.withType<Test> {

@@ -1,0 +1,65 @@
+package kr.ai.nemo.group.service;
+
+import jakarta.validation.Valid;
+import kr.ai.nemo.common.exception.CustomException;
+import kr.ai.nemo.common.exception.ResponseCode;
+import kr.ai.nemo.group.domain.Group;
+import kr.ai.nemo.group.domain.enums.CategoryConstants;
+import kr.ai.nemo.group.domain.enums.GroupStatus;
+import kr.ai.nemo.group.dto.GroupCreateRequest;
+import kr.ai.nemo.group.dto.GroupCreateResponse;
+import kr.ai.nemo.group.participants.domain.enums.Role;
+import kr.ai.nemo.group.participants.domain.enums.Status;
+import kr.ai.nemo.group.participants.service.GroupParticipantsService;
+import kr.ai.nemo.group.repository.GroupRepository;
+import kr.ai.nemo.image.service.ImageService;
+import kr.ai.nemo.user.domain.User;
+import kr.ai.nemo.user.service.UserQueryService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class GroupCommandService {
+
+  private final GroupRepository groupRepository;
+  private final UserQueryService userQueryService;
+  private final GroupTagService groupTagService;
+  private final GroupParticipantsService groupParticipantsService;
+  private final ImageService imageService;
+
+  @Transactional
+  public GroupCreateResponse createGroup(@Valid GroupCreateRequest request, Long userId) {
+    User user = userQueryService.findByIdOrThrow(userId);
+
+    if (!CategoryConstants.VALID_CATEGORIES.contains(request.getCategory())) {
+      throw new CustomException(ResponseCode.INVALID_CATEGORY);
+    }
+
+    Group group = Group.builder()
+        .owner(user)
+        .name(request.getName())
+        .summary(request.getSummary())
+        .description(request.getDescription())
+        .plan(request.getPlan())
+        .category(request.getCategory())
+        .location(request.getLocation())
+        .completedScheduleTotal(0)
+        .imageUrl(imageService.uploadGroupImage(request.getImageUrl()))
+        .currentUserCount(0)
+        .maxUserCount(request.getMaxUserCount())
+        .status(GroupStatus.ACTIVE)
+        .build();
+
+    Group savedGroup = groupRepository.save(group);
+
+    if (request.getTags() != null && !request.getTags().isEmpty()) {
+      groupTagService.assignTags(savedGroup, request.getTags());
+    }
+
+    groupParticipantsService.applyToGroup(savedGroup.getId(), user.getId(), Role.LEADER, Status.JOINED);
+
+    return new GroupCreateResponse(savedGroup);
+  }
+}
