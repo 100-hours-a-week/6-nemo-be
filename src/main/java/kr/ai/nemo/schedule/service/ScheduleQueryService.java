@@ -87,7 +87,7 @@ public class ScheduleQueryService {
     }
 
     public Schedule findByIdOrThrow(Long scheduleId) {
-      Schedule schedule = scheduleRepository.findById(scheduleId)
+      Schedule schedule = scheduleRepository.findByIdWithGroupAndOwner(scheduleId)
           .orElseThrow(() -> new CustomException(ResponseCode.SCHEDULE_NOT_FOUND));
       if(schedule.getStatus() == ScheduleStatus.CANCELED){
         throw new CustomException(ResponseCode.SCHEDULE_ALREADY_CANCELED);
