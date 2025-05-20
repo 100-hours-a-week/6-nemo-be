@@ -4,8 +4,8 @@ spring:
 
   servlet:
     multipart:
-      max-file-size: ${IMAGE_FILE_BYTE}mb
-      max-request-size: ${IMAGE_REQUEST_BYTE}mb
+      max-file-size: ${IMAGE_FILE_BYTE}
+      max-request-size: ${IMAGE_REQUEST_BYTE}
 
   datasource:
     url: jdbc:mysql://${DB_URL}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
