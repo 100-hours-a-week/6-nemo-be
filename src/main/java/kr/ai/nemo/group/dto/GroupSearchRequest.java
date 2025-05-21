@@ -16,7 +16,7 @@ public class GroupSearchRequest {
 
   private String category;
 
-  @Size(min = 2, max = 64)
+  @Size(min = 1, max = 64)
   private String keyword;
 
   @Min(0)
