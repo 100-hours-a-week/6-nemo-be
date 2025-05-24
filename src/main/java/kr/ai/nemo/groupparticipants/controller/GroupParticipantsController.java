@@ -19,12 +19,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/groups")
 @RequiredArgsConstructor
 public class GroupParticipantsController {
   private final GroupParticipantsService groupParticipantsService;
 
-  @PostMapping("/groups/{groupId}/applications")
+  @PostMapping("/{groupId}/applications")
   public ResponseEntity<Object> applyToGroup(
       @PathVariable Long groupId,
       @AuthenticationPrincipal Long userId){
@@ -32,13 +32,13 @@ public class GroupParticipantsController {
     return ResponseEntity.noContent().build();
   }
 
-  @GetMapping("/groups/{groupId}/participants")
+  @GetMapping("/{groupId}/participants")
   public ResponseEntity<ApiResponse<GroupParticipantsListResponse>> getGroupParticipants(@PathVariable Long groupId) {
     List<GroupParticipantDto> list = groupParticipantsService.getAcceptedParticipants(groupId);
     return ResponseEntity.ok(ApiResponse.success(new GroupParticipantsListResponse(list)));
   }
 
-  @GetMapping("/groups/me")
+  @GetMapping("/me")
   public ResponseEntity<ApiResponse<MyGroupListResponse>> getMyGroups(@AuthenticationPrincipal Long userId) {
     List<MyGroupDto> groupList = groupParticipantsService.getMyGroups(userId);
     return ResponseEntity.ok(ApiResponse.success(new MyGroupListResponse(groupList)));
