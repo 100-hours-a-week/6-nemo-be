@@ -3,9 +3,9 @@ package kr.ai.nemo.auth.service;
 import java.time.LocalDateTime;
 
 import kr.ai.nemo.auth.domain.UserToken;
+import kr.ai.nemo.auth.exception.AuthErrorCode;
+import kr.ai.nemo.auth.exception.AuthException;
 import kr.ai.nemo.auth.repository.UserTokenRepository;
-import kr.ai.nemo.common.exception.CustomException;
-import kr.ai.nemo.common.exception.ResponseCode;
 import kr.ai.nemo.user.domain.User;
 
 import lombok.RequiredArgsConstructor;
@@ -71,6 +71,6 @@ public class UserTokenService {
     }
     return userTokenRepository.findByRefreshTokenAndRevokedFalse(refreshToken)
         .filter(t -> t.getExpiresAt().isAfter(LocalDateTime.now()))
-        .orElseThrow(() -> new CustomException(ResponseCode.INVALID_TOKEN));
+        .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_TOKEN));
   }
 }

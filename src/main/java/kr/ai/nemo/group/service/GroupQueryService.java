@@ -1,14 +1,15 @@
 package kr.ai.nemo.group.service;
 
-import kr.ai.nemo.common.exception.CustomException;
-import kr.ai.nemo.common.exception.ResponseCode;
 import kr.ai.nemo.group.domain.Group;
 import kr.ai.nemo.group.domain.enums.GroupStatus;
 import kr.ai.nemo.group.dto.GroupDetailResponse;
 import kr.ai.nemo.group.dto.GroupDto;
 import kr.ai.nemo.group.dto.GroupListResponse;
 import kr.ai.nemo.group.dto.GroupSearchRequest;
+import kr.ai.nemo.group.exception.GroupErrorCode;
+import kr.ai.nemo.group.exception.GroupException;
 import kr.ai.nemo.group.repository.GroupRepository;
+import kr.ai.nemo.group.validator.GroupValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -25,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class GroupQueryService {
 
   private final GroupRepository groupRepository;
+  private final GroupValidator groupValidator;
 
   public GroupListResponse getGroups(GroupSearchRequest request) {
     Pageable pageable = toPageable(request);
@@ -44,27 +46,13 @@ public class GroupQueryService {
     return GroupListResponse.from(groupDtoPage);
   }
 
-  private GroupDetailResponse convertToDetailResponse(Group group) {
-    return GroupDetailResponse.from(group);
-  }
-
   public GroupDetailResponse detailGroup(Long groupId) {
-    Group group = findByIdOrThrow(groupId);
-    return convertToDetailResponse(group);
+    Group group = groupValidator.findByIdOrThrow(groupId);
+    return GroupDetailResponse.from(group);
   }
 
   private Pageable toPageable(GroupSearchRequest request) {
     Sort sort = Sort.by(Sort.Direction.fromString(request.getDirection()), request.getSort());
     return PageRequest.of(request.getPage(), request.getSize(), sort);
-  }
-
-  public Group findByIdOrThrow(Long groupId) {
-    Group group = groupRepository.findById(groupId)
-        .orElseThrow(() -> new CustomException(ResponseCode.GROUP_NOT_FOUND));
-
-    if (group.getStatus() == GroupStatus.DISBANDED) {
-      throw new CustomException(ResponseCode.GROUP_DISBANDED);
-    }
-    return group;
   }
 }

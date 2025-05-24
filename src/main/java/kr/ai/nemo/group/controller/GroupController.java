@@ -1,7 +1,7 @@
 package kr.ai.nemo.group.controller;
 
 import jakarta.validation.Valid;
-import kr.ai.nemo.common.exception.ApiResponse;
+import kr.ai.nemo.global.common.ApiResponse;
 import kr.ai.nemo.group.dto.GroupCreateRequest;
 import kr.ai.nemo.group.dto.GroupCreateResponse;
 import kr.ai.nemo.group.dto.GroupDetailResponse;
@@ -41,13 +41,30 @@ public class GroupController {
   private final GroupQueryService groupQueryService;
   private final ScheduleQueryService scheduleQueryService;
 
-  @PostMapping("/ai-generate")
-  public ResponseEntity<ApiResponse<GroupGenerateResponse>> generateGroupInfo(
-      @Valid @RequestBody GroupGenerateRequest request
-  ) {
-    return ResponseEntity.ok(ApiResponse.success(groupGenerateService.generate(request)));
+  @GetMapping
+  public ResponseEntity<ApiResponse<GroupListResponse>> getGroups(@Valid @ModelAttribute GroupSearchRequest request) {
+    return ResponseEntity.ok(ApiResponse.success(groupQueryService.getGroups(request)));
   }
 
+  @GetMapping("/{groupId}")
+  public ResponseEntity<ApiResponse<GroupDetailResponse>> showGroupInfo(@PathVariable Long groupId) {
+    return ResponseEntity.ok(ApiResponse.success(groupQueryService.detailGroup(groupId)));
+  }
+
+  @GetMapping("/search")
+  public ResponseEntity<ApiResponse<GroupListResponse>> searchGroups(@Valid @ModelAttribute GroupSearchRequest request) {
+    return ResponseEntity.ok(ApiResponse.success(groupQueryService.getGroups(request)));
+  }
+
+  @GetMapping("/{groupId}/schedules")
+  public ResponseEntity<ApiResponse<ScheduleListResponse>> getGroupSchedules(
+      @PathVariable Long groupId,
+      @Valid PageRequestDto pageRequestDto
+  ) {
+    return ResponseEntity.ok(ApiResponse.success(
+        scheduleQueryService.getGroupSchedules(groupId, pageRequestDto.toPageRequest("startAt", "desc"))
+    ));
+  }
 
   @PostMapping
   public ResponseEntity<ApiResponse<GroupCreateResponse>> createGroup(
@@ -67,28 +84,10 @@ public class GroupController {
         .body(ApiResponse.created(createdGroup));
   }
 
-  @GetMapping("/{groupId}")
-  public ResponseEntity<ApiResponse<GroupDetailResponse>> showGroupInfo(@PathVariable Long groupId) {
-    return ResponseEntity.ok(ApiResponse.success(groupQueryService.detailGroup(groupId)));
-  }
-
-  @GetMapping
-  public ResponseEntity<ApiResponse<GroupListResponse>> getGroups(@Valid @ModelAttribute GroupSearchRequest request) {
-    return ResponseEntity.ok(ApiResponse.success(groupQueryService.getGroups(request)));
-  }
-
-  @GetMapping("/search")
-  public ResponseEntity<ApiResponse<GroupListResponse>> searchGroups(@Valid @ModelAttribute GroupSearchRequest request) {
-    return ResponseEntity.ok(ApiResponse.success(groupQueryService.getGroups(request)));
-  }
-
-  @GetMapping("/{groupId}/schedules")
-  public ResponseEntity<ApiResponse<ScheduleListResponse>> getGroupSchedules(
-      @PathVariable Long groupId,
-      @Valid PageRequestDto pageRequestDto
+  @PostMapping("/ai-generate")
+  public ResponseEntity<ApiResponse<GroupGenerateResponse>> generateGroupInfo(
+      @Valid @RequestBody GroupGenerateRequest request
   ) {
-    return ResponseEntity.ok(ApiResponse.success(
-        scheduleQueryService.getGroupSchedules(groupId, pageRequestDto.toPageRequest("startAt", "desc"))
-    ));
+    return ResponseEntity.ok(ApiResponse.success(groupGenerateService.generate(request)));
   }
 }

@@ -4,9 +4,9 @@ import java.time.LocalDateTime;
 import kr.ai.nemo.auth.domain.enums.DefaultUserValue;
 import kr.ai.nemo.auth.domain.enums.OAuthProvider;
 import kr.ai.nemo.auth.dto.KakaoUserResponse;
-import kr.ai.nemo.auth.exception.OAuthErrorCode;
-import kr.ai.nemo.auth.exception.OAuthException;
-import kr.ai.nemo.image.service.ImageService;
+import kr.ai.nemo.auth.exception.KakaoOAuthErrorCode;
+import kr.ai.nemo.auth.exception.AuthException;
+import kr.ai.nemo.infra.ImageService;
 import kr.ai.nemo.user.domain.User;
 import kr.ai.nemo.user.domain.enums.UserStatus;
 import kr.ai.nemo.user.repository.UserRepository;
@@ -23,7 +23,7 @@ public class OauthUserService {
   @Transactional
   public User handleUser(KakaoUserResponse userResponse) {
     if (userResponse == null || userResponse.getId() == null) {
-      throw new OAuthException(OAuthErrorCode.INVALID_USER_RESPONSE);
+      throw new AuthException(KakaoOAuthErrorCode.INVALID_USER_RESPONSE);
     }
 
     final String provider = OAuthProvider.KAKAO.name();
