@@ -1,13 +1,13 @@
 package kr.ai.nemo.group.service;
 
-import kr.ai.nemo.common.exception.CustomException;
-import kr.ai.nemo.common.exception.ResponseCode;
 import kr.ai.nemo.group.domain.Group;
 import kr.ai.nemo.group.domain.enums.GroupStatus;
 import kr.ai.nemo.group.dto.GroupDetailResponse;
 import kr.ai.nemo.group.dto.GroupDto;
 import kr.ai.nemo.group.dto.GroupListResponse;
 import kr.ai.nemo.group.dto.GroupSearchRequest;
+import kr.ai.nemo.group.exception.GroupErrorCode;
+import kr.ai.nemo.group.exception.GroupException;
 import kr.ai.nemo.group.repository.GroupRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,10 +60,10 @@ public class GroupQueryService {
 
   public Group findByIdOrThrow(Long groupId) {
     Group group = groupRepository.findById(groupId)
-        .orElseThrow(() -> new CustomException(ResponseCode.GROUP_NOT_FOUND));
+        .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
 
     if (group.getStatus() == GroupStatus.DISBANDED) {
-      throw new CustomException(ResponseCode.GROUP_DISBANDED);
+      throw new GroupException(GroupErrorCode.GROUP_DISBANDED);
     }
     return group;
   }

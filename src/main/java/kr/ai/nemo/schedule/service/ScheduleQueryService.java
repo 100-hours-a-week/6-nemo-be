@@ -3,8 +3,6 @@ package kr.ai.nemo.schedule.service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import kr.ai.nemo.common.exception.CustomException;
-import kr.ai.nemo.common.exception.ResponseCode;
 import kr.ai.nemo.group.service.GroupQueryService;
 import kr.ai.nemo.schedule.domain.Schedule;
 import kr.ai.nemo.schedule.domain.enums.ScheduleStatus;
@@ -12,9 +10,11 @@ import kr.ai.nemo.schedule.dto.MySchedulesResponse;
 import kr.ai.nemo.schedule.dto.MySchedulesResponse.ScheduleParticipation;
 import kr.ai.nemo.schedule.dto.ScheduleDetailResponse;
 import kr.ai.nemo.schedule.dto.ScheduleListResponse;
-import kr.ai.nemo.schedule.participants.domain.ScheduleParticipant;
-import kr.ai.nemo.schedule.participants.domain.enums.ScheduleParticipantStatus;
-import kr.ai.nemo.schedule.participants.repository.ScheduleParticipantRepository;
+import kr.ai.nemo.schedule.exception.ScheduleErrorCode;
+import kr.ai.nemo.schedule.exception.ScheduleException;
+import kr.ai.nemo.scheduleparticipants.domain.ScheduleParticipant;
+import kr.ai.nemo.scheduleparticipants.domain.enums.ScheduleParticipantStatus;
+import kr.ai.nemo.scheduleparticipants.repository.ScheduleParticipantRepository;
 import kr.ai.nemo.schedule.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -88,9 +88,9 @@ public class ScheduleQueryService {
 
     public Schedule findByIdOrThrow(Long scheduleId) {
       Schedule schedule = scheduleRepository.findByIdWithGroupAndOwner(scheduleId)
-          .orElseThrow(() -> new CustomException(ResponseCode.SCHEDULE_NOT_FOUND));
+          .orElseThrow(() -> new ScheduleException(ScheduleErrorCode.SCHEDULE_NOT_FOUND));
       if(schedule.getStatus() == ScheduleStatus.CANCELED){
-        throw new CustomException(ResponseCode.SCHEDULE_ALREADY_CANCELED);
+        throw new ScheduleException(ScheduleErrorCode.SCHEDULE_ALREADY_CANCELED);
       }
       return schedule;
     }

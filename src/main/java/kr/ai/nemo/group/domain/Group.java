@@ -2,7 +2,7 @@ package kr.ai.nemo.group.domain;
 
 import jakarta.persistence.*;
 import kr.ai.nemo.group.domain.enums.GroupStatus;
-import kr.ai.nemo.group.participants.domain.GroupParticipants;
+import kr.ai.nemo.groupparticipants.domain.GroupParticipants;
 import kr.ai.nemo.user.domain.User;
 import lombok.AccessLevel;
 import lombok.Builder;

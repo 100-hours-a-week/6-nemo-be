@@ -1,6 +1,6 @@
 package kr.ai.nemo.schedule.controller;
 
-import kr.ai.nemo.common.exception.ApiResponse;
+import kr.ai.nemo.global.common.ApiResponse;
 import kr.ai.nemo.schedule.dto.MySchedulesResponse;
 import kr.ai.nemo.schedule.dto.ScheduleCreateRequest;
 import kr.ai.nemo.schedule.dto.ScheduleCreateResponse;

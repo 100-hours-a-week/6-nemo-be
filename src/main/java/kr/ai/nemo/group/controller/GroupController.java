@@ -1,7 +1,7 @@
 package kr.ai.nemo.group.controller;
 
 import jakarta.validation.Valid;
-import kr.ai.nemo.common.exception.ApiResponse;
+import kr.ai.nemo.global.common.ApiResponse;
 import kr.ai.nemo.group.dto.GroupCreateRequest;
 import kr.ai.nemo.group.dto.GroupCreateResponse;
 import kr.ai.nemo.group.dto.GroupDetailResponse;

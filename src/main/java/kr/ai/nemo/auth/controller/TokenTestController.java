@@ -1,6 +1,6 @@
 package kr.ai.nemo.auth.controller;
 
-import kr.ai.nemo.auth.jwt.JwtProvider;
+import kr.ai.nemo.auth.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

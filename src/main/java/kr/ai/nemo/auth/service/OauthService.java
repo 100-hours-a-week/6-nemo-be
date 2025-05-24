@@ -7,8 +7,8 @@ import kr.ai.nemo.auth.domain.enums.OAuthProvider;
 import kr.ai.nemo.auth.dto.KakaoTokenResponse;
 import kr.ai.nemo.auth.dto.KakaoUserResponse;
 import kr.ai.nemo.auth.dto.TokenRefreshResponse;
-import kr.ai.nemo.auth.exception.OAuthErrorCode;
-import kr.ai.nemo.auth.exception.OAuthException;
+import kr.ai.nemo.auth.exception.KakaoOAuthErrorCode;
+import kr.ai.nemo.auth.exception.AuthException;
 import kr.ai.nemo.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ public class OauthService {
     try {
       KakaoTokenResponse kakaoToken = kakaoClient.getAccessToken(code);
       if (kakaoToken.getAccessToken() == null || kakaoToken.getAccessToken().isEmpty()) {
-        throw new OAuthException(OAuthErrorCode.EMPTY_ACCESS_TOKEN);
+        throw new AuthException(KakaoOAuthErrorCode.EMPTY_ACCESS_TOKEN);
       }
 
       KakaoUserResponse userResponse = kakaoClient.getUserInfo(kakaoToken.getAccessToken());
@@ -48,10 +48,10 @@ public class OauthService {
 
       return accessToken;
 
-    } catch (OAuthException e) {
+    } catch (AuthException e) {
       throw e;
     } catch (Exception e) {
-      throw new OAuthException(OAuthErrorCode.LOGIN_ERROR, e);
+      throw new AuthException(KakaoOAuthErrorCode.LOGIN_ERROR);
     }
   }
 
@@ -61,11 +61,11 @@ public class OauthService {
 
   public String handleKakaoCallback(String code, String error, HttpServletResponse response) {
     if (error != null) {
-      throw new OAuthException(OAuthErrorCode.KAKAO_AUTH_ERROR);
+      throw new AuthException(KakaoOAuthErrorCode.KAKAO_AUTH_ERROR);
     }
 
     if (code == null || code.isEmpty()) {
-      throw new OAuthException(OAuthErrorCode.CODE_MISSING);
+      throw new AuthException(KakaoOAuthErrorCode.CODE_MISSING);
     }
 
     return loginWithKakao(code, response);

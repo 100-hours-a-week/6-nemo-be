@@ -1,18 +1,19 @@
 package kr.ai.nemo.group.service;
 
 import jakarta.validation.Valid;
-import kr.ai.nemo.common.exception.CustomException;
-import kr.ai.nemo.common.exception.ResponseCode;
+import kr.ai.nemo.global.error.exception.CustomException;
+import kr.ai.nemo.group.exception.GroupErrorCode;
 import kr.ai.nemo.group.domain.Group;
 import kr.ai.nemo.group.domain.enums.CategoryConstants;
 import kr.ai.nemo.group.domain.enums.GroupStatus;
 import kr.ai.nemo.group.dto.GroupCreateRequest;
 import kr.ai.nemo.group.dto.GroupCreateResponse;
-import kr.ai.nemo.group.participants.domain.enums.Role;
-import kr.ai.nemo.group.participants.domain.enums.Status;
-import kr.ai.nemo.group.participants.service.GroupParticipantsService;
+import kr.ai.nemo.group.exception.GroupException;
+import kr.ai.nemo.groupparticipants.domain.enums.Role;
+import kr.ai.nemo.groupparticipants.domain.enums.Status;
+import kr.ai.nemo.groupparticipants.service.GroupParticipantsService;
 import kr.ai.nemo.group.repository.GroupRepository;
-import kr.ai.nemo.image.service.ImageService;
+import kr.ai.nemo.infra.ImageService;
 import kr.ai.nemo.user.domain.User;
 import kr.ai.nemo.user.service.UserQueryService;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,7 @@ public class GroupCommandService {
     User user = userQueryService.findByIdOrThrow(userId);
 
     if (!CategoryConstants.VALID_CATEGORIES.contains(request.getCategory())) {
-      throw new CustomException(ResponseCode.INVALID_CATEGORY);
+      throw new GroupException(GroupErrorCode.INVALID_CATEGORY);
     }
 
     Group group = Group.builder()

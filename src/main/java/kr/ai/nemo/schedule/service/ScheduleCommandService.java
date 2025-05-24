@@ -1,16 +1,15 @@
 package kr.ai.nemo.schedule.service;
 
-import java.time.LocalDateTime;
-import kr.ai.nemo.common.exception.CustomException;
-import kr.ai.nemo.common.exception.ResponseCode;
 import kr.ai.nemo.group.domain.Group;
-import kr.ai.nemo.group.participants.service.GroupParticipantsService;
+import kr.ai.nemo.groupparticipants.service.GroupParticipantsService;
 import kr.ai.nemo.group.service.GroupQueryService;
 import kr.ai.nemo.schedule.domain.Schedule;
 import kr.ai.nemo.schedule.domain.enums.ScheduleStatus;
 import kr.ai.nemo.schedule.dto.ScheduleCreateRequest;
 import kr.ai.nemo.schedule.dto.ScheduleCreateResponse;
-import kr.ai.nemo.schedule.participants.service.ScheduleParticipantsService;
+import kr.ai.nemo.schedule.exception.ScheduleErrorCode;
+import kr.ai.nemo.schedule.exception.ScheduleException;
+import kr.ai.nemo.scheduleparticipants.service.ScheduleParticipantsService;
 import kr.ai.nemo.schedule.repository.ScheduleRepository;
 import kr.ai.nemo.user.service.UserQueryService;
 import lombok.RequiredArgsConstructor;
@@ -52,13 +51,13 @@ public class ScheduleCommandService {
     Schedule schedule = scheduleQueryService.findByIdOrThrow(scheduleId);
 
     if (schedule.getStatus() == ScheduleStatus.CLOSED) {
-      throw new CustomException(ResponseCode.SCHEDULE_ALREADY_ENDED);
+      throw new ScheduleException(ScheduleErrorCode.SCHEDULE_ALREADY_ENDED);
     } else if (schedule.getStatus() == ScheduleStatus.CANCELED) {
-      throw new CustomException(ResponseCode.SCHEDULE_ALREADY_CANCELED);
+      throw new ScheduleException(ScheduleErrorCode.SCHEDULE_ALREADY_CANCELED);
     }
 
     if (!schedule.getOwner().getId().equals(userId)) {
-      throw new CustomException(ResponseCode.SCHEDULE_DELETE_FORBIDDEN);
+      throw new ScheduleException(ScheduleErrorCode.SCHEDULE_DELETE_FORBIDDEN);
     }
 
     schedule.cancel();

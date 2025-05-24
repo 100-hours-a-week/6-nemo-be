@@ -14,9 +14,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import kr.ai.nemo.group.domain.Group;
-import kr.ai.nemo.group.participants.domain.GroupParticipants;
+import kr.ai.nemo.groupparticipants.domain.GroupParticipants;
 import kr.ai.nemo.schedule.domain.Schedule;
-import kr.ai.nemo.schedule.participants.domain.ScheduleParticipant;
+import kr.ai.nemo.scheduleparticipants.domain.ScheduleParticipant;
 import kr.ai.nemo.user.domain.enums.UserStatus;
 import lombok.*;
 

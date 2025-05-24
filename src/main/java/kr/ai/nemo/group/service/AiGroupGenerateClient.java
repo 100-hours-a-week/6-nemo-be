@@ -1,8 +1,8 @@
 package kr.ai.nemo.group.service;
 
-import kr.ai.nemo.common.exception.ApiResponse;
-import kr.ai.nemo.common.exception.CustomException;
-import kr.ai.nemo.common.exception.ResponseCode;
+import kr.ai.nemo.global.common.ApiResponse;
+import kr.ai.nemo.global.error.code.CommonErrorCode;
+import kr.ai.nemo.global.error.exception.CustomException;
 import kr.ai.nemo.group.dto.GroupAiGenerateRequest;
 import kr.ai.nemo.group.dto.GroupAiGenerateResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -45,13 +45,13 @@ public class AiGroupGenerateClient {
       ApiResponse<GroupAiGenerateResponse> body = response.getBody();
 
       if (body == null || body.getData() == null) {
-        throw new CustomException(ResponseCode.AI_RESPONSE_PARSE_ERROR);
+        throw new CustomException(CommonErrorCode.AI_RESPONSE_PARSE_ERROR);
       }
 
       return body.getData();
 
     } catch (Exception e) {
-      throw new CustomException(ResponseCode.AI_SERVER_CONNECTION_FAILED);
+      throw new CustomException(CommonErrorCode.AI_SERVER_CONNECTION_FAILED);
     }
   }
 }

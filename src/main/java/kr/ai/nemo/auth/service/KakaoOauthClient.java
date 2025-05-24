@@ -2,8 +2,8 @@ package kr.ai.nemo.auth.service;
 
 import kr.ai.nemo.auth.dto.KakaoTokenResponse;
 import kr.ai.nemo.auth.dto.KakaoUserResponse;
-import kr.ai.nemo.auth.exception.OAuthErrorCode;
-import kr.ai.nemo.auth.exception.OAuthException;
+import kr.ai.nemo.auth.exception.KakaoOAuthErrorCode;
+import kr.ai.nemo.auth.exception.AuthException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -44,20 +44,20 @@ public class KakaoOauthClient {
       );
 
       if (response.getBody() == null) {
-        throw new OAuthException(OAuthErrorCode.EMPTY_TOKEN_RESPONSE);
+        throw new AuthException(KakaoOAuthErrorCode.EMPTY_TOKEN_RESPONSE);
       }
 
       return response.getBody();
     } catch (HttpClientErrorException e) {
       if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
-        throw new OAuthException(OAuthErrorCode.INVALID_CODE, e);
+        throw new AuthException(KakaoOAuthErrorCode.INVALID_CODE);
       } else if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-        throw new OAuthException(OAuthErrorCode.INVALID_CLIENT, e);
+        throw new AuthException(KakaoOAuthErrorCode.INVALID_CLIENT);
       } else {
-        throw new OAuthException(OAuthErrorCode.CLIENT_ERROR, e);
+        throw new AuthException(KakaoOAuthErrorCode.CLIENT_ERROR);
       }
     } catch (RestClientException e) {
-      throw new OAuthException(OAuthErrorCode.CONNECTION_ERROR, e);
+      throw new AuthException(KakaoOAuthErrorCode.CONNECTION_ERROR);
     }
   }
 
@@ -77,20 +77,20 @@ public class KakaoOauthClient {
       KakaoUserResponse body = response.getBody();
 
       if (body == null) {
-        throw new OAuthException(OAuthErrorCode.EMPTY_USER_INFO);
+        throw new AuthException(KakaoOAuthErrorCode.EMPTY_USER_INFO);
       }
       if (body.getId() == null) {
-        throw new OAuthException(OAuthErrorCode.MISSING_USER_ID);
+        throw new AuthException(KakaoOAuthErrorCode.MISSING_USER_ID);
       }
       return body;
     } catch (HttpClientErrorException e) {
       if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-        throw new OAuthException(OAuthErrorCode.INVALID_ACCESS_TOKEN, e);
+        throw new AuthException(KakaoOAuthErrorCode.INVALID_ACCESS_TOKEN);
       } else {
-        throw new OAuthException(OAuthErrorCode.USER_INFO_ERROR, e);
+        throw new AuthException(KakaoOAuthErrorCode.USER_INFO_ERROR);
       }
     } catch (RestClientException e) {
-      throw new OAuthException(OAuthErrorCode.CONNECTION_ERROR, e);
+      throw new AuthException(KakaoOAuthErrorCode.CONNECTION_ERROR);
     }
   }
 }

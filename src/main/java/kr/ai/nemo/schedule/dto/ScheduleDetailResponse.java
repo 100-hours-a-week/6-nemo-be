@@ -3,7 +3,7 @@ package kr.ai.nemo.schedule.dto;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import kr.ai.nemo.schedule.domain.Schedule;
-import kr.ai.nemo.schedule.participants.domain.ScheduleParticipant;
+import kr.ai.nemo.scheduleparticipants.domain.ScheduleParticipant;
 
 public record ScheduleDetailResponse(
     Long id,
