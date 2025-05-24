@@ -8,7 +8,8 @@ import kr.ai.nemo.groupparticipants.dto.GroupParticipantDto;
 import kr.ai.nemo.groupparticipants.dto.GroupParticipantsListResponse;
 import kr.ai.nemo.groupparticipants.dto.MyGroupDto;
 import kr.ai.nemo.groupparticipants.dto.MyGroupListResponse;
-import kr.ai.nemo.groupparticipants.service.GroupParticipantsService;
+import kr.ai.nemo.groupparticipants.service.GroupParticipantsQueryService;
+import kr.ai.nemo.groupparticipants.service.GroupParticipantsCommandService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,25 +23,26 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/groups")
 @RequiredArgsConstructor
 public class GroupParticipantsController {
-  private final GroupParticipantsService groupParticipantsService;
+  private final GroupParticipantsCommandService groupParticipantsCommandService;
+  private final GroupParticipantsQueryService groupParticipantsQueryService;
 
   @PostMapping("/{groupId}/applications")
   public ResponseEntity<Object> applyToGroup(
       @PathVariable Long groupId,
       @AuthenticationPrincipal Long userId){
-    groupParticipantsService.applyToGroup(groupId, userId, Role.MEMBER, Status.JOINED);
+    groupParticipantsCommandService.applyToGroup(groupId, userId, Role.MEMBER, Status.JOINED);
     return ResponseEntity.noContent().build();
   }
 
   @GetMapping("/{groupId}/participants")
   public ResponseEntity<ApiResponse<GroupParticipantsListResponse>> getGroupParticipants(@PathVariable Long groupId) {
-    List<GroupParticipantDto> list = groupParticipantsService.getAcceptedParticipants(groupId);
+    List<GroupParticipantDto> list = groupParticipantsQueryService.getAcceptedParticipants(groupId);
     return ResponseEntity.ok(ApiResponse.success(new GroupParticipantsListResponse(list)));
   }
 
   @GetMapping("/me")
   public ResponseEntity<ApiResponse<MyGroupListResponse>> getMyGroups(@AuthenticationPrincipal Long userId) {
-    List<MyGroupDto> groupList = groupParticipantsService.getMyGroups(userId);
+    List<MyGroupDto> groupList = groupParticipantsQueryService.getMyGroups(userId);
     return ResponseEntity.ok(ApiResponse.success(new MyGroupListResponse(groupList)));
   }
 }

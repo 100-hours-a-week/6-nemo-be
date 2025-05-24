@@ -8,7 +8,7 @@ import kr.ai.nemo.group.dto.GroupCreateResponse;
 import kr.ai.nemo.group.validator.GroupValidator;
 import kr.ai.nemo.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.groupparticipants.domain.enums.Status;
-import kr.ai.nemo.groupparticipants.service.GroupParticipantsService;
+import kr.ai.nemo.groupparticipants.service.GroupParticipantsCommandService;
 import kr.ai.nemo.group.repository.GroupRepository;
 import kr.ai.nemo.infra.ImageService;
 import kr.ai.nemo.user.domain.User;
@@ -23,7 +23,7 @@ public class GroupCommandService {
 
   private final GroupRepository groupRepository;
   private final GroupTagService groupTagService;
-  private final GroupParticipantsService groupParticipantsService;
+  private final GroupParticipantsCommandService groupParticipantsCommandService;
   private final ImageService imageService;
   private final GroupValidator groupValidator;
   private final UserValidator userValidator;
@@ -55,7 +55,7 @@ public class GroupCommandService {
       groupTagService.assignTags(savedGroup, request.getTags());
     }
 
-    groupParticipantsService.applyToGroup(savedGroup.getId(), user.getId(), Role.LEADER, Status.JOINED);
+    groupParticipantsCommandService.applyToGroup(savedGroup.getId(), user.getId(), Role.LEADER, Status.JOINED);
 
     return new GroupCreateResponse(savedGroup);
   }
