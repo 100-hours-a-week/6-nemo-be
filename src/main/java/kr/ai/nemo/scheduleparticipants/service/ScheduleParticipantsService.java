@@ -2,21 +2,16 @@ package kr.ai.nemo.scheduleparticipants.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import kr.ai.nemo.auth.exception.AuthErrorCode;
-import kr.ai.nemo.auth.exception.AuthException;
 import kr.ai.nemo.group.domain.Group;
 import kr.ai.nemo.groupparticipants.domain.GroupParticipants;
 import kr.ai.nemo.schedule.domain.Schedule;
 import kr.ai.nemo.schedule.domain.enums.ScheduleStatus;
-import kr.ai.nemo.schedule.exception.ScheduleErrorCode;
-import kr.ai.nemo.schedule.exception.ScheduleException;
+import kr.ai.nemo.schedule.validator.ScheduleValidator;
 import kr.ai.nemo.scheduleparticipants.domain.ScheduleParticipant;
 import kr.ai.nemo.scheduleparticipants.domain.enums.ScheduleParticipantStatus;
-import kr.ai.nemo.scheduleparticipants.exception.ScheduleParticipantErrorCode;
-import kr.ai.nemo.scheduleparticipants.exception.ScheduleParticipantException;
 import kr.ai.nemo.scheduleparticipants.repository.ScheduleParticipantRepository;
 import kr.ai.nemo.schedule.repository.ScheduleRepository;
-import kr.ai.nemo.schedule.service.ScheduleQueryService;
+import kr.ai.nemo.scheduleparticipants.validator.ScheduleParticipantValidator;
 import kr.ai.nemo.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,7 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class ScheduleParticipantsService {
   private final ScheduleParticipantRepository scheduleParticipantRepository;
   private final ScheduleRepository scheduleRepository;
-  private final ScheduleQueryService scheduleQueryService;
+  private final ScheduleValidator scheduleValidator;
+  private final ScheduleParticipantValidator scheduleParticipantValidator;
 
   @Transactional
   public void addAllParticipantsForNewSchedule(Schedule schedule) {
@@ -72,29 +68,21 @@ public class ScheduleParticipantsService {
 
   @Transactional
   public void decideParticipation(Long scheduleId, Long userId, ScheduleParticipantStatus status) {
-    Schedule schedule = scheduleQueryService.findByIdOrThrow(scheduleId);
-    ScheduleParticipant participant = scheduleParticipantRepository
-        .findByScheduleIdAndUserId(scheduleId, userId)
-        .orElseThrow(() -> new AuthException(AuthErrorCode.ACCESS_DENIED));
-
-    if (schedule.getStartAt().isBefore(LocalDateTime.now())) {
-      throw new ScheduleException(ScheduleErrorCode.SCHEDULE_ALREADY_STARTED_OR_ENDED);
-    }
+    Schedule schedule = scheduleValidator.findByIdOrThrow(scheduleId);
+    ScheduleParticipant participant = scheduleParticipantValidator.validateParticipationOrThrow(scheduleId, userId);
+    scheduleValidator.validateScheduleStart(schedule);
 
     ScheduleParticipantStatus currentStatus = participant.getStatus();
 
-    if (currentStatus == status) {
-      throw new ScheduleParticipantException(ScheduleParticipantErrorCode.SCHEDULE_ALREADY_DECIDED);
-    }
+    scheduleParticipantValidator.validateStatusChange(currentStatus, status);
 
     if (currentStatus == ScheduleParticipantStatus.ACCEPTED && status == ScheduleParticipantStatus.REJECTED) {
       schedule.subtractCurrentUserCount();
+      participant.reject();
     } else if ((currentStatus == ScheduleParticipantStatus.PENDING || currentStatus == ScheduleParticipantStatus.REJECTED) 
                && status == ScheduleParticipantStatus.ACCEPTED) {
       schedule.addCurrentUserCount();
+      participant.accept();
     }
-
-    participant.setStatus(status);
-    participant.setJoinedAt(LocalDateTime.now());
   }
 }

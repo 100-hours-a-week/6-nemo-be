@@ -6,6 +6,10 @@ import kr.ai.nemo.global.common.ApiResponse;
 import kr.ai.nemo.global.error.code.CommonErrorCode;
 import kr.ai.nemo.global.error.exception.CustomException;
 import kr.ai.nemo.group.exception.GroupException;
+import kr.ai.nemo.groupparticipants.exception.GroupParticipantException;
+import kr.ai.nemo.schedule.exception.ScheduleException;
+import kr.ai.nemo.scheduleparticipants.exception.ScheduleParticipantException;
+import kr.ai.nemo.user.exception.UserException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -80,8 +84,36 @@ public class GlobalExceptionHandler {
         .body(ApiResponse.error(e.getErrorCode()));
   }
 
+  @ExceptionHandler(UserException.class)
+  public ResponseEntity<ApiResponse<?>> handleUserException(UserException e) {
+    return ResponseEntity
+        .status(e.getErrorCode().getHttpStatus())
+        .body(ApiResponse.error(e.getErrorCode()));
+  }
+
   @ExceptionHandler(GroupException.class)
   public ResponseEntity<ApiResponse<?>> handleGroupException(GroupException e) {
+    return ResponseEntity
+        .status(e.getErrorCode().getHttpStatus())
+        .body(ApiResponse.error(e.getErrorCode()));
+  }
+
+  @ExceptionHandler(GroupParticipantException.class)
+  public ResponseEntity<ApiResponse<?>> handleGroupParticipantException(GroupParticipantException e) {
+    return ResponseEntity
+        .status(e.getErrorCode().getHttpStatus())
+        .body(ApiResponse.error(e.getErrorCode()));
+  }
+
+  @ExceptionHandler(ScheduleException.class)
+  public ResponseEntity<ApiResponse<?>> handleScheduleException(ScheduleException e) {
+    return ResponseEntity
+        .status(e.getErrorCode().getHttpStatus())
+        .body(ApiResponse.error(e.getErrorCode()));
+  }
+
+  @ExceptionHandler(ScheduleParticipantException.class)
+  public ResponseEntity<ApiResponse<?>> handleScheduleParticipantException(ScheduleParticipantException e) {
     return ResponseEntity
         .status(e.getErrorCode().getHttpStatus())
         .body(ApiResponse.error(e.getErrorCode()));

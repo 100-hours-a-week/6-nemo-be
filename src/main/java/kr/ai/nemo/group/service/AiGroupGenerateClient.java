@@ -19,6 +19,8 @@ public class AiGroupGenerateClient {
   private final RestTemplate restTemplate;
   private final String baseUrl;
 
+  private static final String GROUP_AI_GENERATE_PATH = "/ai/v1/groups/information";
+
   public AiGroupGenerateClient(
       RestTemplate restTemplate,
       @Value("${ai.service.url:http://localhost:8000}") String baseUrl
@@ -29,7 +31,7 @@ public class AiGroupGenerateClient {
 
   public GroupAiGenerateResponse call(GroupAiGenerateRequest request) {
     try {
-      String url = baseUrl + "/ai/v1/groups/information";
+      String url = baseUrl + GROUP_AI_GENERATE_PATH;
 
       HttpHeaders headers = new HttpHeaders();
       headers.setContentType(MediaType.APPLICATION_JSON);

@@ -3,15 +3,14 @@ package kr.ai.nemo.schedule.service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import kr.ai.nemo.group.service.GroupQueryService;
+import kr.ai.nemo.group.validator.GroupValidator;
 import kr.ai.nemo.schedule.domain.Schedule;
 import kr.ai.nemo.schedule.domain.enums.ScheduleStatus;
 import kr.ai.nemo.schedule.dto.MySchedulesResponse;
 import kr.ai.nemo.schedule.dto.MySchedulesResponse.ScheduleParticipation;
 import kr.ai.nemo.schedule.dto.ScheduleDetailResponse;
 import kr.ai.nemo.schedule.dto.ScheduleListResponse;
-import kr.ai.nemo.schedule.exception.ScheduleErrorCode;
-import kr.ai.nemo.schedule.exception.ScheduleException;
+import kr.ai.nemo.schedule.validator.ScheduleValidator;
 import kr.ai.nemo.scheduleparticipants.domain.ScheduleParticipant;
 import kr.ai.nemo.scheduleparticipants.domain.enums.ScheduleParticipantStatus;
 import kr.ai.nemo.scheduleparticipants.repository.ScheduleParticipantRepository;
@@ -26,17 +25,19 @@ import org.springframework.stereotype.Service;
 public class ScheduleQueryService {
   private final ScheduleRepository scheduleRepository;
   private final ScheduleParticipantRepository scheduleParticipantRepository;
-  private final GroupQueryService groupQueryService;
+  private final GroupValidator groupValidator;
+  private final ScheduleValidator scheduleValidator;
+
 
   public ScheduleDetailResponse getScheduleDetail(Long scheduleId) {
-    Schedule schedule = findByIdOrThrow(scheduleId);
+    Schedule schedule = scheduleValidator.findByIdOrThrow(scheduleId);
 
     List<ScheduleParticipant> participants = scheduleParticipantRepository.findByScheduleId(scheduleId);
     return ScheduleDetailResponse.from(schedule, participants);
   }
 
   public ScheduleListResponse getGroupSchedules(Long groupId, PageRequest pageRequest) {
-    groupQueryService.findByIdOrThrow(groupId);
+    groupValidator.findByIdOrThrow(groupId);
     Page<Schedule> page = scheduleRepository.findByGroupIdAndStatusNot(groupId, pageRequest, ScheduleStatus.CANCELED);
 
     List<ScheduleListResponse.ScheduleSummary> summaries = page.getContent().stream()
@@ -84,14 +85,5 @@ public class ScheduleQueryService {
         .toList();
 
     return new MySchedulesResponse(pending, upcoming, completed);
-    }
-
-    public Schedule findByIdOrThrow(Long scheduleId) {
-      Schedule schedule = scheduleRepository.findByIdWithGroupAndOwner(scheduleId)
-          .orElseThrow(() -> new ScheduleException(ScheduleErrorCode.SCHEDULE_NOT_FOUND));
-      if(schedule.getStatus() == ScheduleStatus.CANCELED){
-        throw new ScheduleException(ScheduleErrorCode.SCHEDULE_ALREADY_CANCELED);
-      }
-      return schedule;
     }
 }
