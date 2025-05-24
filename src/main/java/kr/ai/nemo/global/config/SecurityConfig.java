@@ -41,7 +41,11 @@ public class SecurityConfig {
                 "/auth/kakao/callback",
                 "/api/v1/auth/token/refresh",
                 "/public/**",
-                "/error"
+                "/error",
+                "/swagger-ui/**",
+                "/v3/api-docs/**",
+                "/swagger-resources/**",
+                "/webjars/**"
             ).permitAll()
             .anyRequest().authenticated()
         )

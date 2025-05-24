@@ -1,5 +1,7 @@
 package kr.ai.nemo.global.error.handler;
 
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Objects;
 import kr.ai.nemo.auth.exception.AuthException;
 import kr.ai.nemo.global.common.ApiResponse;
@@ -72,10 +74,13 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(Exception.class)
-  public ResponseEntity<ApiResponse<?>> handleGeneralException(Exception e) {
+  public ResponseEntity<ApiResponse<?>> handleGeneralException(Exception e, HttpServletRequest request) {
+    Integer status = (Integer) request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
+    int statusCode = status != null ? status : HttpStatus.INTERNAL_SERVER_ERROR.value();
+
     return ResponseEntity
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(ApiResponse.error(CommonErrorCode.INTERNAL_SERVER_ERROR));
+        .status(statusCode)
+        .body(ApiResponse.error(statusCode, e.getMessage()));
   }
 
   @ExceptionHandler(AuthException.class)
