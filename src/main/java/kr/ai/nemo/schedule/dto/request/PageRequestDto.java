@@ -1,4 +1,4 @@
-package kr.ai.nemo.schedule.dto;
+package kr.ai.nemo.schedule.dto.request;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;

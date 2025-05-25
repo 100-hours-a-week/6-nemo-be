@@ -1,8 +1,9 @@
-package kr.ai.nemo.schedule.dto;
+package kr.ai.nemo.schedule.dto.response;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import kr.ai.nemo.schedule.domain.Schedule;
+import kr.ai.nemo.schedule.domain.enums.ScheduleStatus;
 import kr.ai.nemo.scheduleparticipants.domain.ScheduleParticipant;
 
 public record MySchedulesResponse(
@@ -20,13 +21,14 @@ public record MySchedulesResponse(
   }
 
   public record ScheduleInfo(
-      Long id,
+      Long scheduleId,
       String title,
+      String description,
       String address,
-      String ownerName,
-      String status,
-      String groupName,
+      ScheduleStatus status,
       int currentUserCount,
+      String groupName,
+      String ownerName,
       String startAt
 
   ) {
@@ -35,11 +37,12 @@ public record MySchedulesResponse(
       return new ScheduleInfo(
           schedule.getId(),
           schedule.getTitle(),
+          schedule.getDescription(),
           schedule.getAddress(),
-          schedule.getOwner().getNickname(),
-          participant.getStatus().name(),
-          schedule.getGroup().getName(),
+          schedule.getStatus(),
           schedule.getCurrentUserCount(),
+          schedule.getGroup().getName(),
+          schedule.getOwner().getNickname(),
           schedule.getStartAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
       );
     }

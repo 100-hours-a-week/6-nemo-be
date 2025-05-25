@@ -1,4 +1,4 @@
-package kr.ai.nemo.schedule.dto;
+package kr.ai.nemo.schedule.dto.response;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -6,12 +6,12 @@ import kr.ai.nemo.schedule.domain.Schedule;
 import kr.ai.nemo.scheduleparticipants.domain.ScheduleParticipant;
 
 public record ScheduleDetailResponse(
-    Long id,
+    Long scheduleId,
     String title,
-    String address,
-    String ownerName,
     String description,
-    String scheduleStatus,
+    String address,
+    String status,
+    String ownerName,
     String startAt,
     String createdAt,
     GroupInfo group,
@@ -19,7 +19,7 @@ public record ScheduleDetailResponse(
 ) {
   public record GroupInfo(Long groupId, String name, int currentUserCount, int maxUserCount) {}
 
-  public record ParticipantInfo(Long id, UserInfo user, String status) {}
+  public record ParticipantInfo(UserInfo user, String status) {}
 
   public record UserInfo(Long userId, String nickname, String profileImageUrl) {}
 
@@ -41,7 +41,6 @@ public record ScheduleDetailResponse(
         ),
         participants.stream()
             .map(p -> new ParticipantInfo(
-                p.getId(),
                 new UserInfo(
                     p.getUser().getId(),
                     p.getUser().getNickname(),
