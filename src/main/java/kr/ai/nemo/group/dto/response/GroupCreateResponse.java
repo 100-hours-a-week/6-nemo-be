@@ -6,7 +6,7 @@ import kr.ai.nemo.group.domain.Group;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public record GroupCreateResponse(
-    Long id,
+    Long groupId,
     String name,
     String category,
     String summary,

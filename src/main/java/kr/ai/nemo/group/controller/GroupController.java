@@ -76,7 +76,7 @@ public class GroupController {
     URI location = ServletUriComponentsBuilder
         .fromCurrentRequest()
         .path("/{id}")
-        .buildAndExpand(createdGroup.id())
+        .buildAndExpand(createdGroup.groupId())
         .toUri();
 
     return ResponseEntity
