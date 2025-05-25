@@ -1,29 +1,29 @@
-package kr.ai.nemo.groupparticipants.dto;
+package kr.ai.nemo.groupparticipants.dto.response;
 
 import java.util.List;
 import kr.ai.nemo.group.domain.Group;
 
 public record MyGroupDto(
-    Long id,
+    Long groupId,
     String name,
+    String category,
     String summary,
     String location,
-    String imageUrl,
     int currentUserCount,
     int maxUserCount,
-    String category,
+    String imageUrl,
     List<String> tags
 ) {
   public static MyGroupDto from(Group group) {
     return new MyGroupDto(
         group.getId(),
         group.getName(),
+        group.getCategory(),
         group.getSummary(),
         group.getLocation(),
-        group.getImageUrl(),
         group.getCurrentUserCount(),
         group.getMaxUserCount(),
-        group.getCategory(),
+        group.getImageUrl(),
         group.getGroupTags().stream()
             .map(gt -> gt.getTag().getName())
             .toList()

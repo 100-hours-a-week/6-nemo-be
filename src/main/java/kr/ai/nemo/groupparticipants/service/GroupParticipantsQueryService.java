@@ -5,8 +5,8 @@ import kr.ai.nemo.group.domain.enums.GroupStatus;
 import kr.ai.nemo.group.validator.GroupValidator;
 import kr.ai.nemo.groupparticipants.domain.GroupParticipants;
 import kr.ai.nemo.groupparticipants.domain.enums.Status;
-import kr.ai.nemo.groupparticipants.dto.GroupParticipantDto;
-import kr.ai.nemo.groupparticipants.dto.MyGroupDto;
+import kr.ai.nemo.groupparticipants.dto.response.GroupParticipantsListResponse;
+import kr.ai.nemo.groupparticipants.dto.response.MyGroupDto;
 import kr.ai.nemo.groupparticipants.repository.GroupParticipantsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,11 +18,10 @@ public class GroupParticipantsQueryService {
   private final GroupParticipantsRepository groupParticipantsRepository;
   private final GroupValidator groupValidator;
 
-  public List<GroupParticipantDto> getAcceptedParticipants(Long groupId) {
+  public List<GroupParticipantsListResponse.GroupParticipantDto> getAcceptedParticipants(Long groupId) {
     groupValidator.findByIdOrThrow(groupId);
-    List<GroupParticipants> participants = groupParticipantsRepository.findByGroupIdAndStatus(groupId, Status.JOINED);
-    return participants.stream()
-        .map(GroupParticipantDto::from)
+    return groupParticipantsRepository.findByGroupIdAndStatus(groupId, Status.JOINED).stream()
+        .map(GroupParticipantsListResponse.GroupParticipantDto::from)
         .toList();
   }
 
