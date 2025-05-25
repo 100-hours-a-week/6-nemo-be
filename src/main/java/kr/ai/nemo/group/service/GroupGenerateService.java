@@ -1,9 +1,9 @@
 package kr.ai.nemo.group.service;
 
-import kr.ai.nemo.group.dto.GroupAiGenerateRequest;
-import kr.ai.nemo.group.dto.GroupAiGenerateResponse;
-import kr.ai.nemo.group.dto.GroupGenerateRequest;
-import kr.ai.nemo.group.dto.GroupGenerateResponse;
+import kr.ai.nemo.group.dto.request.GroupAiGenerateRequest;
+import kr.ai.nemo.group.dto.response.GroupAiGenerateResponse;
+import kr.ai.nemo.group.dto.request.GroupGenerateRequest;
+import kr.ai.nemo.group.dto.response.GroupGenerateResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

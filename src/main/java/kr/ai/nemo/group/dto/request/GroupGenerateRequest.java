@@ -1,4 +1,4 @@
-package kr.ai.nemo.group.dto;
+package kr.ai.nemo.group.dto.request;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

@@ -79,7 +79,7 @@ public class KakaoOauthClient {
       if (body == null) {
         throw new AuthException(KakaoOAuthErrorCode.EMPTY_USER_INFO);
       }
-      if (body.getId() == null) {
+      if (body.id() == null) {
         throw new AuthException(KakaoOAuthErrorCode.MISSING_USER_ID);
       }
       return body;

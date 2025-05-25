@@ -1,10 +1,10 @@
 package kr.ai.nemo.schedule.controller;
 
 import kr.ai.nemo.global.common.ApiResponse;
-import kr.ai.nemo.schedule.dto.MySchedulesResponse;
-import kr.ai.nemo.schedule.dto.ScheduleCreateRequest;
-import kr.ai.nemo.schedule.dto.ScheduleCreateResponse;
-import kr.ai.nemo.schedule.dto.ScheduleDetailResponse;
+import kr.ai.nemo.schedule.dto.response.MySchedulesResponse;
+import kr.ai.nemo.schedule.dto.request.ScheduleCreateRequest;
+import kr.ai.nemo.schedule.dto.response.ScheduleCreateResponse;
+import kr.ai.nemo.schedule.dto.response.ScheduleDetailResponse;
 import kr.ai.nemo.schedule.service.ScheduleCommandService;
 import kr.ai.nemo.schedule.service.ScheduleQueryService;
 import lombok.RequiredArgsConstructor;

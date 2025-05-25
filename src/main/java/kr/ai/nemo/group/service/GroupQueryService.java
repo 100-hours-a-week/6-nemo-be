@@ -1,13 +1,12 @@
 package kr.ai.nemo.group.service;
 
+import java.util.List;
 import kr.ai.nemo.group.domain.Group;
 import kr.ai.nemo.group.domain.enums.GroupStatus;
-import kr.ai.nemo.group.dto.GroupDetailResponse;
-import kr.ai.nemo.group.dto.GroupDto;
-import kr.ai.nemo.group.dto.GroupListResponse;
-import kr.ai.nemo.group.dto.GroupSearchRequest;
-import kr.ai.nemo.group.exception.GroupErrorCode;
-import kr.ai.nemo.group.exception.GroupException;
+import kr.ai.nemo.group.dto.response.GroupDetailResponse;
+import kr.ai.nemo.group.dto.response.GroupDto;
+import kr.ai.nemo.group.dto.response.GroupListResponse;
+import kr.ai.nemo.group.dto.request.GroupSearchRequest;
 import kr.ai.nemo.group.repository.GroupRepository;
 import kr.ai.nemo.group.validator.GroupValidator;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +26,7 @@ public class GroupQueryService {
 
   private final GroupRepository groupRepository;
   private final GroupValidator groupValidator;
+  private final GroupTagService groupTagService;
 
   public GroupListResponse getGroups(GroupSearchRequest request) {
     Pageable pageable = toPageable(request);
@@ -48,7 +48,8 @@ public class GroupQueryService {
 
   public GroupDetailResponse detailGroup(Long groupId) {
     Group group = groupValidator.findByIdOrThrow(groupId);
-    return GroupDetailResponse.from(group);
+    List<String> tags = groupTagService.getTagNamesByGroupId(group.getId());
+    return GroupDetailResponse.from(group, tags);
   }
 
   private Pageable toPageable(GroupSearchRequest request) {

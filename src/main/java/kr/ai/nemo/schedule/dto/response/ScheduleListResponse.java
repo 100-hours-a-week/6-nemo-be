@@ -1,6 +1,7 @@
-package kr.ai.nemo.schedule.dto;
+package kr.ai.nemo.schedule.dto.response;
 
 import java.util.List;
+import kr.ai.nemo.schedule.domain.enums.ScheduleStatus;
 
 public record ScheduleListResponse(
     List<ScheduleSummary> schedules,
@@ -10,13 +11,14 @@ public record ScheduleListResponse(
     boolean isLast
 ) {
   public record ScheduleSummary(
-      Long id,
+      Long scheduleId,
       String title,
-      String startAt,
-      String address,
       String description,
+      String address,
+      ScheduleStatus status,
+      int currentUserCount,
       String ownerName,
-      String scheduleStatus,
-      int currentUserCount
+      String startAt,
+      String createdAt
   ) {}
 }
