@@ -1,10 +1,11 @@
 package kr.ai.nemo.group.service;
 
 import jakarta.validation.Valid;
+import java.util.List;
 import kr.ai.nemo.group.domain.Group;
 import kr.ai.nemo.group.domain.enums.GroupStatus;
-import kr.ai.nemo.group.dto.GroupCreateRequest;
-import kr.ai.nemo.group.dto.GroupCreateResponse;
+import kr.ai.nemo.group.dto.request.GroupCreateRequest;
+import kr.ai.nemo.group.dto.response.GroupCreateResponse;
 import kr.ai.nemo.group.validator.GroupValidator;
 import kr.ai.nemo.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.groupparticipants.domain.enums.Status;
@@ -32,31 +33,33 @@ public class GroupCommandService {
   public GroupCreateResponse createGroup(@Valid GroupCreateRequest request, Long userId) {
     User user = userValidator.findByIdOrThrow(userId);
 
-    groupValidator.isCategory(request.getCategory());
+    groupValidator.isCategory(request.category());
 
     Group group = Group.builder()
         .owner(user)
-        .name(request.getName())
-        .summary(request.getSummary())
-        .description(request.getDescription())
-        .plan(request.getPlan())
-        .category(request.getCategory())
-        .location(request.getLocation())
+        .name(request.name())
+        .summary(request.summary())
+        .description(request.description())
+        .plan(request.plan())
+        .category(request.category())
+        .location(request.location())
         .completedScheduleTotal(0)
-        .imageUrl(imageService.uploadGroupImage(request.getImageUrl()))
+        .imageUrl(imageService.uploadGroupImage(request.imageUrl()))
         .currentUserCount(0)
-        .maxUserCount(request.getMaxUserCount())
+        .maxUserCount(request.maxUserCount())
         .status(GroupStatus.ACTIVE)
         .build();
 
     Group savedGroup = groupRepository.save(group);
 
-    if (request.getTags() != null && !request.getTags().isEmpty()) {
-      groupTagService.assignTags(savedGroup, request.getTags());
+    if (request.tags() != null && !request.tags().isEmpty()) {
+      groupTagService.assignTags(savedGroup, request.tags());
     }
 
     groupParticipantsCommandService.applyToGroup(savedGroup.getId(), user.getId(), Role.LEADER, Status.JOINED);
 
-    return new GroupCreateResponse(savedGroup);
+    List<String> tags = groupTagService.getTagNamesByGroupId(savedGroup.getId());
+
+    return GroupCreateResponse.from(savedGroup, tags);
   }
 }

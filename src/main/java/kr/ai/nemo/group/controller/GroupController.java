@@ -2,13 +2,13 @@ package kr.ai.nemo.group.controller;
 
 import jakarta.validation.Valid;
 import kr.ai.nemo.global.common.ApiResponse;
-import kr.ai.nemo.group.dto.GroupCreateRequest;
-import kr.ai.nemo.group.dto.GroupCreateResponse;
-import kr.ai.nemo.group.dto.GroupDetailResponse;
-import kr.ai.nemo.group.dto.GroupGenerateRequest;
-import kr.ai.nemo.group.dto.GroupGenerateResponse;
-import kr.ai.nemo.group.dto.GroupListResponse;
-import kr.ai.nemo.group.dto.GroupSearchRequest;
+import kr.ai.nemo.group.dto.request.GroupCreateRequest;
+import kr.ai.nemo.group.dto.response.GroupCreateResponse;
+import kr.ai.nemo.group.dto.response.GroupDetailResponse;
+import kr.ai.nemo.group.dto.request.GroupGenerateRequest;
+import kr.ai.nemo.group.dto.response.GroupGenerateResponse;
+import kr.ai.nemo.group.dto.response.GroupListResponse;
+import kr.ai.nemo.group.dto.request.GroupSearchRequest;
 import kr.ai.nemo.group.service.GroupCommandService;
 import kr.ai.nemo.group.service.GroupGenerateService;
 import kr.ai.nemo.group.service.GroupQueryService;
@@ -76,7 +76,7 @@ public class GroupController {
     URI location = ServletUriComponentsBuilder
         .fromCurrentRequest()
         .path("/{id}")
-        .buildAndExpand(createdGroup.getId())
+        .buildAndExpand(createdGroup.id())
         .toUri();
 
     return ResponseEntity

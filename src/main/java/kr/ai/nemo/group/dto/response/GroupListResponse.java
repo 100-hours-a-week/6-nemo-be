@@ -1,4 +1,4 @@
-package kr.ai.nemo.group.dto;
+package kr.ai.nemo.group.dto.response;
 
 import java.util.List;
 import org.springframework.data.domain.Page;

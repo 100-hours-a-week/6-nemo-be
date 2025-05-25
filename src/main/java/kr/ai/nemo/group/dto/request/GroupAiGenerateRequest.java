@@ -1,31 +1,27 @@
-package kr.ai.nemo.group.dto;
+package kr.ai.nemo.group.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 
-@Getter
-@AllArgsConstructor
-public class GroupAiGenerateRequest {
+public record GroupAiGenerateRequest (
 
   @NotBlank(message = "모임명은 필수입니다.")
-  private String name;
+  String name,
 
   @NotBlank(message = "모임 목표는 필수입니다.")
-  private String goal;
+  String goal,
 
   @NotNull(message = "모임 카테고리는 필수입니다.")
-  private String category;
+  String category,
 
   @NotBlank(message = "기간 선택은 필수입니다.")
-  private String period;
+  String period,
 
   @JsonProperty("isPlanCreated")
   @NotNull(message = "학습계획 생성 여부 선택은 필수입니다.")
-  private boolean isPlanCreated;
-
+  boolean isPlanCreated
+) {
   public static GroupAiGenerateRequest from(GroupGenerateRequest req) {
     return new GroupAiGenerateRequest(
         req.name(),

@@ -33,4 +33,11 @@ public class GroupTagService {
       groupTagRepository.save(groupTag);
     }
   }
+
+  @Transactional(readOnly = true)
+  public List<String> getTagNamesByGroupId(Long groupId) {
+    return groupTagRepository.findByGroupId(groupId).stream()
+        .map(groupTag -> groupTag.getTag().getName())
+        .toList();
+  }
 }

@@ -1,4 +1,4 @@
-package kr.ai.nemo.group.dto;
+package kr.ai.nemo.group.dto.response;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,13 +14,13 @@ import lombok.NoArgsConstructor;
 @Builder
 public class GroupDto {
 
-  private Long id;
+  private Long groupId;
   private String name;
+  private String category;
   private String summary;
   private String location;
   private int currentUserCount;
   private int maxUserCount;
-  private String category;
   private String imageUrl;
   private List<String> tags;
 
@@ -30,13 +30,13 @@ public class GroupDto {
         .collect(Collectors.toList());
 
     return GroupDto.builder()
-        .id(group.getId())
+        .groupId(group.getId())
         .name(group.getName())
+        .category(group.getCategory())
         .summary(group.getSummary())
         .location(group.getLocation())
         .currentUserCount(group.getCurrentUserCount())
         .maxUserCount(group.getMaxUserCount())
-        .category(group.getCategory())
         .imageUrl(group.getImageUrl())
         .tags(tags)
         .build();

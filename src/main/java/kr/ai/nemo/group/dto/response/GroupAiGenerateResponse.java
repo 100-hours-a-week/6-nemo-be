@@ -1,4 +1,4 @@
-package kr.ai.nemo.group.dto;
+package kr.ai.nemo.group.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
