@@ -1,7 +1,7 @@
 package kr.ai.nemo.global.config;
 
-import kr.ai.nemo.auth.security.JwtAuthenticationFilter;
-import kr.ai.nemo.auth.security.JwtProvider;
+import kr.ai.nemo.domain.auth.security.JwtAuthenticationFilter;
+import kr.ai.nemo.domain.auth.security.JwtProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
