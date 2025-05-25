@@ -18,7 +18,7 @@ public enum GroupErrorCode implements ErrorCode {
 
   // 409 Conflict
   GROUP_DISBANDED("GROUP_DISBANDED", "해체된 모임입니다.", HttpStatus.CONFLICT),
-  ALREADY_APPLIED_OR_JOINED("ALREADY_APPLIED_OR_JOINED", "이미 신청했거나 참여 중인 사용자입니다.", HttpStatus.CONFLICT),
+  ALREADY_APPLIED_OR_JOINED("ALREADY_APPLIED_OR_JOINED", "이미 신청했거나 참여중인 사용자입니다.", HttpStatus.CONFLICT),
   GROUP_FULL("GROUP_FULL", "모임 정원이 가득 찼습니다.", HttpStatus.CONFLICT);
 
 

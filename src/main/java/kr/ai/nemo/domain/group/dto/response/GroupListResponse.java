@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import org.springframework.data.domain.Page;
 
+@Schema(name = "모임 리스트 조회 응답", description = "모임 리스트 조회 응답 DTO")
 public record GroupListResponse(
 
     @Schema(description = "모임 목록")

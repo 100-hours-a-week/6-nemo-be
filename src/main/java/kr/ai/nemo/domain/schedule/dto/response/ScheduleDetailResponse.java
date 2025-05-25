@@ -6,7 +6,7 @@ import kr.ai.nemo.domain.schedule.domain.Schedule;
 import kr.ai.nemo.domain.scheduleparticipants.domain.ScheduleParticipant;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "일정 상세 조회 응답 DTO")
+@Schema(name = "일정 상세 조회 응답", description = "일정 상세 조회 응답 DTO")
 public record ScheduleDetailResponse(
     @Schema(description = "일정 ID", example = "1001")
     Long scheduleId,

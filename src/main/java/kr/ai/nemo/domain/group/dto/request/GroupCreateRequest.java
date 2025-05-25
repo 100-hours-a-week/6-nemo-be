@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 
+@Schema(name = "모임 생성 요청", description = "모임 생성 요청 DTO")
 public record GroupCreateRequest(
 
     @Schema(description = "모임 이름", example = "백엔드 스터디")

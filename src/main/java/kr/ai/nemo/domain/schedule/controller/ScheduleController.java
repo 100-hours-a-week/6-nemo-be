@@ -38,6 +38,7 @@ public class ScheduleController {
 
   @Operation(summary = "일정 생성", description = "일정을 생성합니다.")
   @ApiResponse(responseCode = "201", description = "리소스가 성공적으로 생성되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerScheduleCreateResponse.class)))
+  @ApiResponse(responseCode = "404", description = "모임원이 아닙니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
   @PostMapping
   public ResponseEntity<BaseApiResponse<ScheduleCreateResponse>> createSchedule(
       @RequestBody ScheduleCreateRequest request,
@@ -49,6 +50,8 @@ public class ScheduleController {
 
   @Operation(summary = "일정 취소(삭제)", description = "일정을 취소(삭제)합니다.")
   @ApiResponse(responseCode = "204", description = "성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
+  @ApiResponse(responseCode = "403", description = "일정 생성자만 취소할 수 있습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
+  @ApiResponse(responseCode = "409", description = "이미 종료된 일정을 취소할 수 없습니다. // 이미 취소된 일정입니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
   @DeleteMapping("/{scheduleId}")
   public ResponseEntity<BaseApiResponse<Void>> deleteSchedule(
       @Parameter(description = "조회할 일정 ID", example = "123", required = true)

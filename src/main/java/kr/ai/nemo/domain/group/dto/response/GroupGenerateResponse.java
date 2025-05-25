@@ -4,6 +4,7 @@ import java.util.List;
 import kr.ai.nemo.domain.group.dto.request.GroupGenerateRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(name = "모임 정보 생성 응답", description = "모임 정보 생성 응답 DTO")
 public record GroupGenerateResponse(
 
     @Schema(description = "모임 이름", example = "백엔드 스터디")

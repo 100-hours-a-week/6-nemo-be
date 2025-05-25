@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Setter
 @NoArgsConstructor
 @ToString
+@Schema(name = "모임 검색 요청", description = "모임 검색 요청 DTO")
 public class GroupSearchRequest {
 
   @Schema(description = "검색할 모임 카테고리", example = "백엔드")

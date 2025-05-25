@@ -4,6 +4,7 @@ import java.util.List;
 import kr.ai.nemo.domain.group.domain.Group;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(name = "나의 모임 리스트 내 모임 정보", description = "나의 모임 리스트 응답 DTO")
 public record MyGroupDto(
     @Schema(description = "모임 ID", example = "98765")
     Long groupId,

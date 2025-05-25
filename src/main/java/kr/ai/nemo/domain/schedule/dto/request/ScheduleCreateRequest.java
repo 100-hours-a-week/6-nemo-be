@@ -6,8 +6,9 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(name = "일정 생성 요청", description = "일정 생성 요청 DTO")
 public record ScheduleCreateRequest(
-    @Schema(description = "그룹 ID", example = "123")
+    @Schema(description = "모임 ID", example = "123")
     @NotNull
     Long groupId,
 

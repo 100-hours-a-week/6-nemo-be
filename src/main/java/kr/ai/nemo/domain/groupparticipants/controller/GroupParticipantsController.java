@@ -16,6 +16,8 @@ import kr.ai.nemo.domain.groupparticipants.dto.response.MyGroupListResponse;
 import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsQueryService;
 import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsCommandService;
 import kr.ai.nemo.global.swagger.groupparticipant.SwaggerGroupParticipantsListResponse;
+import kr.ai.nemo.global.swagger.groupparticipant.SwaggerMyGroupListResponse;
+import kr.ai.nemo.global.swagger.jwt.SwaggerJwtErrorResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -35,6 +37,8 @@ public class GroupParticipantsController {
 
   @Operation(summary = "모임 신청", description = "사용자가 특정 모임에 가입 신청을 합니다.")
   @ApiResponse(responseCode = "204", description = "성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
+  @ApiResponse(responseCode = "409", description = "이미 신청했거나 참여중인 사용자입니다. // 모임이 가득 찼습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
+  @SwaggerJwtErrorResponse
   @PostMapping("/{groupId}/applications")
   public ResponseEntity<Object> applyToGroup(
       @Parameter(description = "모임 ID", example = "123")
@@ -56,7 +60,8 @@ public class GroupParticipantsController {
   }
 
   @Operation(summary = "내가 참여 중인 모임 목록 조회", description = "현재 로그인한 사용자가 가입중인 모임 목록을 반환합니다.")
-  @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = MyGroupListResponse.class)))
+  @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerMyGroupListResponse.class)))
+  @SwaggerJwtErrorResponse
   @GetMapping("/me")
   public ResponseEntity<BaseApiResponse<MyGroupListResponse>> getMyGroups(
       @Parameter(hidden = true)

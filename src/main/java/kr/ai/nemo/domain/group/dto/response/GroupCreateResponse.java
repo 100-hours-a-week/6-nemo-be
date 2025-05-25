@@ -6,6 +6,7 @@ import java.util.List;
 import kr.ai.nemo.domain.group.domain.Group;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@Schema(name = "모임 생성 응답", description = "모임 생성 응답 DTO")
 public record GroupCreateResponse(
 
     @Schema(description = "모임 ID", example = "1")

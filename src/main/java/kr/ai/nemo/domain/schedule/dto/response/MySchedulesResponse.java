@@ -7,7 +7,7 @@ import kr.ai.nemo.domain.schedule.domain.enums.ScheduleStatus;
 import kr.ai.nemo.domain.scheduleparticipants.domain.ScheduleParticipant;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "내 일정 응답 DTO")
+@Schema(name = "나의 일정 리스트 조회 응답", description = "내 일정 응답 DTO")
 public record MySchedulesResponse(
     @Schema(description = "미응답 일정 목록")
     List<ScheduleParticipation> notResponded,

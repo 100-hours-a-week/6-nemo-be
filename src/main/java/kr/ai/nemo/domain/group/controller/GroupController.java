@@ -17,7 +17,7 @@ import kr.ai.nemo.domain.group.dto.request.GroupSearchRequest;
 import kr.ai.nemo.domain.group.service.GroupCommandService;
 import kr.ai.nemo.domain.group.service.GroupGenerateService;
 import kr.ai.nemo.domain.group.service.GroupQueryService;
-import kr.ai.nemo.domain.schedule.dto.request.PageRequestDto;
+import kr.ai.nemo.global.dto.PageRequestDto;
 import kr.ai.nemo.domain.schedule.dto.response.ScheduleListResponse;
 import kr.ai.nemo.domain.schedule.service.ScheduleQueryService;
 import kr.ai.nemo.global.swagger.group.SwaggerGroupCreateResponse;

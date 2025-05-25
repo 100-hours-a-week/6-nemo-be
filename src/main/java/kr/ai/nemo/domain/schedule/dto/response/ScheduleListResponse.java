@@ -4,7 +4,7 @@ import java.util.List;
 import kr.ai.nemo.domain.schedule.domain.enums.ScheduleStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "일정 리스트 응답 DTO")
+@Schema(name = "일정 리스트 조회 응답", description = "일정 리스트 응답 DTO")
 public record ScheduleListResponse(
     @Schema(description = "일정 요약 목록")
     List<ScheduleSummary> schedules,

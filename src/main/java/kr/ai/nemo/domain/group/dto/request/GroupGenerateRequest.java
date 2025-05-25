@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(name = "모임 정보 생성 요청", description = "모임 정보 생성 요청 DTO")
 public record GroupGenerateRequest(
 
     @Schema(description = "모임 이름", example = "백엔드 스터디")

@@ -1,4 +1,4 @@
-package kr.ai.nemo.domain.schedule.dto.request;
+package kr.ai.nemo.global.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import jakarta.validation.constraints.Min;
 
+@Schema(name = "오프셋 페이징", description = "오프셋 페이징 DTO")
 public record PageRequestDto(
     @Schema(description = "페이지 번호 (0부터 시작)", example = "0")
     @Min(0) int page,

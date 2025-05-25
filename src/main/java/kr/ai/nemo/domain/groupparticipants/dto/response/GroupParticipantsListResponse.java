@@ -6,6 +6,7 @@ import java.util.List;
 import kr.ai.nemo.domain.groupparticipants.domain.GroupParticipants;
 import kr.ai.nemo.domain.user.domain.User;
 
+@Schema(name = "모임원 리스트 조회 응답", description = "모임원 리스트 조회 응답 DTO")
 public record GroupParticipantsListResponse(
     List<GroupParticipantDto> participants
 ) {
