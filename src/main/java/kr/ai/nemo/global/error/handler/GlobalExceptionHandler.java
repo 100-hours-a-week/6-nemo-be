@@ -1,15 +1,17 @@
 package kr.ai.nemo.global.error.handler;
 
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Objects;
-import kr.ai.nemo.auth.exception.AuthException;
-import kr.ai.nemo.global.common.ApiResponse;
+import kr.ai.nemo.domain.auth.exception.AuthException;
+import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.global.error.code.CommonErrorCode;
 import kr.ai.nemo.global.error.exception.CustomException;
-import kr.ai.nemo.group.exception.GroupException;
-import kr.ai.nemo.groupparticipants.exception.GroupParticipantException;
-import kr.ai.nemo.schedule.exception.ScheduleException;
-import kr.ai.nemo.scheduleparticipants.exception.ScheduleParticipantException;
-import kr.ai.nemo.user.exception.UserException;
+import kr.ai.nemo.domain.group.exception.GroupException;
+import kr.ai.nemo.domain.groupparticipants.exception.GroupParticipantException;
+import kr.ai.nemo.domain.schedule.exception.ScheduleException;
+import kr.ai.nemo.domain.scheduleparticipants.exception.ScheduleParticipantException;
+import kr.ai.nemo.domain.user.exception.UserException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,15 +26,15 @@ import org.springframework.web.client.RestClientException;
 public class GlobalExceptionHandler {
 
   @ExceptionHandler(CustomException.class)
-  public ResponseEntity<ApiResponse<?>> handleBaseException(CustomException e) {
+  public ResponseEntity<BaseApiResponse<?>> handleBaseException(CustomException e) {
     return ResponseEntity
         .status(e.getCommonErrorCode().getHttpStatus())
-        .body(ApiResponse.error(e.getCommonErrorCode()));
+        .body(BaseApiResponse.error(e.getCommonErrorCode()));
   }
 
   // 필수값 존재 X
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<ApiResponse<?>> handleValidationException(MethodArgumentNotValidException e) {
+  public ResponseEntity<BaseApiResponse<?>> handleValidationException(MethodArgumentNotValidException e) {
     String errorMessage = e.getBindingResult().getFieldErrors().stream()
         .map(DefaultMessageSourceResolvable::getDefaultMessage)
         .filter(Objects::nonNull) // null 방지
@@ -41,7 +43,7 @@ public class GlobalExceptionHandler {
 
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
-        .body(ApiResponse.error(
+        .body(BaseApiResponse.error(
             CommonErrorCode.INVALID_REQUEST.getHttpStatus().value(),  // 상태 코드 숫자만 추출
             errorMessage
         ));
@@ -50,11 +52,11 @@ public class GlobalExceptionHandler {
 
   // 파라미터가 없는 경우
   @ExceptionHandler(MissingServletRequestParameterException.class)
-  public ResponseEntity<ApiResponse<?>> handleMissingParamException(MissingServletRequestParameterException e) {
+  public ResponseEntity<BaseApiResponse<?>> handleMissingParamException(MissingServletRequestParameterException e) {
     String paramName = e.getParameterName();  // 빠진 파라미터 이름
     String message = String.format(CommonErrorCode.MISSING_REQUIRED_PARAMETER.getMessage(), paramName);
 
-    ApiResponse<?> response = ApiResponse.error(
+    BaseApiResponse<?> response = BaseApiResponse.error(
         CommonErrorCode.MISSING_REQUIRED_PARAMETER.getHttpStatus().value(),
         message
     );
@@ -65,64 +67,67 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(HttpMessageNotReadableException.class)
-  public ResponseEntity<ApiResponse<?>> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+  public ResponseEntity<BaseApiResponse<?>> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
-        .body(ApiResponse.error(CommonErrorCode.INVALID_ENUM));
+        .body(BaseApiResponse.error(CommonErrorCode.INVALID_ENUM));
   }
 
   @ExceptionHandler(Exception.class)
-  public ResponseEntity<ApiResponse<?>> handleGeneralException(Exception e) {
+  public ResponseEntity<BaseApiResponse<?>> handleGeneralException(Exception e, HttpServletRequest request) {
+    Integer status = (Integer) request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
+    int statusCode = status != null ? status : HttpStatus.INTERNAL_SERVER_ERROR.value();
+
     return ResponseEntity
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(ApiResponse.error(CommonErrorCode.INTERNAL_SERVER_ERROR));
+        .status(statusCode)
+        .body(BaseApiResponse.error(statusCode, e.getMessage()));
   }
 
   @ExceptionHandler(AuthException.class)
-  public ResponseEntity<ApiResponse<Object>> handleOAuthException(AuthException e) {
+  public ResponseEntity<BaseApiResponse<Object>> handleOAuthException(AuthException e) {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-        .body(ApiResponse.error(e.getErrorCode()));
+        .body(BaseApiResponse.error(e.getErrorCode()));
   }
 
   @ExceptionHandler(UserException.class)
-  public ResponseEntity<ApiResponse<?>> handleUserException(UserException e) {
+  public ResponseEntity<BaseApiResponse<?>> handleUserException(UserException e) {
     return ResponseEntity
         .status(e.getErrorCode().getHttpStatus())
-        .body(ApiResponse.error(e.getErrorCode()));
+        .body(BaseApiResponse.error(e.getErrorCode()));
   }
 
   @ExceptionHandler(GroupException.class)
-  public ResponseEntity<ApiResponse<?>> handleGroupException(GroupException e) {
+  public ResponseEntity<BaseApiResponse<?>> handleGroupException(GroupException e) {
     return ResponseEntity
         .status(e.getErrorCode().getHttpStatus())
-        .body(ApiResponse.error(e.getErrorCode()));
+        .body(BaseApiResponse.error(e.getErrorCode()));
   }
 
   @ExceptionHandler(GroupParticipantException.class)
-  public ResponseEntity<ApiResponse<?>> handleGroupParticipantException(GroupParticipantException e) {
+  public ResponseEntity<BaseApiResponse<?>> handleGroupParticipantException(GroupParticipantException e) {
     return ResponseEntity
         .status(e.getErrorCode().getHttpStatus())
-        .body(ApiResponse.error(e.getErrorCode()));
+        .body(BaseApiResponse.error(e.getErrorCode()));
   }
 
   @ExceptionHandler(ScheduleException.class)
-  public ResponseEntity<ApiResponse<?>> handleScheduleException(ScheduleException e) {
+  public ResponseEntity<BaseApiResponse<?>> handleScheduleException(ScheduleException e) {
     return ResponseEntity
         .status(e.getErrorCode().getHttpStatus())
-        .body(ApiResponse.error(e.getErrorCode()));
+        .body(BaseApiResponse.error(e.getErrorCode()));
   }
 
   @ExceptionHandler(ScheduleParticipantException.class)
-  public ResponseEntity<ApiResponse<?>> handleScheduleParticipantException(ScheduleParticipantException e) {
+  public ResponseEntity<BaseApiResponse<?>> handleScheduleParticipantException(ScheduleParticipantException e) {
     return ResponseEntity
         .status(e.getErrorCode().getHttpStatus())
-        .body(ApiResponse.error(e.getErrorCode()));
+        .body(BaseApiResponse.error(e.getErrorCode()));
   }
 
 
   @ExceptionHandler(RestClientException.class)
-  public ResponseEntity<ApiResponse<Object>> handleRestClientException(RestClientException e) {
+  public ResponseEntity<BaseApiResponse<Object>> handleRestClientException(RestClientException e) {
     return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-        .body(ApiResponse.error(CommonErrorCode.EXTERNAL_API_ERROR));
+        .body(BaseApiResponse.error(CommonErrorCode.EXTERNAL_API_ERROR));
   }
 }
