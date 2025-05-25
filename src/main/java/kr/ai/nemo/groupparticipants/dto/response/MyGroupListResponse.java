@@ -1,4 +1,4 @@
-package kr.ai.nemo.groupparticipants.dto;
+package kr.ai.nemo.groupparticipants.dto.response;
 
 import java.util.List;
 

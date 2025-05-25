@@ -6,10 +6,10 @@ import java.util.List;
 import kr.ai.nemo.group.validator.GroupValidator;
 import kr.ai.nemo.schedule.domain.Schedule;
 import kr.ai.nemo.schedule.domain.enums.ScheduleStatus;
-import kr.ai.nemo.schedule.dto.MySchedulesResponse;
-import kr.ai.nemo.schedule.dto.MySchedulesResponse.ScheduleParticipation;
-import kr.ai.nemo.schedule.dto.ScheduleDetailResponse;
-import kr.ai.nemo.schedule.dto.ScheduleListResponse;
+import kr.ai.nemo.schedule.dto.response.MySchedulesResponse;
+import kr.ai.nemo.schedule.dto.response.MySchedulesResponse.ScheduleParticipation;
+import kr.ai.nemo.schedule.dto.response.ScheduleDetailResponse;
+import kr.ai.nemo.schedule.dto.response.ScheduleListResponse;
 import kr.ai.nemo.schedule.validator.ScheduleValidator;
 import kr.ai.nemo.scheduleparticipants.domain.ScheduleParticipant;
 import kr.ai.nemo.scheduleparticipants.domain.enums.ScheduleParticipantStatus;
@@ -44,12 +44,13 @@ public class ScheduleQueryService {
         .map(schedule -> new ScheduleListResponse.ScheduleSummary(
             schedule.getId(),
             schedule.getTitle(),
-            schedule.getStartAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
-            schedule.getAddress(),
             schedule.getDescription(),
+            schedule.getAddress(),
+            schedule.getStatus(),
+            schedule.getCurrentUserCount(),
             schedule.getOwner().getNickname(),
-            schedule.getStatus().name(),
-            schedule.getCurrentUserCount()
+            schedule.getStartAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+            schedule.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
         ))
         .toList();
 

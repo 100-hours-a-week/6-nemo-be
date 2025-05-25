@@ -26,11 +26,11 @@ public class OauthService {
   public String loginWithKakao(String code, HttpServletResponse response) {
     try {
       KakaoTokenResponse kakaoToken = kakaoClient.getAccessToken(code);
-      if (kakaoToken.getAccessToken() == null || kakaoToken.getAccessToken().isEmpty()) {
+      if (kakaoToken.accessToken() == null || kakaoToken.accessToken().isEmpty()) {
         throw new AuthException(KakaoOAuthErrorCode.EMPTY_ACCESS_TOKEN);
       }
 
-      KakaoUserResponse userResponse = kakaoClient.getUserInfo(kakaoToken.getAccessToken());
+      KakaoUserResponse userResponse = kakaoClient.getUserInfo(kakaoToken.accessToken());
       User user = userService.handleUser(userResponse);
 
       String accessToken = tokenManager.createAccessToken(user.getId());

@@ -1,4 +1,4 @@
-package kr.ai.nemo.schedule.dto;
+package kr.ai.nemo.schedule.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
@@ -11,7 +11,6 @@ public record ScheduleCreateRequest(
     @NotBlank String description,
     @NotBlank String address,
     String addressDetail,
-
     @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm", timezone = "Asia/Seoul")
     LocalDateTime startAt

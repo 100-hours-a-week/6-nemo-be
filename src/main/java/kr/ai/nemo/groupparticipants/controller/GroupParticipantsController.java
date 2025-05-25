@@ -4,10 +4,9 @@ import java.util.List;
 import kr.ai.nemo.global.common.ApiResponse;
 import kr.ai.nemo.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.groupparticipants.domain.enums.Status;
-import kr.ai.nemo.groupparticipants.dto.GroupParticipantDto;
-import kr.ai.nemo.groupparticipants.dto.GroupParticipantsListResponse;
-import kr.ai.nemo.groupparticipants.dto.MyGroupDto;
-import kr.ai.nemo.groupparticipants.dto.MyGroupListResponse;
+import kr.ai.nemo.groupparticipants.dto.response.GroupParticipantsListResponse;
+import kr.ai.nemo.groupparticipants.dto.response.MyGroupDto;
+import kr.ai.nemo.groupparticipants.dto.response.MyGroupListResponse;
 import kr.ai.nemo.groupparticipants.service.GroupParticipantsQueryService;
 import kr.ai.nemo.groupparticipants.service.GroupParticipantsCommandService;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +35,7 @@ public class GroupParticipantsController {
 
   @GetMapping("/{groupId}/participants")
   public ResponseEntity<ApiResponse<GroupParticipantsListResponse>> getGroupParticipants(@PathVariable Long groupId) {
-    List<GroupParticipantDto> list = groupParticipantsQueryService.getAcceptedParticipants(groupId);
+    List<GroupParticipantsListResponse.GroupParticipantDto> list = groupParticipantsQueryService.getAcceptedParticipants(groupId);
     return ResponseEntity.ok(ApiResponse.success(new GroupParticipantsListResponse(list)));
   }
 
