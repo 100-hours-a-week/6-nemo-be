@@ -22,39 +22,39 @@ public class OauthUserService {
 
   @Transactional
   public User handleUser(KakaoUserResponse userResponse) {
-    if (userResponse == null || userResponse.getId() == null) {
+    if (userResponse == null || userResponse.id() == null) {
       throw new AuthException(KakaoOAuthErrorCode.INVALID_USER_RESPONSE);
     }
 
     final String provider = OAuthProvider.KAKAO.name();
-    final String providerId = userResponse.getId().toString();
+    final String providerId = userResponse.id().toString();
 
     return userRepository.findByProviderAndProviderId(provider, providerId)
         .orElseGet(() -> userRepository.save(createUserFromResponse(userResponse)));
   }
 
   private User createUserFromResponse(KakaoUserResponse userResponse) {
-    KakaoUserResponse.KakaoAccount account = userResponse.getKakaoAccount();
-    KakaoUserResponse.Profile profile = (account != null) ? account.getProfile() : null;
+    KakaoUserResponse.KakaoAccount account = userResponse.kakaoAccount();
+    KakaoUserResponse.Profile profile = (account != null) ? account.profile() : null;
 
-    final String email = (account != null && account.getEmail() != null)
-        ? account.getEmail()
+    final String email = (account != null && account.email() != null)
+        ? account.email()
         : DefaultUserValue.UNKNOWN_EMAIL;
 
-    final String nickname = (profile != null && profile.getNickname() != null)
-        ? profile.getNickname()
+    final String nickname = (profile != null && profile.nickname() != null)
+        ? profile.nickname()
         : DefaultUserValue.UNKNOWN_NICKNAME;
 
     String profileImageUrl;
     if (profile.isDefaultImage()) {
-      profileImageUrl = profile.getProfileImageUrl();
+      profileImageUrl = profile.profileImageUrl();
     } else {
-      profileImageUrl = imageService.uploadKakaoProfileImage(profile.getProfileImageUrl(), userResponse.getId());
+      profileImageUrl = imageService.uploadKakaoProfileImage(profile.profileImageUrl(), userResponse.id());
     }
 
     return User.builder()
         .provider(OAuthProvider.KAKAO.name())
-        .providerId(userResponse.getId().toString())
+        .providerId(userResponse.id().toString())
         .email(email)
         .nickname(nickname)
         .profileImageUrl(profileImageUrl)
