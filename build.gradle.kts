@@ -2,6 +2,7 @@ plugins {
 	java
 	id("org.springframework.boot") version "3.4.5"
 	id("io.spring.dependency-management") version "1.1.7"
+	id ("io.sentry.jvm.gradle") version "5.6.0"
 }
 
 group = "kr.ai.nemo"
@@ -39,6 +40,8 @@ dependencies {
 	implementation("com.amazonaws:aws-java-sdk-s3:$awsSdkVersion")
 	implementation("com.amazonaws:aws-java-sdk-s3")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$swaggerVersion")
+	implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.12.0")
+
 
 	implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
@@ -57,4 +60,15 @@ dependencies {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+sentry {
+	// Generates a JVM (Java, Kotlin, etc.) source bundle and uploads your source code to Sentry.
+	// This enables source context, allowing you to see your source
+	// code as part of your stack traces in Sentry.
+	includeSourceContext = true
+
+	org = "glenn-bn"
+	projectName = "java-spring-boot"
+	authToken = System.getenv("SENTRY_AUTH_TOKEN")
 }

@@ -61,3 +61,11 @@ cloud:
 ai:
   service:
     url: ${AI_SERVICE_URL}
+
+sentry:
+  dsn: ${SENTRY_DSN}
+  environment: ${SENTRY_ENV}
+  release: ${SENTRY_RELEASE}
+  traces-sample-rate: ${SENTRY_SAMPLE_RATE:0.1}
+  send-default-pii: ${SENTRY_SEND_PII:false}
+  enable-tracing: true
