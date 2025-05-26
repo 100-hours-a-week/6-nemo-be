@@ -2,10 +2,15 @@ spring:
   application:
     name: nemo
 
+  servlet:
+    multipart:
+      max-file-size: ${IMAGE_FILE_BYTE}
+      max-request-size: ${IMAGE_REQUEST_BYTE}
+
   datasource:
-    url: jdbc:mysql://${db_url}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: ${username}
-    password: ${password}
+    url: jdbc:mysql://${DB_URL}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ${USERNAME}
+    password: ${PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -28,8 +33,8 @@ oauth:
 
 jwt:
   secret: ${JWT_SECRET}
-  access-token-validity: 3600000
-  refresh-token-validity: 1209600000
+  access-token-validity: ${ACCESS_TOKEN_EXPIRATION}
+  refresh-token-validity: ${REFRESH_TOKEN_EXPIRATION}
 
 management:
   endpoints:
@@ -42,3 +47,17 @@ management:
 
 server:
   forward-headers-strategy: framework
+
+cloud:
+  aws:
+    s3:
+      bucket: ${BUCKET_NAME}
+    credentials:
+      access-key: ${CLOUD_AWS_CREDENTIALS_ACCESS_KEY}
+      secret-key: ${CLOUD_AWS_CREDENTIALS_SECRET_KEY}
+    region:
+      static: ${AWS_REGION}
+
+ai:
+  service:
+    url: ${AI_SERVICE_URL}
