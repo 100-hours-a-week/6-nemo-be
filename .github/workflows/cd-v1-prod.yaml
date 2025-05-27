@@ -17,5 +17,5 @@ jobs:
           username: ${{ secrets.PROD_USER }}
           key: ${{ secrets.PROD_SSH_KEY }}
           script: |
-            cd ~/nemo/backend/scripts
-            bash deploy_ci_cd.sh
+            cd ~/nemo/cloud/v1/backend/semi-automated
+            bash deploy_cicd.sh
