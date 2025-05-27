@@ -38,4 +38,4 @@ jobs:
           key: ${{ secrets.DEV_SSH_KEY }}
           script: |
             cd ~/nemo/cloud/v1/backend/semi-automated
-            bash deploy_cicd.sh
+            bash deploy-cicd.sh
