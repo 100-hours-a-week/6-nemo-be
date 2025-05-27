@@ -27,7 +27,7 @@ public class ScheduleCommandService {
 
   @Transactional
   public ScheduleCreateResponse createSchedule(Long userId, ScheduleCreateRequest request){
-    groupParticipantValidator.validateJoinedParticipant(request.groupId(), userId);
+    groupParticipantValidator.validateIsJoinedMember(request.groupId(), userId);
     Group group = groupValidator.findByIdOrThrow(request.groupId());
 
     Schedule schedule = Schedule.builder()
