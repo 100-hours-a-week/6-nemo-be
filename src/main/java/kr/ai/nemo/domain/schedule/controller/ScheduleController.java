@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import kr.ai.nemo.aop.role.annotation.RequireGroupParticipant;
 import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.domain.schedule.dto.response.MySchedulesResponse;
 import kr.ai.nemo.domain.schedule.dto.request.ScheduleCreateRequest;
@@ -40,13 +41,13 @@ public class ScheduleController {
   @ApiResponse(responseCode = "201", description = "리소스가 성공적으로 생성되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerScheduleCreateResponse.class)))
   @ApiResponse(responseCode = "404", description = "모임원이 아닙니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
   @PostMapping
+  @RequireGroupParticipant
   public ResponseEntity<BaseApiResponse<ScheduleCreateResponse>> createSchedule(
       @RequestBody ScheduleCreateRequest request,
       @Parameter(hidden = true) @AuthenticationPrincipal Long userId) {
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(BaseApiResponse.created(scheduleCommandService.createSchedule(userId, request)));
   }
-
 
   @Operation(summary = "일정 취소(삭제)", description = "일정을 취소(삭제)합니다.")
   @ApiResponse(responseCode = "204", description = "성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))

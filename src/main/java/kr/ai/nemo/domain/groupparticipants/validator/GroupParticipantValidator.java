@@ -4,8 +4,6 @@ import java.util.List;
 import kr.ai.nemo.domain.group.exception.GroupErrorCode;
 import kr.ai.nemo.domain.group.exception.GroupException;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Status;
-import kr.ai.nemo.domain.groupparticipants.exception.GroupParticipantErrorCode;
-import kr.ai.nemo.domain.groupparticipants.exception.GroupParticipantException;
 import kr.ai.nemo.domain.groupparticipants.repository.GroupParticipantsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -25,11 +23,8 @@ public class GroupParticipantValidator {
     }
   }
 
-  public void validateIsJoinedMember(Long groupId, Long userId) {
-    boolean exists = repository.existsByGroupIdAndUserIdAndStatus(
+  public boolean validateIsJoinedMember(Long groupId, Long userId) {
+    return repository.existsByGroupIdAndUserIdAndStatus(
         groupId, userId, Status.JOINED);
-    if (!exists) {
-      throw new GroupParticipantException(GroupParticipantErrorCode.NOT_GROUP_MEMBER);
-    }
   }
 }

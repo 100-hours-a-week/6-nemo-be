@@ -1,4 +1,4 @@
-package kr.ai.nemo.aop;
+package kr.ai.nemo.aop.logging;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -17,7 +17,7 @@ public class TimeTraceAspect {
   private static final Logger log = LoggerFactory.getLogger(TimeTraceAspect.class);
 
   // 1) 포인트컷 선언: @TimeTrace 애노테이션이 붙은 메서드에 적용
-  @Pointcut("@annotation(kr.ai.nemo.annotation.TimeTrace)")
+  @Pointcut("@annotation(kr.ai.nemo.aop.logging.TimeTrace)")
   private void timeTraceAnnotation() {}
 
   // 2) 포인트컷 선언: 특정 패키지 내 컨트롤러 클래스의 모든 메서드 대상
