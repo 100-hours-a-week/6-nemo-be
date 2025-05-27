@@ -41,7 +41,7 @@ dependencies {
 	implementation("com.amazonaws:aws-java-sdk-s3")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$swaggerVersion")
 	implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.12.0")
-
+	implementation("org.springframework.boot:spring-boot-starter-aop")
 
 	implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
