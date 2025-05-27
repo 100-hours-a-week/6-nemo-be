@@ -58,9 +58,8 @@ public class ScheduleController {
   @DeleteMapping("/{scheduleId}")
   public ResponseEntity<BaseApiResponse<Void>> deleteSchedule(
       @Parameter(description = "조회할 일정 ID", example = "123", required = true)
-      @PathVariable Long scheduleId,
-      @Parameter(hidden = true) @AuthenticationPrincipal Long userId) {
-    scheduleCommandService.deleteSchedule(userId, scheduleId);
+      @PathVariable Long scheduleId) {
+    scheduleCommandService.deleteSchedule(scheduleId);
     return ResponseEntity.noContent().build();
   }
 

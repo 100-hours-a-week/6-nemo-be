@@ -46,8 +46,9 @@ public class ScheduleCommandService {
   }
 
   @Transactional
-  public void deleteSchedule(Long userId, Long scheduleId) {
+  public void deleteSchedule(Long scheduleId) {
     Schedule schedule = scheduleValidator.findByIdOrThrow(scheduleId);
+    scheduleValidator.validateSchedule(schedule);
 
     schedule.cancel();
   }
