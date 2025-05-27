@@ -32,17 +32,17 @@ public class Group {
   @JoinColumn(name = "owner_id", nullable = false)
   private User owner;
 
-
   @Column(name = "name", nullable = false)
   private String name;
 
   @Column(name = "summary", nullable = false)
   private String summary;
 
-  @Column(name = "description", nullable = false)
+  @Column(name = "description", columnDefinition = "TEXT", nullable = false)
   private String description;
 
-  @Column(name = "plan")
+  @Lob
+  @Column(name = "plan", columnDefinition = "TEXT")
   private String plan;
 
   @Column(name = "category", nullable = false)
