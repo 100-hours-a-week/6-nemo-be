@@ -21,7 +21,7 @@ public class TimeTraceAspect {
   private void timeTraceAnnotation() {}
 
   // 2) 포인트컷 선언: 특정 패키지 내 컨트롤러 클래스의 모든 메서드 대상
-  @Pointcut("within(kr.ai.nemo.domain..controller..*)")
+  @Pointcut("within(kr.ai.nemo.domain..controller..*) || within(kr.ai.nemo.domain..service..*)")
   private void controllerPackage() {}
 
   // 3) 위 두 포인트컷을 합쳐서 advice 적용
