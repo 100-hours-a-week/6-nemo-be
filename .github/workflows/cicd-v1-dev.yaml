@@ -2,7 +2,7 @@ name: Backend CI/CD for dev-v1
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ develop, infra/ci-cd ]
 
 jobs:
   build-and-deploy:
@@ -28,7 +28,7 @@ jobs:
           echo "${{ secrets.DEV_SSH_KEY }}" > temp_key
           chmod 600 temp_key
           scp -i temp_key -o StrictHostKeyChecking=no ./build/libs/nemo-server-0.0.1-SNAPSHOT.jar \
-          ${{ secrets.DEV_USER }}@${{ secrets.DEV_HOST }}:~/nemo/backend/jar-backups/
+          ${{ secrets.DEV_USER }}@${{ secrets.DEV_HOST }}:~/nemo/backend/backend-service/build/libs/nemo-server-0.0.1-SNAPSHOT.jar
 
       - name: Deploy to Server
         uses: appleboy/ssh-action@v1.0.3
@@ -37,5 +37,5 @@ jobs:
           username: ${{ secrets.DEV_USER }}
           key: ${{ secrets.DEV_SSH_KEY }}
           script: |
-            cd ~/nemo/backend/scripts
-            bash deploy_ci_cd.sh
+            cd ~/nemo/cloud/v1/backend/semi-automated
+            bash deploy_cicd.sh

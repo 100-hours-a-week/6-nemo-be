@@ -25,7 +25,7 @@ jobs:
 
       - name: Upload JAR to Prod Server
         run: |
-          echo "${{ secrets.DEV_SSH_KEY }}" > temp_key
+          echo "${{ secrets.PROD_SSH_KEY }}" > temp_key
           chmod 600 temp_key
           scp -i temp_key -o StrictHostKeyChecking=no ./build/libs/nemo-server-0.0.1-SNAPSHOT.jar \
-          ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }}:~/nemo/backend/jar-backups/
+          ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }}:~/nemo/backend/backend-service/build/libs/nemo-server-0.0.1-SNAPSHOT.jar
