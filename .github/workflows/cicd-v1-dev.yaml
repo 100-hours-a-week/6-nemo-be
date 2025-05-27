@@ -39,3 +39,4 @@ jobs:
           script: |
             cd ~/nemo/cloud/v1/backend/semi-automated
             bash deploy-cicd.sh
+
