@@ -48,8 +48,6 @@ public class ScheduleCommandService {
   @Transactional
   public void deleteSchedule(Long userId, Long scheduleId) {
     Schedule schedule = scheduleValidator.findByIdOrThrow(scheduleId);
-    scheduleValidator.validateSchedule(schedule.getStatus());
-    scheduleValidator.validateScheduleOwner(userId, schedule);
 
     schedule.cancel();
   }

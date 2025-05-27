@@ -27,4 +27,6 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
   // Group과 Owner 정보를 함께 가져오는 메서드 추가
   @Query("SELECT s FROM Schedule s JOIN FETCH s.group JOIN FETCH s.owner WHERE s.id = :scheduleId")
   Optional<Schedule> findByIdWithGroupAndOwner(@Param("scheduleId") Long scheduleId);
+
+  boolean existsByIdAndOwnerId(Long scheduleId, Long userId);
 }

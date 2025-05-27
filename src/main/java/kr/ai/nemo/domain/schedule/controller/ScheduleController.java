@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ai.nemo.aop.role.annotation.RequireGroupParticipant;
+import kr.ai.nemo.aop.role.annotation.RequireScheduleOwner;
 import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.domain.schedule.dto.response.MySchedulesResponse;
 import kr.ai.nemo.domain.schedule.dto.request.ScheduleCreateRequest;
@@ -53,6 +54,7 @@ public class ScheduleController {
   @ApiResponse(responseCode = "204", description = "성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
   @ApiResponse(responseCode = "403", description = "일정 생성자만 취소할 수 있습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
   @ApiResponse(responseCode = "409", description = "이미 종료된 일정을 취소할 수 없습니다. // 이미 취소된 일정입니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
+  @RequireScheduleOwner("scheduleId")
   @DeleteMapping("/{scheduleId}")
   public ResponseEntity<BaseApiResponse<Void>> deleteSchedule(
       @Parameter(description = "조회할 일정 ID", example = "123", required = true)
