@@ -1,8 +1,8 @@
 package kr.ai.nemo.domain.schedule.service;
 
+import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
-import kr.ai.nemo.domain.groupparticipants.validator.GroupParticipantValidator;
 import kr.ai.nemo.domain.schedule.domain.Schedule;
 import kr.ai.nemo.domain.schedule.domain.enums.ScheduleStatus;
 import kr.ai.nemo.domain.schedule.dto.request.ScheduleCreateRequest;
@@ -10,7 +10,6 @@ import kr.ai.nemo.domain.schedule.dto.response.ScheduleCreateResponse;
 import kr.ai.nemo.domain.schedule.validator.ScheduleValidator;
 import kr.ai.nemo.domain.scheduleparticipants.service.ScheduleParticipantsService;
 import kr.ai.nemo.domain.schedule.repository.ScheduleRepository;
-import kr.ai.nemo.domain.user.validator.UserValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,17 +20,15 @@ public class ScheduleCommandService {
   private final ScheduleRepository scheduleRepository;
   private final ScheduleParticipantsService scheduleParticipantsService;
   private final GroupValidator groupValidator;
-  private final UserValidator userValidator;
-  private final GroupParticipantValidator groupParticipantValidator;
   private final ScheduleValidator scheduleValidator;
 
   @Transactional
-  public ScheduleCreateResponse createSchedule(Long userId, ScheduleCreateRequest request){
+  public ScheduleCreateResponse createSchedule(CustomUserDetails userDetails, ScheduleCreateRequest request){
     Group group = groupValidator.findByIdOrThrow(request.groupId());
 
     Schedule schedule = Schedule.builder()
         .group(group)
-        .owner(userValidator.findByIdOrThrow(userId))
+        .owner(userDetails.getUser())
         .title(request.title())
         .description(request.description())
         .address(request.fullAddress())

@@ -1,7 +1,6 @@
 package kr.ai.nemo.global.config;
 
 import kr.ai.nemo.domain.auth.security.JwtAuthenticationFilter;
-import kr.ai.nemo.domain.auth.security.JwtProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -16,15 +15,10 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @EnableWebSecurity
 public class SecurityConfig {
 
-  private final JwtProvider jwtProvider;
-
-  public SecurityConfig(JwtProvider jwtProvider) {
-    this.jwtProvider = jwtProvider;
-  }
-
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http,
-      CorsConfigurationSource corsConfigurationSource) throws Exception {
+      CorsConfigurationSource corsConfigurationSource,
+      JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
     return http
         .cors(cors -> cors.configurationSource(corsConfigurationSource))
         .csrf(AbstractHttpConfigurer::disable)
@@ -36,7 +30,6 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/api/v1/schedules/**").permitAll()
             .requestMatchers("/test/token/**").permitAll()
             .requestMatchers("/actuator/**").permitAll()
-
             .requestMatchers(
                 "/auth/kakao/callback",
                 "/api/v1/auth/token/refresh",
@@ -49,7 +42,7 @@ public class SecurityConfig {
             ).permitAll()
             .anyRequest().authenticated()
         )
-        .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         .build();
   }
 }

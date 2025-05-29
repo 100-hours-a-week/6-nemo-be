@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ai.nemo.aop.role.annotation.RequireGroupParticipant;
 import kr.ai.nemo.aop.role.annotation.RequireScheduleOwner;
+import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.domain.schedule.dto.response.MySchedulesResponse;
 import kr.ai.nemo.domain.schedule.dto.request.ScheduleCreateRequest;
@@ -45,9 +46,9 @@ public class ScheduleController {
   @RequireGroupParticipant
   public ResponseEntity<BaseApiResponse<ScheduleCreateResponse>> createSchedule(
       @RequestBody ScheduleCreateRequest request,
-      @Parameter(hidden = true) @AuthenticationPrincipal Long userId) {
+      @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails) {
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(BaseApiResponse.created(scheduleCommandService.createSchedule(userId, request)));
+        .body(BaseApiResponse.created(scheduleCommandService.createSchedule(userDetails, request)));
   }
 
   @Operation(summary = "일정 취소(삭제)", description = "일정을 취소(삭제)합니다.")
