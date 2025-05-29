@@ -25,7 +25,14 @@ public class OauthService {
 
   @TimeTrace
   @Transactional
-  public String loginWithKakao(String code, HttpServletResponse response) {
+  public String loginWithKakao(String code, String error, HttpServletResponse response) {
+    if (error != null) {
+      throw new AuthException(KakaoOAuthErrorCode.KAKAO_AUTH_ERROR);
+    }
+
+    if (code == null || code.isEmpty()) {
+      throw new AuthException(KakaoOAuthErrorCode.CODE_MISSING);
+    }
     try {
       KakaoTokenResponse kakaoToken = kakaoClient.getAccessToken(code);
       if (kakaoToken.accessToken() == null || kakaoToken.accessToken().isEmpty()) {
@@ -62,6 +69,7 @@ public class OauthService {
     return tokenManager.reissueAccessToken(refreshToken);
   }
 
+<<<<<<< HEAD
   public String handleKakaoCallback(String code, String error, HttpServletResponse response) {
     if (error != null) {
       throw new AuthException(KakaoOAuthErrorCode.KAKAO_AUTH_ERROR);
@@ -75,6 +83,8 @@ public class OauthService {
   }
 
   @TimeTrace
+=======
+>>>>>>> 7ffc18e (fix: transactional 적용을 위한 로그인 flow 변경 (#114))
   @Transactional
   public void invalidateRefreshToken(String refreshToken) {
     userTokenService.revokeToken(refreshToken);
