@@ -3,8 +3,8 @@ package kr.ai.nemo.domain.auth.controller;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
+import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.dto.TokenRefreshResponse;
-import kr.ai.nemo.domain.auth.service.KakaoOauthClient;
 import kr.ai.nemo.domain.auth.service.OauthService;
 import kr.ai.nemo.domain.auth.service.TokenManager;
 import kr.ai.nemo.global.common.SuccessCode;
@@ -28,7 +28,6 @@ public class AuthController {
   private final OauthService oauthService;
   private final UriGenerator uriGenerator;
   private final TokenManager tokenManager;
-  private final KakaoOauthClient kakaoOauthClient;
 
   @GetMapping("/api/v1/auth/login/kakao")
   public void kakaoLogin(
@@ -43,6 +42,7 @@ public class AuthController {
     }
   }
 
+  @TimeTrace
   @GetMapping("/auth/kakao/callback")
   public void login(
       @RequestParam(value = "state", required = false) String state,
@@ -57,6 +57,7 @@ public class AuthController {
     }
   }
 
+  @TimeTrace
   @PostMapping("/api/v1/auth/token/refresh")
   public ResponseEntity<BaseApiResponse<TokenRefreshResponse>> tokenRefresh(
       @CookieValue(name = "refresh_token", required = true) String refreshToken
@@ -64,6 +65,7 @@ public class AuthController {
     return ResponseEntity.ok(BaseApiResponse.success(oauthService.reissueAccessToken(refreshToken)));
   }
 
+  @TimeTrace
   @DeleteMapping("/api/v1/auth/logout/kakao")
   public ResponseEntity<BaseApiResponse<?>> logout(
       @CookieValue(name = "refresh_token", required = false) String refreshToken,

@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.aop.role.annotation.RequireGroupParticipant;
 import kr.ai.nemo.aop.role.annotation.RequireScheduleOwner;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
@@ -56,6 +57,7 @@ public class ScheduleController {
   @ApiResponse(responseCode = "403", description = "일정 생성자만 취소할 수 있습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
   @ApiResponse(responseCode = "409", description = "이미 종료된 일정을 취소할 수 없습니다. // 이미 취소된 일정입니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
   @RequireScheduleOwner("scheduleId")
+  @TimeTrace
   @DeleteMapping("/{scheduleId}")
   public ResponseEntity<BaseApiResponse<Void>> deleteSchedule(
       @Parameter(description = "조회할 일정 ID", example = "123", required = true)
@@ -66,6 +68,7 @@ public class ScheduleController {
 
   @Operation(summary = "일정 상세 조회", description = "일정 상세를 조회합니다.")
   @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerScheduleDetailResponse.class)))
+  @TimeTrace
   @GetMapping("/{scheduleId}")
   public ResponseEntity<BaseApiResponse<ScheduleDetailResponse>> getScheduleDetail(@PathVariable Long scheduleId) {
     return ResponseEntity.ok(BaseApiResponse.success(scheduleQueryService.getScheduleDetail(scheduleId)));
@@ -73,6 +76,7 @@ public class ScheduleController {
 
   @Operation(summary = "나의 일정 리스트 조회", description = "나의 일정 리스트를 조회합니다.")
   @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerMySchedulesResponse.class)))
+  @TimeTrace
   @GetMapping("/me")
   public ResponseEntity<BaseApiResponse<MySchedulesResponse>> getMySchedules(
       @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails

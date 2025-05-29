@@ -3,6 +3,7 @@ package kr.ai.nemo.domain.auth.service;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
+import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.domain.UserToken;
 import kr.ai.nemo.domain.auth.dto.TokenRefreshResponse;
 import kr.ai.nemo.domain.auth.security.JwtProvider;
@@ -38,7 +39,7 @@ public class TokenManager {
     cookie.setMaxAge((int) (jwtProvider.getRefreshTokenValidity() / 1000)); // 초 단위
     response.addCookie(cookie);
   }
-
+  @TimeTrace
   public TokenRefreshResponse reissueAccessToken(String refreshToken) {
     UserToken userToken = userTokenService.findValidToken(refreshToken);
     User user = userToken.getUser();

@@ -2,6 +2,7 @@ package kr.ai.nemo.domain.auth.service;
 
 import java.time.LocalDateTime;
 
+import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.domain.UserToken;
 import kr.ai.nemo.domain.auth.exception.AuthErrorCode;
 import kr.ai.nemo.domain.auth.exception.AuthException;
@@ -19,6 +20,7 @@ public class UserTokenService {
 
   private final UserTokenRepository userTokenRepository;
 
+  @TimeTrace
   @Transactional
   public void saveOrUpdateToken(User user, String provider, String refreshToken,
       String deviceInfo, LocalDateTime expiresAt) {
@@ -57,6 +59,7 @@ public class UserTokenService {
     userTokenRepository.save(newToken);
   }
 
+  @TimeTrace
   @Transactional
   public void revokeToken(String refreshToken) {
     UserToken token = findValidToken(refreshToken);

@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.domain.scheduleparticipants.dto.ScheduleParticipantDecisionRequest;
@@ -31,6 +32,7 @@ public class ScheduleParticipantsController {
   @ApiResponse(responseCode = "204", description = "성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
   @ApiResponse(responseCode = "403", description = "모임원이 아니므로 일정에 참여할 수 없습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
   @ApiResponse(responseCode = "409", description = "이미 응답하셨습니다. // 이미 종료된 일정입니다. // 이미 취소된 일정입니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
+  @TimeTrace
   @PatchMapping("/{scheduleId}/participants")
   public ResponseEntity<BaseApiResponse<Void>> updateParticipants(
       @PathVariable Long scheduleId,

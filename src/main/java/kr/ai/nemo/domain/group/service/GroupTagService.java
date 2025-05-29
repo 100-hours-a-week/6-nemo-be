@@ -2,6 +2,7 @@ package kr.ai.nemo.domain.group.service;
 
 import java.util.List;
 
+import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.domain.GroupTag;
 import kr.ai.nemo.domain.group.domain.Tag;
@@ -18,6 +19,7 @@ public class GroupTagService {
   private final TagRepository tagRepository;
   private final GroupTagRepository groupTagRepository;
 
+  @TimeTrace
   @Transactional
   public void assignTags(Group group, List<String> tagNames) {
     for (String tagName : tagNames) {
@@ -34,6 +36,7 @@ public class GroupTagService {
     }
   }
 
+  @TimeTrace
   @Transactional(readOnly = true)
   public List<String> getTagNamesByGroupId(Long groupId) {
     return groupTagRepository.findByGroupId(groupId).stream()

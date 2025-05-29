@@ -2,6 +2,7 @@ package kr.ai.nemo.domain.auth.service;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
+import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.domain.enums.LoginDevice;
 import kr.ai.nemo.domain.auth.domain.enums.OAuthProvider;
 import kr.ai.nemo.domain.auth.dto.KakaoTokenResponse;
@@ -22,6 +23,7 @@ public class OauthService {
   private final TokenManager tokenManager;
   private final UserTokenService userTokenService;
 
+  @TimeTrace
   @Transactional
   public String loginWithKakao(String code, HttpServletResponse response) {
     try {
@@ -55,6 +57,7 @@ public class OauthService {
     }
   }
 
+  @TimeTrace
   public TokenRefreshResponse reissueAccessToken(String refreshToken) {
     return tokenManager.reissueAccessToken(refreshToken);
   }
@@ -71,6 +74,7 @@ public class OauthService {
     return loginWithKakao(code, response);
   }
 
+  @TimeTrace
   @Transactional
   public void invalidateRefreshToken(String refreshToken) {
     userTokenService.revokeToken(refreshToken);

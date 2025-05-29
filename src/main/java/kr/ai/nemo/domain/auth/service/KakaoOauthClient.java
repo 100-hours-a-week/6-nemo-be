@@ -1,5 +1,6 @@
 package kr.ai.nemo.domain.auth.service;
 
+import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.dto.KakaoTokenResponse;
 import kr.ai.nemo.domain.auth.dto.KakaoUserResponse;
 import kr.ai.nemo.domain.auth.exception.KakaoOAuthErrorCode;
@@ -25,6 +26,7 @@ public class KakaoOauthClient {
   @Value("${oauth.kakao.redirect-uri}")
   private String redirectUri;
 
+  @TimeTrace
   public KakaoTokenResponse getAccessToken(String code) {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -61,6 +63,7 @@ public class KakaoOauthClient {
     }
   }
 
+  @TimeTrace
   public KakaoUserResponse getUserInfo(String accessToken) {
     HttpHeaders headers = new HttpHeaders();
     headers.setBearerAuth(accessToken);

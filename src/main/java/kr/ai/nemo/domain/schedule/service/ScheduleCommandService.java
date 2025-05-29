@@ -1,5 +1,6 @@
 package kr.ai.nemo.domain.schedule.service;
 
+import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
@@ -22,6 +23,7 @@ public class ScheduleCommandService {
   private final GroupValidator groupValidator;
   private final ScheduleValidator scheduleValidator;
 
+  @TimeTrace
   @Transactional
   public ScheduleCreateResponse createSchedule(CustomUserDetails userDetails, ScheduleCreateRequest request){
     Group group = groupValidator.findByIdOrThrow(request.groupId());

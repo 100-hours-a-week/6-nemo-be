@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.domain.group.dto.request.GroupCreateRequest;
@@ -54,6 +55,7 @@ public class GroupController {
 
   @Operation(summary = "모임 리스트 조회", description = "카테고리별 모임의 리스트를 조회합니다.")
   @ApiResponse(responseCode = "200", description = "성공적으로 조회되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupListResponse.class)))
+  @TimeTrace
   @GetMapping
   public ResponseEntity<BaseApiResponse<GroupListResponse>> getGroups(@Valid @ModelAttribute GroupSearchRequest request) {
     return ResponseEntity.ok(BaseApiResponse.success(groupQueryService.getGroups(request)));
@@ -61,6 +63,7 @@ public class GroupController {
 
   @Operation(summary = "모임 상세 조회", description = "요청한 모임의 상세 정보를 조회합니다.")
   @ApiResponse(responseCode = "200", description = "성공적으로 조회되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupDetailResponse.class)))
+  @TimeTrace
   @GetMapping("/{groupId}")
   public ResponseEntity<BaseApiResponse<GroupDetailResponse>> showGroupInfo(@PathVariable Long groupId) {
     return ResponseEntity.ok(BaseApiResponse.success(groupQueryService.detailGroup(groupId)));
@@ -68,6 +71,7 @@ public class GroupController {
 
   @Operation(summary = "검색한 모임 리스트 조회", description = "검색한 키워드가 포함된 모임의 리스트를 조회합니다.")
   @ApiResponse(responseCode = "200", description = "성공적으로 조회되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupListResponse.class)))
+  @TimeTrace
   @GetMapping("/search")
   public ResponseEntity<BaseApiResponse<GroupListResponse>> searchGroups(@Valid @ModelAttribute GroupSearchRequest request) {
     return ResponseEntity.ok(BaseApiResponse.success(groupQueryService.getGroups(request)));
@@ -75,6 +79,7 @@ public class GroupController {
 
   @Operation(summary = "모임의 일정 리스트 조회", description = "특정 모임의 일정 리스트를 조회합니다.")
   @ApiResponse(responseCode = "200", description = "성공적으로 조회되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerScheduleListResponse.class)))
+  @TimeTrace
   @GetMapping("/{groupId}/schedules")
   public ResponseEntity<BaseApiResponse<ScheduleListResponse>> getGroupSchedules(
       @PathVariable Long groupId,
@@ -88,6 +93,7 @@ public class GroupController {
   @Operation(summary = "모임 생성", description = "모임을 생성합니다.")
   @ApiResponse(responseCode = "201", description = "리소스가 성공적으로 생성되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupCreateResponse.class)))
   @SwaggerJwtErrorResponse
+  @TimeTrace
   @PostMapping
   public ResponseEntity<BaseApiResponse<GroupCreateResponse>> createGroup(
       @Valid @RequestBody GroupCreateRequest request,
@@ -109,6 +115,7 @@ public class GroupController {
   @Operation(summary = "AI에 모임 정보 생성 요청", description = "사용자의 입력을 토대로 AI가 모임 정보를 생성해줍니다.")
   @ApiResponse(responseCode = "201", description = "리소스가 성공적으로 생성되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupGenerateResponse.class)))
   @SwaggerJwtErrorResponse
+  @TimeTrace
   @PostMapping("/ai-generate")
   public ResponseEntity<BaseApiResponse<GroupGenerateResponse>> generateGroupInfo(
       @Valid @RequestBody GroupGenerateRequest request

@@ -3,6 +3,7 @@ package kr.ai.nemo.domain.schedule.service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
 import kr.ai.nemo.domain.schedule.domain.Schedule;
 import kr.ai.nemo.domain.schedule.domain.enums.ScheduleStatus;
@@ -28,7 +29,7 @@ public class ScheduleQueryService {
   private final GroupValidator groupValidator;
   private final ScheduleValidator scheduleValidator;
 
-
+  @TimeTrace
   public ScheduleDetailResponse getScheduleDetail(Long scheduleId) {
     Schedule schedule = scheduleValidator.findByIdOrThrow(scheduleId);
 
@@ -36,6 +37,7 @@ public class ScheduleQueryService {
     return ScheduleDetailResponse.from(schedule, participants);
   }
 
+  @TimeTrace
   public ScheduleListResponse getGroupSchedules(Long groupId, PageRequest pageRequest) {
     groupValidator.findByIdOrThrow(groupId);
     Page<Schedule> page = scheduleRepository.findByGroupIdAndStatusNot(groupId, pageRequest, ScheduleStatus.CANCELED);
@@ -63,6 +65,7 @@ public class ScheduleQueryService {
     );
   }
 
+  @TimeTrace
   public MySchedulesResponse getMySchedules(Long userId) {
     List<ScheduleParticipant> participants = scheduleParticipantRepository.findByUserId(userId);
 

@@ -1,6 +1,7 @@
 package kr.ai.nemo.domain.groupparticipants.service;
 
 import java.time.LocalDateTime;
+import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
 import kr.ai.nemo.domain.groupparticipants.domain.GroupParticipants;
@@ -25,6 +26,7 @@ public class GroupParticipantsCommandService {
   private final UserValidator userValidator;
   private final GroupParticipantValidator groupParticipantValidator;
 
+  @TimeTrace
   @Transactional
   public void applyToGroup(Long groupId, Long userId, Role role, Status status) {
     User user =userValidator.findByIdOrThrow(userId);

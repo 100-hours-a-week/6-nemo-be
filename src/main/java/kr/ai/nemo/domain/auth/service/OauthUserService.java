@@ -1,6 +1,7 @@
 package kr.ai.nemo.domain.auth.service;
 
 import java.time.LocalDateTime;
+import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.domain.enums.DefaultUserValue;
 import kr.ai.nemo.domain.auth.domain.enums.OAuthProvider;
 import kr.ai.nemo.domain.auth.dto.KakaoUserResponse;
@@ -20,6 +21,7 @@ public class OauthUserService {
   private final UserRepository userRepository;
   private final ImageService imageService;
 
+  @TimeTrace
   @Transactional
   public User handleUser(KakaoUserResponse userResponse) {
     if (userResponse == null || userResponse.id() == null) {
@@ -33,6 +35,7 @@ public class OauthUserService {
         .orElseGet(() -> userRepository.save(createUserFromResponse(userResponse)));
   }
 
+  @TimeTrace
   private User createUserFromResponse(KakaoUserResponse userResponse) {
     KakaoUserResponse.KakaoAccount account = userResponse.kakaoAccount();
     KakaoUserResponse.Profile profile = (account != null) ? account.profile() : null;

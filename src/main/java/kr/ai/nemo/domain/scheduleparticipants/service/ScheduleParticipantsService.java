@@ -2,6 +2,7 @@ package kr.ai.nemo.domain.scheduleparticipants.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.groupparticipants.domain.GroupParticipants;
 import kr.ai.nemo.domain.schedule.domain.Schedule;
@@ -25,6 +26,7 @@ public class ScheduleParticipantsService {
   private final ScheduleValidator scheduleValidator;
   private final ScheduleParticipantValidator scheduleParticipantValidator;
 
+  @TimeTrace
   @Transactional
   public void addAllParticipantsForNewSchedule(Schedule schedule) {
     Group group = schedule.getGroup();
@@ -47,6 +49,7 @@ public class ScheduleParticipantsService {
     }
   }
 
+  @TimeTrace
   @Transactional
   public void addParticipantToUpcomingSchedules(Group group, User user) {
     List<Schedule> schedules = scheduleRepository.findByGroupAndStatus(group, ScheduleStatus.RECRUITING);
@@ -66,6 +69,7 @@ public class ScheduleParticipantsService {
     }
   }
 
+  @TimeTrace
   @Transactional
   public void decideParticipation(Long scheduleId, Long userId, ScheduleParticipantStatus status) {
     Schedule schedule = scheduleValidator.findByIdOrThrow(scheduleId);
