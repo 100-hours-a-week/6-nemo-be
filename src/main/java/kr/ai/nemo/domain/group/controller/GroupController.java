@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.domain.group.dto.request.GroupCreateRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupCreateResponse;
@@ -90,9 +91,9 @@ public class GroupController {
   @PostMapping
   public ResponseEntity<BaseApiResponse<GroupCreateResponse>> createGroup(
       @Valid @RequestBody GroupCreateRequest request,
-      @AuthenticationPrincipal Long userId ) {
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-    GroupCreateResponse createdGroup = groupCommandService.createGroup(request, userId);
+    GroupCreateResponse createdGroup = groupCommandService.createGroup(request, userDetails);
 
     URI location = ServletUriComponentsBuilder
         .fromCurrentRequest()

@@ -2,6 +2,7 @@ package kr.ai.nemo.domain.group.service;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.domain.enums.GroupStatus;
 import kr.ai.nemo.domain.group.dto.request.GroupCreateRequest;
@@ -12,8 +13,6 @@ import kr.ai.nemo.domain.groupparticipants.domain.enums.Status;
 import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsCommandService;
 import kr.ai.nemo.domain.group.repository.GroupRepository;
 import kr.ai.nemo.infra.ImageService;
-import kr.ai.nemo.domain.user.domain.User;
-import kr.ai.nemo.domain.user.validator.UserValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,16 +26,14 @@ public class GroupCommandService {
   private final GroupParticipantsCommandService groupParticipantsCommandService;
   private final ImageService imageService;
   private final GroupValidator groupValidator;
-  private final UserValidator userValidator;
 
   @Transactional
-  public GroupCreateResponse createGroup(@Valid GroupCreateRequest request, Long userId) {
-    User user = userValidator.findByIdOrThrow(userId);
+  public GroupCreateResponse createGroup(@Valid GroupCreateRequest request, CustomUserDetails userDetails) {
 
     groupValidator.isCategory(request.category());
 
     Group group = Group.builder()
-        .owner(user)
+        .owner(userDetails.getUser())
         .name(request.name())
         .summary(request.summary())
         .description(request.description())
@@ -56,7 +53,7 @@ public class GroupCommandService {
       groupTagService.assignTags(savedGroup, request.tags());
     }
 
-    groupParticipantsCommandService.applyToGroup(savedGroup.getId(), user.getId(), Role.LEADER, Status.JOINED);
+    groupParticipantsCommandService.applyToGroup(savedGroup.getId(), userDetails.getUserId(), Role.LEADER, Status.JOINED);
 
     List<String> tags = groupTagService.getTagNamesByGroupId(savedGroup.getId());
 

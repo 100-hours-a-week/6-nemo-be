@@ -75,8 +75,8 @@ public class ScheduleController {
   @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerMySchedulesResponse.class)))
   @GetMapping("/me")
   public ResponseEntity<BaseApiResponse<MySchedulesResponse>> getMySchedules(
-      @Parameter(hidden = true) @AuthenticationPrincipal Long userId
+      @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
-    return ResponseEntity.ok(BaseApiResponse.success(scheduleQueryService.getMySchedules(userId)));
+    return ResponseEntity.ok(BaseApiResponse.success(scheduleQueryService.getMySchedules(userDetails.getUserId())));
   }
 }

@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Status;
@@ -44,8 +45,8 @@ public class GroupParticipantsController {
       @Parameter(description = "모임 ID", example = "123")
       @PathVariable Long groupId,
       @Parameter(hidden = true)
-      @AuthenticationPrincipal Long userId){
-    groupParticipantsCommandService.applyToGroup(groupId, userId, Role.MEMBER, Status.JOINED);
+      @AuthenticationPrincipal CustomUserDetails userDetails){
+    groupParticipantsCommandService.applyToGroup(groupId, userDetails.getUserId(), Role.MEMBER, Status.JOINED);
     return ResponseEntity.noContent().build();
   }
 
@@ -65,8 +66,8 @@ public class GroupParticipantsController {
   @GetMapping("/me")
   public ResponseEntity<BaseApiResponse<MyGroupListResponse>> getMyGroups(
       @Parameter(hidden = true)
-      @AuthenticationPrincipal Long userId) {
-    List<MyGroupDto> groupList = groupParticipantsQueryService.getMyGroups(userId);
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
+    List<MyGroupDto> groupList = groupParticipantsQueryService.getMyGroups(userDetails.getUserId());
     return ResponseEntity.ok(BaseApiResponse.success(new MyGroupListResponse(groupList)));
   }
 }

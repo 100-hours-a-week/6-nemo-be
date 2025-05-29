@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.domain.scheduleparticipants.dto.ScheduleParticipantDecisionRequest;
 import kr.ai.nemo.domain.scheduleparticipants.service.ScheduleParticipantsService;
@@ -34,8 +35,8 @@ public class ScheduleParticipantsController {
   public ResponseEntity<BaseApiResponse<Void>> updateParticipants(
       @PathVariable Long scheduleId,
       @Valid @RequestBody ScheduleParticipantDecisionRequest request,
-      @Parameter(hidden = true) @AuthenticationPrincipal Long userId) {
-    scheduleParticipantsService.decideParticipation(scheduleId, userId, request.status());
+      @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails) {
+    scheduleParticipantsService.decideParticipation(scheduleId, userDetails.getUserId(), request.status());
     return ResponseEntity.ok(BaseApiResponse.noContent());
   }
 }
