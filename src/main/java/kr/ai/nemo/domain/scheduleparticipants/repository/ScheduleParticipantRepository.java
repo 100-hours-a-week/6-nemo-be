@@ -5,10 +5,12 @@ import java.util.Optional;
 import kr.ai.nemo.domain.schedule.domain.Schedule;
 import kr.ai.nemo.domain.scheduleparticipants.domain.ScheduleParticipant;
 import kr.ai.nemo.domain.user.domain.User;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ScheduleParticipantRepository extends JpaRepository<ScheduleParticipant, Long> {
 
+  @EntityGraph(attributePaths = {"user"})
   List<ScheduleParticipant> findByScheduleId(Long scheduleId);
 
   boolean existsByScheduleAndUser(Schedule schedule, User user);
