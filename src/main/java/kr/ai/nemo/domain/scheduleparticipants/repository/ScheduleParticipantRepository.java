@@ -7,6 +7,7 @@ import kr.ai.nemo.domain.scheduleparticipants.domain.ScheduleParticipant;
 import kr.ai.nemo.domain.user.domain.User;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 public interface ScheduleParticipantRepository extends JpaRepository<ScheduleParticipant, Long> {
 
@@ -17,5 +18,12 @@ public interface ScheduleParticipantRepository extends JpaRepository<SchedulePar
 
   Optional<ScheduleParticipant> findByScheduleIdAndUserId(Long scheduleId, Long userId);
 
+  @Query("""
+    SELECT sp FROM ScheduleParticipant sp
+    LEFT JOIN FETCH sp.schedule s
+    LEFT JOIN FETCH s.group g
+    LEFT JOIN FETCH s.owner o
+    WHERE sp.user.id = :userId
+""")
   List<ScheduleParticipant> findByUserId(Long userId);
 }
