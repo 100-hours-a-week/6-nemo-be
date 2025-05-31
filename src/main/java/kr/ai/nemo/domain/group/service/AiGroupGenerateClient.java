@@ -1,5 +1,6 @@
 package kr.ai.nemo.domain.group.service;
 
+import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.global.error.code.CommonErrorCode;
 import kr.ai.nemo.global.error.exception.CustomException;
@@ -29,6 +30,7 @@ public class AiGroupGenerateClient {
     this.baseUrl = baseUrl;
   }
 
+  @TimeTrace
   public GroupAiGenerateResponse call(GroupAiGenerateRequest request) {
     try {
       String url = baseUrl + GROUP_AI_GENERATE_PATH;

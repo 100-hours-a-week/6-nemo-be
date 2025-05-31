@@ -1,6 +1,7 @@
 package kr.ai.nemo.domain.groupparticipants.service;
 
 import java.util.List;
+import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.group.domain.enums.GroupStatus;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
 import kr.ai.nemo.domain.groupparticipants.domain.GroupParticipants;
@@ -18,6 +19,7 @@ public class GroupParticipantsQueryService {
   private final GroupParticipantsRepository groupParticipantsRepository;
   private final GroupValidator groupValidator;
 
+  @TimeTrace
   public List<GroupParticipantsListResponse.GroupParticipantDto> getAcceptedParticipants(Long groupId) {
     groupValidator.findByIdOrThrow(groupId);
     return groupParticipantsRepository.findByGroupIdAndStatus(groupId, Status.JOINED).stream()
@@ -25,6 +27,7 @@ public class GroupParticipantsQueryService {
         .toList();
   }
 
+  @TimeTrace
   public List<MyGroupDto> getMyGroups(Long userId) {
     List<GroupParticipants> participants = groupParticipantsRepository.findByUserIdAndStatus(userId, Status.JOINED);
 

@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 public enum AuthErrorCode implements ErrorCode {
 
   // 401 UNAUTHORIZED
-  UNAUTHORIZED("UNAUTHORIZED", "인증이 필요합니다.", HttpStatus.UNAUTHORIZED),
+  UNAUTHORIZED("UNAUTHORIZED", "로그인이 필요합니다.", HttpStatus.UNAUTHORIZED),
   INVALID_TOKEN("INVALID_TOKEN", "토큰이 유효하지 않습니다.", HttpStatus.UNAUTHORIZED),
   EXPIRED_TOKEN("EXPIRED_TOKEN", "토큰이 만료되었습니다.", HttpStatus.UNAUTHORIZED),
 

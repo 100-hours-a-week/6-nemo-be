@@ -1,6 +1,7 @@
 package kr.ai.nemo.domain.group.service;
 
 import java.util.List;
+import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.domain.enums.GroupStatus;
 import kr.ai.nemo.domain.group.dto.response.GroupDetailResponse;
@@ -28,6 +29,7 @@ public class GroupQueryService {
   private final GroupValidator groupValidator;
   private final GroupTagService groupTagService;
 
+  @TimeTrace
   public GroupListResponse getGroups(GroupSearchRequest request) {
     Pageable pageable = toPageable(request);
 
@@ -46,6 +48,7 @@ public class GroupQueryService {
     return GroupListResponse.from(groupDtoPage);
   }
 
+  @TimeTrace
   public GroupDetailResponse detailGroup(Long groupId) {
     Group group = groupValidator.findByIdOrThrow(groupId);
     List<String> tags = groupTagService.getTagNamesByGroupId(group.getId());

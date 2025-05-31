@@ -24,10 +24,10 @@ public class ScheduleValidator {
     return schedule;
   }
 
-  public void validateSchedule(ScheduleStatus status) {
-    if (status.equals(ScheduleStatus.CLOSED)) {
+  public void validateSchedule(Schedule schedule) {
+    if (schedule.getStatus().equals(ScheduleStatus.CLOSED)) {
       throw new ScheduleException(ScheduleErrorCode.SCHEDULE_ALREADY_ENDED);
-    } else if (status.equals(ScheduleStatus.CANCELED)) {
+    } else if (schedule.getStatus().equals(ScheduleStatus.CANCELED)) {
       throw new ScheduleException(ScheduleErrorCode.SCHEDULE_ALREADY_CANCELED);
     }
   }

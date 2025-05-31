@@ -2,11 +2,13 @@ package kr.ai.nemo.domain.auth.controller;
 
 import kr.ai.nemo.domain.auth.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/test/token")
 @RequiredArgsConstructor
+@Profile({ "local", "dev"})
 public class TokenTestController {
 
   private final JwtProvider jwtProvider;

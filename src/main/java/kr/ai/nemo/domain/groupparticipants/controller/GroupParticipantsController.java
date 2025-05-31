@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import kr.ai.nemo.aop.logging.TimeTrace;
+import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Status;
@@ -39,18 +41,20 @@ public class GroupParticipantsController {
   @ApiResponse(responseCode = "204", description = "성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
   @ApiResponse(responseCode = "409", description = "이미 신청했거나 참여중인 사용자입니다. // 모임이 가득 찼습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
   @SwaggerJwtErrorResponse
+  @TimeTrace
   @PostMapping("/{groupId}/applications")
   public ResponseEntity<Object> applyToGroup(
       @Parameter(description = "모임 ID", example = "123")
       @PathVariable Long groupId,
       @Parameter(hidden = true)
-      @AuthenticationPrincipal Long userId){
-    groupParticipantsCommandService.applyToGroup(groupId, userId, Role.MEMBER, Status.JOINED);
+      @AuthenticationPrincipal CustomUserDetails userDetails){
+    groupParticipantsCommandService.applyToGroup(groupId, userDetails.getUserId(), Role.MEMBER, Status.JOINED);
     return ResponseEntity.noContent().build();
   }
 
   @Operation(summary = "모임 참가자 목록 조회", description = "특정 모임에 가입중인 사용자 목록을 반환합니다.")
   @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupParticipantsListResponse.class)))
+  @TimeTrace
   @GetMapping("/{groupId}/participants")
   public ResponseEntity<BaseApiResponse<GroupParticipantsListResponse>> getGroupParticipants(
       @Parameter(description = "모임 ID", example = "123")
@@ -62,11 +66,12 @@ public class GroupParticipantsController {
   @Operation(summary = "내가 참여 중인 모임 목록 조회", description = "현재 로그인한 사용자가 가입중인 모임 목록을 반환합니다.")
   @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerMyGroupListResponse.class)))
   @SwaggerJwtErrorResponse
+  @TimeTrace
   @GetMapping("/me")
   public ResponseEntity<BaseApiResponse<MyGroupListResponse>> getMyGroups(
       @Parameter(hidden = true)
-      @AuthenticationPrincipal Long userId) {
-    List<MyGroupDto> groupList = groupParticipantsQueryService.getMyGroups(userId);
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
+    List<MyGroupDto> groupList = groupParticipantsQueryService.getMyGroups(userDetails.getUserId());
     return ResponseEntity.ok(BaseApiResponse.success(new MyGroupListResponse(groupList)));
   }
 }

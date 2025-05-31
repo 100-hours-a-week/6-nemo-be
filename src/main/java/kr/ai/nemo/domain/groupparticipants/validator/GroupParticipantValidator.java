@@ -22,4 +22,9 @@ public class GroupParticipantValidator {
       throw new GroupException(GroupErrorCode.ALREADY_APPLIED_OR_JOINED);
     }
   }
+
+  public boolean validateIsJoinedMember(Long groupId, Long userId) {
+    return repository.existsByGroupIdAndUserIdAndStatus(
+        groupId, userId, Status.JOINED);
+  }
 }
