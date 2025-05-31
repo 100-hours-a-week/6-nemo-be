@@ -12,14 +12,13 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface GroupRepository extends JpaRepository<Group, Long> {
+  @EntityGraph(attributePaths = {"groupTags", "groupTags.tag"})
   @Query("""
-      SELECT DISTINCT g FROM Group g
- LEFT JOIN g.groupTags t
- WHERE g.status <> 'DISBANDED' AND (
-     g.name LIKE %:keyword% OR
-     g.summary LIKE %:keyword% OR
-     t.tag.name LIKE %:keyword%
- )
+    SELECT DISTINCT g FROM Group g
+    WHERE g.status <> 'DISBANDED' AND (
+        g.name LIKE %:keyword% OR
+        g.summary LIKE %:keyword%
+    )
 """)
   Page<Group> searchWithKeywordOnly(@Param("keyword") String keyword, Pageable pageable);
 

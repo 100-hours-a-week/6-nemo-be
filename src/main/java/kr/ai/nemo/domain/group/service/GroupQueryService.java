@@ -13,9 +13,7 @@ import kr.ai.nemo.domain.group.validator.GroupValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,10 +27,8 @@ public class GroupQueryService {
   private final GroupValidator groupValidator;
   private final GroupTagService groupTagService;
 
-  @TimeTrace
-  public GroupListResponse getGroups(GroupSearchRequest request) {
-    Pageable pageable = toPageable(request);
-
+  @Transactional(readOnly = true)
+  public GroupListResponse getGroups(GroupSearchRequest request, Pageable pageable) {
     Page<Group> groups;
 
     if (request.getCategory() != null) {
@@ -49,14 +45,10 @@ public class GroupQueryService {
   }
 
   @TimeTrace
+  @Transactional(readOnly = true)
   public GroupDetailResponse detailGroup(Long groupId) {
     Group group = groupValidator.findByIdOrThrow(groupId);
     List<String> tags = groupTagService.getTagNamesByGroupId(group.getId());
     return GroupDetailResponse.from(group, tags);
-  }
-
-  private Pageable toPageable(GroupSearchRequest request) {
-    Sort sort = Sort.by(Sort.Direction.fromString(request.getDirection()), request.getSort());
-    return PageRequest.of(request.getPage(), request.getSize(), sort);
   }
 }

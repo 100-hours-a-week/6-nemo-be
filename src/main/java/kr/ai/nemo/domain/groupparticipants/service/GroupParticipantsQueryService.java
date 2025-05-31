@@ -11,6 +11,7 @@ import kr.ai.nemo.domain.groupparticipants.dto.response.MyGroupDto;
 import kr.ai.nemo.domain.groupparticipants.repository.GroupParticipantsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
@@ -20,6 +21,7 @@ public class GroupParticipantsQueryService {
   private final GroupValidator groupValidator;
 
   @TimeTrace
+  @Transactional(readOnly = true)
   public List<GroupParticipantsListResponse.GroupParticipantDto> getAcceptedParticipants(Long groupId) {
     groupValidator.findByIdOrThrow(groupId);
     return groupParticipantsRepository.findByGroupIdAndStatus(groupId, Status.JOINED).stream()
@@ -28,6 +30,7 @@ public class GroupParticipantsQueryService {
   }
 
   @TimeTrace
+  @Transactional(readOnly = true)
   public List<MyGroupDto> getMyGroups(Long userId) {
     List<GroupParticipants> participants = groupParticipantsRepository.findByUserIdAndStatus(userId, Status.JOINED);
 

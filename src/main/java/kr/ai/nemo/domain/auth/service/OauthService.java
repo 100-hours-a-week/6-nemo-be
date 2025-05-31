@@ -25,7 +25,14 @@ public class OauthService {
 
   @TimeTrace
   @Transactional
-  public String loginWithKakao(String code, HttpServletResponse response) {
+  public String loginWithKakao(String code, String error, HttpServletResponse response) {
+    if (error != null) {
+      throw new AuthException(KakaoOAuthErrorCode.KAKAO_AUTH_ERROR);
+    }
+
+    if (code == null || code.isEmpty()) {
+      throw new AuthException(KakaoOAuthErrorCode.CODE_MISSING);
+    }
     try {
       KakaoTokenResponse kakaoToken = kakaoClient.getAccessToken(code);
       if (kakaoToken.accessToken() == null || kakaoToken.accessToken().isEmpty()) {
@@ -60,18 +67,6 @@ public class OauthService {
   @TimeTrace
   public TokenRefreshResponse reissueAccessToken(String refreshToken) {
     return tokenManager.reissueAccessToken(refreshToken);
-  }
-
-  public String handleKakaoCallback(String code, String error, HttpServletResponse response) {
-    if (error != null) {
-      throw new AuthException(KakaoOAuthErrorCode.KAKAO_AUTH_ERROR);
-    }
-
-    if (code == null || code.isEmpty()) {
-      throw new AuthException(KakaoOAuthErrorCode.CODE_MISSING);
-    }
-
-    return loginWithKakao(code, response);
   }
 
   @TimeTrace

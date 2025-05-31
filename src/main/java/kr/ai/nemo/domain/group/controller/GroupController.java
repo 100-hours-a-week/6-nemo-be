@@ -29,6 +29,8 @@ import kr.ai.nemo.global.swagger.group.SwaggerScheduleListResponse;
 import kr.ai.nemo.global.swagger.jwt.SwaggerJwtErrorResponse;
 import kr.ai.nemo.global.swagger.group.SwaggerGroupListResponse;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -57,8 +59,9 @@ public class GroupController {
   @ApiResponse(responseCode = "200", description = "성공적으로 조회되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupListResponse.class)))
   @TimeTrace
   @GetMapping
-  public ResponseEntity<BaseApiResponse<GroupListResponse>> getGroups(@Valid @ModelAttribute GroupSearchRequest request) {
-    return ResponseEntity.ok(BaseApiResponse.success(groupQueryService.getGroups(request)));
+  public ResponseEntity<BaseApiResponse<GroupListResponse>> getGroups(@Valid @ModelAttribute GroupSearchRequest request, @ParameterObject @Valid PageRequestDto pageRequestDto) {
+    PageRequest pageRequest = pageRequestDto.toPageRequest("createAt", "desc");
+    return ResponseEntity.ok(BaseApiResponse.success(groupQueryService.getGroups(request, pageRequest)));
   }
 
   @Operation(summary = "모임 상세 조회", description = "요청한 모임의 상세 정보를 조회합니다.")
@@ -73,8 +76,9 @@ public class GroupController {
   @ApiResponse(responseCode = "200", description = "성공적으로 조회되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupListResponse.class)))
   @TimeTrace
   @GetMapping("/search")
-  public ResponseEntity<BaseApiResponse<GroupListResponse>> searchGroups(@Valid @ModelAttribute GroupSearchRequest request) {
-    return ResponseEntity.ok(BaseApiResponse.success(groupQueryService.getGroups(request)));
+  public ResponseEntity<BaseApiResponse<GroupListResponse>> searchGroups(@Valid @ModelAttribute GroupSearchRequest request, @ParameterObject @Valid PageRequestDto pageRequestDto) {
+    PageRequest pageRequest = pageRequestDto.toPageRequest("", "desc");
+    return ResponseEntity.ok(BaseApiResponse.success(groupQueryService.getGroups(request, pageRequest)));
   }
 
   @Operation(summary = "모임의 일정 리스트 조회", description = "특정 모임의 일정 리스트를 조회합니다.")

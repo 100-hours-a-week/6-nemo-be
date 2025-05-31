@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +31,7 @@ public class ScheduleQueryService {
   private final ScheduleValidator scheduleValidator;
 
   @TimeTrace
+  @Transactional(readOnly = true)
   public ScheduleDetailResponse getScheduleDetail(Long scheduleId) {
     Schedule schedule = scheduleValidator.findByIdOrThrow(scheduleId);
 
@@ -38,6 +40,7 @@ public class ScheduleQueryService {
   }
 
   @TimeTrace
+  @Transactional(readOnly = true)
   public ScheduleListResponse getGroupSchedules(Long groupId, PageRequest pageRequest) {
     groupValidator.findByIdOrThrow(groupId);
     Page<Schedule> page = scheduleRepository.findByGroupIdAndStatusNot(groupId, pageRequest, ScheduleStatus.CANCELED);
@@ -66,6 +69,7 @@ public class ScheduleQueryService {
   }
 
   @TimeTrace
+  @Transactional(readOnly = true)
   public MySchedulesResponse getMySchedules(Long userId) {
     List<ScheduleParticipant> participants = scheduleParticipantRepository.findByUserId(userId);
 

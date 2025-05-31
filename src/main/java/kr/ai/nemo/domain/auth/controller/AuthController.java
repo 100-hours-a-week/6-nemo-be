@@ -49,7 +49,7 @@ public class AuthController {
       @RequestParam(value = "code", required = false) String code,
       @RequestParam(value = "error", required = false) String error,
       HttpServletResponse response) {
-    String accessToken = oauthService.handleKakaoCallback(code, error, response);
+    String accessToken = oauthService.loginWithKakao(code, error, response);
     try {
       response.sendRedirect(uriGenerator.login(state, accessToken).toString());
     } catch (IOException e) {
