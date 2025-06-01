@@ -48,7 +48,7 @@ public class GroupParticipantsController {
       @PathVariable Long groupId,
       @Parameter(hidden = true)
       @AuthenticationPrincipal CustomUserDetails userDetails){
-    groupParticipantsCommandService.applyToGroup(groupId, userDetails.getUserId(), Role.MEMBER, Status.JOINED);
+    groupParticipantsCommandService.applyToGroup(groupId, userDetails, Role.MEMBER, Status.JOINED);
     return ResponseEntity.noContent().build();
   }
 

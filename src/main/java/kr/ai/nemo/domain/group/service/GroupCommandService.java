@@ -55,7 +55,7 @@ public class GroupCommandService {
       groupTagService.assignTags(savedGroup, request.tags());
     }
 
-    groupParticipantsCommandService.applyToGroup(savedGroup.getId(), userDetails.getUserId(), Role.LEADER, Status.JOINED);
+    groupParticipantsCommandService.applyToGroup(savedGroup.getId(), userDetails, Role.LEADER, Status.JOINED);
 
     List<String> tags = groupTagService.getTagNamesByGroupId(savedGroup.getId());
 
