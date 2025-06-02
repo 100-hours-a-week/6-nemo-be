@@ -1,8 +1,27 @@
 package kr.ai.nemo.domain.group.service;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willDoNothing;
+
+import java.util.List;
+import kr.ai.nemo.domain.auth.security.CustomUserDetails;
+import kr.ai.nemo.domain.group.domain.Group;
+import kr.ai.nemo.domain.group.dto.request.GroupCreateRequest;
+import kr.ai.nemo.domain.group.dto.response.GroupCreateResponse;
 import kr.ai.nemo.domain.group.repository.GroupRepository;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
-import kr.ai.nemo.domain.user.repository.UserRepository;
+import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
+import kr.ai.nemo.domain.groupparticipants.domain.enums.Status;
+import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsCommandService;
+import kr.ai.nemo.domain.user.domain.User;
+import kr.ai.nemo.global.fixture.user.UserFixture;
+import kr.ai.nemo.global.testUtil.TestReflectionUtils;
+import kr.ai.nemo.infra.ImageService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,28 +33,82 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @DisplayName("GroupCommandService 테스트")
 class GroupCommandServiceTest {
 
-    @Mock
-    private GroupRepository groupRepository;
+  @Mock
+  private GroupRepository groupRepository;
 
-    @Mock
-    private UserRepository userRepository;
+  @Mock
+  private GroupTagService groupTagService;
 
-    @Mock
-    private GroupValidator groupValidator;
+  @Mock
+  private GroupParticipantsCommandService groupParticipantsCommandService;
 
-    @Mock
-    private GroupTagService groupTagService;
+  @Mock
+  private ImageService imageService;
 
-    @InjectMocks
-    private GroupCommandService groupCommandService;
+  @Mock
+  private GroupValidator groupValidator;
 
-    @Test
-    @DisplayName("그룹 생성 성공 테스트")
-    void createGroup_Success() {
-        // given
-        
-        // when
-        
-        // then
-    }
+  @InjectMocks
+  private GroupCommandService groupCommandService;
+
+  @Test
+  @DisplayName("[성공] 그룹 생성 성공 테스트")
+  void createGroup_Success() {
+    // given
+    User user = UserFixture.createDefaultUser();
+    CustomUserDetails userDetails = new CustomUserDetails(user);
+
+    GroupCreateRequest request = new GroupCreateRequest(
+        "테스트 모임",
+        "테스트 요약",
+        "테스트 설명",
+        "IT/개발",
+        "서울 강남구",
+        10,
+        "test-image-url",
+        List.of("Spring", "JPA"),
+        "테스트 계획"
+    );
+
+    List<String> tags = List.of("Spring", "JPA");
+
+    willDoNothing().given(groupValidator).isCategory(request.category());
+    given(imageService.uploadGroupImage(request.imageUrl())).willReturn("processed-image.jpg");
+    given(groupRepository.save(any(Group.class))).willAnswer(invocation -> {
+      Group groupToSave = invocation.getArgument(0);
+      TestReflectionUtils.setId(groupToSave, "id", 1L);
+      return groupToSave;
+    });
+
+    willDoNothing().given(groupTagService).assignTags(any(Group.class), anyList());
+    willDoNothing().given(groupParticipantsCommandService)
+        .applyToGroup(anyLong(), any(CustomUserDetails.class), any(Role.class), any(Status.class));
+    given(groupTagService.getTagNamesByGroupId(any(Long.class))).willReturn(tags);
+
+    // when
+    GroupCreateResponse response = groupCommandService.createGroup(request, userDetails);
+
+    // then
+    assertThat(response).isNotNull();
+    assertThat(response.groupId()).isEqualTo(1L);
+    assertThat(response.name()).isEqualTo("테스트 모임");
+    assertThat(response.category()).isEqualTo("IT/개발");
+    assertThat(response.summary()).isEqualTo("테스트 요약");
+    assertThat(response.description()).isEqualTo("테스트 설명");
+    assertThat(response.plan()).isEqualTo("테스트 계획");
+    assertThat(response.location()).isEqualTo("서울 강남구");
+    assertThat(response.currentUserCount()).isZero();
+    assertThat(response.maxUserCount()).isEqualTo(10);
+    assertThat(response.imageUrl()).isEqualTo("processed-image.jpg"); // ImageService Mock 결과
+    assertThat(response.tags()).isEqualTo(tags);
+
+    // verify
+    then(groupValidator).should().isCategory(request.category());
+    then(imageService).should().uploadGroupImage(request.imageUrl());
+    then(groupRepository).should().save(any(Group.class));
+    then(groupTagService).should().assignTags(any(Group.class), anyList());
+    then(groupParticipantsCommandService).should()
+        .applyToGroup(anyLong(), any(CustomUserDetails.class), any(Role.class), any(Status.class));
+    then(groupTagService).should().getTagNamesByGroupId(any(Long.class));
+  }
 }

@@ -1,6 +1,7 @@
 package kr.ai.nemo.domain.group.domain;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,6 +20,7 @@ public class Tag {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @NotBlank(message = "Tag 이름은 필수입니다.")
   @Column(nullable = false, unique = true)
   private String name;
 

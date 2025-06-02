@@ -8,7 +8,7 @@ import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Status;
 import kr.ai.nemo.domain.user.domain.User;
 import kr.ai.nemo.domain.user.repository.UserRepository;
-import kr.ai.nemo.global.fixture.UserFixture;
+import kr.ai.nemo.global.fixture.user.UserFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

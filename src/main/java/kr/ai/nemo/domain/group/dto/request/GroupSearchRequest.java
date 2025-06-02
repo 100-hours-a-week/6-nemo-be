@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Schema(name = "모임 검색 요청", description = "모임 검색 요청 DTO")
 public class GroupSearchRequest {
 
-  @Schema(description = "검색할 모임 카테고리", example = "백엔드")
+  @Schema(description = "검색할 모임 카테고리", example = "IT/개발")
   private String category;
 
   @Schema(description = "검색 키워드", example = "Spring")

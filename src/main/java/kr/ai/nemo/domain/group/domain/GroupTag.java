@@ -26,8 +26,8 @@ public class GroupTag {
 
   @Builder
   public GroupTag(Group group, Tag tag) {
-    this.group = group;
-    this.tag = tag;
+    setGroup(group);
+    setTag(tag);
   }
 
   public void setGroup(Group group) {

@@ -1,4 +1,4 @@
-package kr.ai.nemo.global.fixture;
+package kr.ai.nemo.global.fixture.user;
 
 import kr.ai.nemo.domain.user.domain.User;
 import kr.ai.nemo.domain.user.domain.enums.UserStatus;
