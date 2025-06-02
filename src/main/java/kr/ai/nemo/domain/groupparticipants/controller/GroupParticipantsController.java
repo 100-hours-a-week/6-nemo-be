@@ -52,7 +52,7 @@ public class GroupParticipantsController {
     return ResponseEntity.noContent().build();
   }
 
-  @Operation(summary = "모임 참가자 목록 조회", description = "특정 모임에 가입중인 사용자 목록을 반환합니다.")
+  @Operation(summary = "모임원 list 조회", description = "특정 모임에 가입중인 사용자 목록을 반환합니다.")
   @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupParticipantsListResponse.class)))
   @TimeTrace
   @GetMapping("/{groupId}/participants")
@@ -63,7 +63,7 @@ public class GroupParticipantsController {
     return ResponseEntity.ok(BaseApiResponse.success(new GroupParticipantsListResponse(list)));
   }
 
-  @Operation(summary = "내가 참여 중인 모임 목록 조회", description = "현재 로그인한 사용자가 가입중인 모임 목록을 반환합니다.")
+  @Operation(summary = "내가 참여 중인 모임 list 조회", description = "현재 로그인한 사용자가 가입중인 모임 목록을 반환합니다.")
   @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerMyGroupListResponse.class)))
   @SwaggerJwtErrorResponse
   @TimeTrace

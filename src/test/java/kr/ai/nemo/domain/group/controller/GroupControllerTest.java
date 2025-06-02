@@ -33,18 +33,18 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(controllers = GroupController.class)
 @MockMember
-@EnableWebSecurity
+@Import(JwtProvider.class)
 @ActiveProfiles("test")
 @DisplayName("GroupController 테스트")
 class GroupControllerTest {
@@ -66,9 +66,6 @@ class GroupControllerTest {
 
   @MockitoBean
   private ScheduleQueryService scheduleQueryService;
-
-  @MockitoBean
-  private JwtProvider jwtProvider;
 
   @MockitoBean
   private UserRepository userRepository;
