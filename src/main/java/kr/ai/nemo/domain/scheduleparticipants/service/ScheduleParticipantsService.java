@@ -52,7 +52,7 @@ public class ScheduleParticipantsService {
   @TimeTrace
   @Transactional
   public void addParticipantToUpcomingSchedules(Group group, User user) {
-    List<Schedule> schedules = scheduleRepository.findByGroupAndStatus(group, ScheduleStatus.RECRUITING);
+    List<Schedule> schedules = scheduleRepository.findByGroupIdAndStatus(group.getId(), ScheduleStatus.RECRUITING);
 
     for (Schedule schedule : schedules) {
       boolean exists = scheduleParticipantRepository.existsByScheduleAndUser(schedule, user);

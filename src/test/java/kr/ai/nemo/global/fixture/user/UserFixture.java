@@ -12,7 +12,6 @@ public class UserFixture {
 
     public static User createUser(String nickname, String email, String provider, String providerId) {
         return User.builder()
-                .id(1L)
                 .nickname(nickname)
                 .email(email)
                 .provider(provider)

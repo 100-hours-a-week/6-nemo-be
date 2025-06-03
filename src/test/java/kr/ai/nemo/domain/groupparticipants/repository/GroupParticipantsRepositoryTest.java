@@ -43,15 +43,12 @@ class GroupParticipantsRepositoryTest {
     void setUp() {
         User user = UserFixture.createDefaultUser();
         savedUser = userRepository.save(user);
-        TestReflectionUtils.setId(savedUser, "id", 1L);
 
         User user1 = UserFixture.createUser("testUser", "test11@example.com", "kakao", "12341234");
         savedUser1 = userRepository.save(user1);
-        TestReflectionUtils.setId(savedUser1, "id", 2L);
 
         Group group = GroupFixture.createDefaultGroup(savedUser);
         savedGroup = groupRepository.save(group);
-        TestReflectionUtils.setId(savedGroup, "id", 1L);
 
         participant = GroupParticipants.builder()
             .user(savedUser1)
