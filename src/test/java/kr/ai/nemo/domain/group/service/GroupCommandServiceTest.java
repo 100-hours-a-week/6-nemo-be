@@ -76,7 +76,7 @@ class GroupCommandServiceTest {
     given(imageService.uploadGroupImage(request.imageUrl())).willReturn("processed-image.jpg");
     given(groupRepository.save(any(Group.class))).willAnswer(invocation -> {
       Group groupToSave = invocation.getArgument(0);
-      TestReflectionUtils.setId(groupToSave, "id", 1L);
+      TestReflectionUtils.setField(groupToSave, "id", 1L);
       return groupToSave;
     });
 

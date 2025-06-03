@@ -16,7 +16,7 @@ public class MockSecurityContextFactory implements WithSecurityContextFactory<Mo
     SecurityContext context = SecurityContextHolder.createEmptyContext();
 
     User mockUser = UserFixture.createDefaultUser();
-    TestReflectionUtils.setId(mockUser, "id", 1L);
+    TestReflectionUtils.setField(mockUser, "id", 1L);
     CustomUserDetails userDetails = new CustomUserDetails(mockUser);
 
     Authentication auth = new UsernamePasswordAuthenticationToken(

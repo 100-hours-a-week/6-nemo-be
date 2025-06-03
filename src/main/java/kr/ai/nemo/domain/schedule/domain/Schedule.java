@@ -70,6 +70,8 @@ public class Schedule {
     this.currentUserCount = currentUserCount;
     this.status = status;
     this.startAt = startAt;
+    this.createdAt = LocalDateTime.now();
+    this.updatedAt = LocalDateTime.now();
   }
 
   public void addCurrentUserCount() {

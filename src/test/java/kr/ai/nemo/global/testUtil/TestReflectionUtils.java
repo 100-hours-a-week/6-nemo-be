@@ -9,7 +9,7 @@ public class TestReflectionUtils {
    * @param fieldName - 필드 이름 (예: "id")
    * @param value - 주입할 값 (예: 1L)
    */
-  public static void setId(Object targetEntity, String fieldName, Long value) {
+  public static void setField(Object targetEntity, String fieldName, Object value) {
     try {
       Field field = targetEntity.getClass().getDeclaredField(fieldName);
       field.setAccessible(true);

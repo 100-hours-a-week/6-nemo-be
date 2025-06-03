@@ -106,8 +106,8 @@ class GroupParticipantsControllerTest {
     User user = UserFixture.createDefaultUser();
     Group group = GroupFixture.createDefaultGroup(user);
     Group group1 = GroupFixture.createDefaultGroup(user);
-    TestReflectionUtils.setId(group, "id", 1L);
-    TestReflectionUtils.setId(group1, "id", 2L);
+    TestReflectionUtils.setField(group, "id", 1L);
+    TestReflectionUtils.setField(group1, "id", 2L);
 
     List<MyGroupDto> groupList = List.of(
         MyGroupDto.from(group), MyGroupDto.from(group1)

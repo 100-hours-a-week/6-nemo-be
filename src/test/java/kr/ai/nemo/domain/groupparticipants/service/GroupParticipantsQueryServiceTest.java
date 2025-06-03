@@ -57,7 +57,7 @@ class GroupParticipantsQueryServiceTest {
     user = UserFixture.createDefaultUser();
 
     group = GroupFixture.createDefaultGroup(user);
-    TestReflectionUtils.setId(group, "id", 1L);
+    TestReflectionUtils.setField(group, "id", 1L);
     groupId = 1L;
 
      participant = GroupParticipants.builder()
