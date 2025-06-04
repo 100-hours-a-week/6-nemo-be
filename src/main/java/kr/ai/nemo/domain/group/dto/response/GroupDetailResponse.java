@@ -1,12 +1,9 @@
 package kr.ai.nemo.domain.group.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import kr.ai.nemo.domain.group.domain.Group;
 
-@JsonInclude(Include.NON_EMPTY)
 @Schema(name = "모임 상세 조회 응답", description = "모임 상세 조회 응답 DTO")
 public record GroupDetailResponse(
 
