@@ -9,10 +9,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.auth.security.JwtProvider;
+import kr.ai.nemo.domain.auth.service.CustomUserDetailsService;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Status;
@@ -21,7 +21,6 @@ import kr.ai.nemo.domain.groupparticipants.dto.response.MyGroupDto;
 import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsCommandService;
 import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsQueryService;
 import kr.ai.nemo.domain.user.domain.User;
-import kr.ai.nemo.domain.user.repository.UserRepository;
 import kr.ai.nemo.global.fixture.group.GroupFixture;
 import kr.ai.nemo.global.fixture.user.UserFixture;
 import kr.ai.nemo.global.testUtil.MockMember;
@@ -53,7 +52,7 @@ class GroupParticipantsControllerTest {
   private GroupParticipantsQueryService groupParticipantsQueryService;
 
   @MockitoBean
-  private UserRepository userRepository;
+  private CustomUserDetailsService customUserDetailsService;
 
   @Test
   @DisplayName("[성공] 모임 신청 API 테스트")

@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.auth.security.JwtProvider;
+import kr.ai.nemo.domain.auth.service.CustomUserDetailsService;
 import kr.ai.nemo.domain.group.dto.request.GroupCreateRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupGenerateRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupCreateResponse;
@@ -69,7 +70,7 @@ class GroupControllerTest {
   private ScheduleQueryService scheduleQueryService;
 
   @MockitoBean
-  private UserRepository userRepository;
+  private CustomUserDetailsService customUserDetailsService;
 
   @Test
   @DisplayName("모임 list 조회 API 테스트")
@@ -87,6 +88,7 @@ class GroupControllerTest {
             .imageUrl("image1.jpg")
             .tags(List.of("자바", "백엔드"))
             .build(),
+
         GroupDto.builder()
             .groupId(2L)
             .name("운동 모임")

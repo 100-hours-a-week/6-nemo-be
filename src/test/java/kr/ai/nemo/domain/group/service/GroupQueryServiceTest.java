@@ -3,6 +3,7 @@ package kr.ai.nemo.domain.group.service;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 
@@ -15,6 +16,8 @@ import kr.ai.nemo.domain.group.dto.response.GroupDetailResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupListResponse;
 import kr.ai.nemo.domain.group.repository.GroupRepository;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
+import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
+import kr.ai.nemo.domain.groupparticipants.validator.GroupParticipantValidator;
 import kr.ai.nemo.domain.user.domain.User;
 import kr.ai.nemo.global.fixture.group.GroupFixture;
 import kr.ai.nemo.global.fixture.user.UserFixture;
@@ -42,6 +45,9 @@ class GroupQueryServiceTest {
 
   @Mock
   private GroupTagService groupTagService;
+
+  @Mock
+  private GroupParticipantValidator groupParticipantValidator;
 
   @InjectMocks
   private GroupQueryService groupQueryService;
@@ -121,6 +127,7 @@ class GroupQueryServiceTest {
 
     List<String> tags = List.of("tag1", "tag2");
     given(groupTagService.getTagNamesByGroupId(groupId)).willReturn(tags);
+    given(groupParticipantValidator.checkUserRole(customUserDetails, group)).willReturn(Role.MEMBER);
 
     // when
     GroupDetailResponse response = groupQueryService.detailGroup(groupId, customUserDetails);
@@ -129,6 +136,7 @@ class GroupQueryServiceTest {
     then(groupValidator).should(times(1)).findByIdOrThrow(groupId);
     then(groupTagService).should(times(1)).getTagNamesByGroupId(groupId);
     assertThat(response).isNotNull();
+    assertThat(response.role()).isEqualTo(Role.MEMBER);
     assertThat(response.tags()).isEqualTo(tags);
   }
 }
