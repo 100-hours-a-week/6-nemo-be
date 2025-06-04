@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 
 import java.util.List;
+import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.domain.enums.GroupStatus;
 import kr.ai.nemo.domain.group.dto.request.GroupSearchRequest;
@@ -16,6 +17,7 @@ import kr.ai.nemo.domain.group.repository.GroupRepository;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
 import kr.ai.nemo.domain.user.domain.User;
 import kr.ai.nemo.global.fixture.group.GroupFixture;
+import kr.ai.nemo.global.fixture.user.UserFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -109,7 +111,8 @@ class GroupQueryServiceTest {
   @DisplayName("[성공] 모임 상세 조회")
   void getGroup_detail_Success() {
     // given
-    User user = mock(User.class);
+    User user = UserFixture.createDefaultUser();
+    CustomUserDetails customUserDetails = new CustomUserDetails(user);
     Group group = GroupFixture.createDefaultGroup(user);
     Long groupId = 1L;
     ReflectionTestUtils.setField(group, "id", groupId);
@@ -120,7 +123,7 @@ class GroupQueryServiceTest {
     given(groupTagService.getTagNamesByGroupId(groupId)).willReturn(tags);
 
     // when
-    GroupDetailResponse response = groupQueryService.detailGroup(groupId);
+    GroupDetailResponse response = groupQueryService.detailGroup(groupId, customUserDetails);
 
     // then
     then(groupValidator).should(times(1)).findByIdOrThrow(groupId);

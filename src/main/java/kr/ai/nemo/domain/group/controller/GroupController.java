@@ -59,7 +59,7 @@ public class GroupController {
   @ApiResponse(responseCode = "200", description = "성공적으로 조회되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupListResponse.class)))
   @TimeTrace
   @GetMapping
-  public ResponseEntity<BaseApiResponse<GroupListResponse>> getGroups(@Valid @ModelAttribute GroupSearchRequest request, @ParameterObject @Valid PageRequestDto pageRequestDto) {
+  public ResponseEntity<BaseApiResponse<GroupListResponse>> getAllGroupList(@Valid @ModelAttribute GroupSearchRequest request, @ParameterObject @Valid PageRequestDto pageRequestDto) {
     PageRequest pageRequest = pageRequestDto.toPageRequest("createAt", "desc");
     return ResponseEntity.ok(BaseApiResponse.success(groupQueryService.getGroups(request, pageRequest)));
   }
@@ -68,15 +68,17 @@ public class GroupController {
   @ApiResponse(responseCode = "200", description = "성공적으로 조회되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupDetailResponse.class)))
   @TimeTrace
   @GetMapping("/{groupId}")
-  public ResponseEntity<BaseApiResponse<GroupDetailResponse>> showGroupInfo(@PathVariable Long groupId) {
-    return ResponseEntity.ok(BaseApiResponse.success(groupQueryService.detailGroup(groupId)));
+  public ResponseEntity<BaseApiResponse<GroupDetailResponse>> getGroupDetail(
+      @PathVariable Long groupId,
+      @AuthenticationPrincipal(errorOnInvalidType = false) CustomUserDetails customUserDetails) {
+    return ResponseEntity.ok(BaseApiResponse.success(groupQueryService.detailGroup(groupId, customUserDetails)));
   }
 
   @Operation(summary = "검색한 모임 리스트 조회", description = "검색한 키워드가 포함된 모임의 리스트를 조회합니다.")
   @ApiResponse(responseCode = "200", description = "성공적으로 조회되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupListResponse.class)))
   @TimeTrace
   @GetMapping("/search")
-  public ResponseEntity<BaseApiResponse<GroupListResponse>> searchGroups(@Valid @ModelAttribute GroupSearchRequest request, @ParameterObject @Valid PageRequestDto pageRequestDto) {
+  public ResponseEntity<BaseApiResponse<GroupListResponse>> searchGroupList(@Valid @ModelAttribute GroupSearchRequest request, @ParameterObject @Valid PageRequestDto pageRequestDto) {
     PageRequest pageRequest = pageRequestDto.toPageRequest("", "desc");
     return ResponseEntity.ok(BaseApiResponse.success(groupQueryService.getGroups(request, pageRequest)));
   }
@@ -85,7 +87,7 @@ public class GroupController {
   @ApiResponse(responseCode = "200", description = "성공적으로 조회되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerScheduleListResponse.class)))
   @TimeTrace
   @GetMapping("/{groupId}/schedules")
-  public ResponseEntity<BaseApiResponse<ScheduleListResponse>> getGroupSchedules(
+  public ResponseEntity<BaseApiResponse<ScheduleListResponse>> getGroupScheduleList(
       @PathVariable Long groupId,
       @Valid PageRequestDto pageRequestDto
   ) {
@@ -121,7 +123,7 @@ public class GroupController {
   @SwaggerJwtErrorResponse
   @TimeTrace
   @PostMapping("/ai-generate")
-  public ResponseEntity<BaseApiResponse<GroupGenerateResponse>> generateGroupInfo(
+  public ResponseEntity<BaseApiResponse<GroupGenerateResponse>> generateGroup(
       @Valid @RequestBody GroupGenerateRequest request
   ) {
     return ResponseEntity.ok(BaseApiResponse.success(groupGenerateService.generate(request)));

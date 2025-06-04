@@ -24,6 +24,7 @@ import kr.ai.nemo.domain.group.dto.response.GroupListResponse;
 import kr.ai.nemo.domain.group.service.GroupCommandService;
 import kr.ai.nemo.domain.group.service.GroupGenerateService;
 import kr.ai.nemo.domain.group.service.GroupQueryService;
+import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.schedule.domain.enums.ScheduleStatus;
 import kr.ai.nemo.domain.schedule.dto.response.ScheduleListResponse;
 import kr.ai.nemo.domain.schedule.service.ScheduleQueryService;
@@ -244,10 +245,11 @@ class GroupControllerTest {
         15,
         "img.jpg",
         List.of("test1", "test2"),
-        "test1"
+        "test1",
+        Role.LEADER
     );
 
-    given(groupQueryService.detailGroup(anyLong())).willReturn(mockResponse);
+    given(groupQueryService.detailGroup(anyLong(), any())).willReturn(mockResponse);
 
     mockMvc.perform(get("/api/v1/groups/1"))
         .andExpect(status().isOk())
