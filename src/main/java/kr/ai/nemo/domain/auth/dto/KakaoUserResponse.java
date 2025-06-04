@@ -1,16 +1,30 @@
 package kr.ai.nemo.domain.auth.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record KakaoUserResponse (
-  Long id,
-  KakaoAccount kakaoAccount
+    @JsonProperty("id")
+    Long id,
+
+    @JsonProperty("kakao_account")
+    KakaoAccount kakaoAccount
 ) {
   public record KakaoAccount (
-    String email,
-    Profile profile
+      @JsonProperty("email")
+      String email,
+
+      @JsonProperty("profile")
+      Profile profile
   ) {}
+
   public record Profile (
-    String nickname,
-    String profileImageUrl,
-    boolean isDefaultImage
+      @JsonProperty("nickname")
+      String nickname,
+
+      @JsonProperty("profile_image_url")
+      String profileImageUrl,
+
+      @JsonProperty("is_default_image")
+      boolean isDefaultImage
   ) {}
 }

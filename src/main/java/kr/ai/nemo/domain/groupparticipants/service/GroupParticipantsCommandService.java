@@ -2,6 +2,7 @@ package kr.ai.nemo.domain.groupparticipants.service;
 
 import java.time.LocalDateTime;
 import kr.ai.nemo.aop.logging.TimeTrace;
+import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
 import kr.ai.nemo.domain.groupparticipants.domain.GroupParticipants;
@@ -11,7 +12,6 @@ import kr.ai.nemo.domain.groupparticipants.repository.GroupParticipantsRepositor
 import kr.ai.nemo.domain.groupparticipants.validator.GroupParticipantValidator;
 import kr.ai.nemo.domain.scheduleparticipants.service.ScheduleParticipantsService;
 import kr.ai.nemo.domain.user.domain.User;
-import kr.ai.nemo.domain.user.validator.UserValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,15 +23,14 @@ public class GroupParticipantsCommandService {
   private final GroupParticipantsRepository groupParticipantsRepository;
   private final ScheduleParticipantsService scheduleParticipantsService;
   private final GroupValidator groupValidator;
-  private final UserValidator userValidator;
   private final GroupParticipantValidator groupParticipantValidator;
 
   @TimeTrace
   @Transactional
-  public void applyToGroup(Long groupId, Long userId, Role role, Status status) {
-    User user =userValidator.findByIdOrThrow(userId);
+  public void applyToGroup(Long groupId, CustomUserDetails userDetails, Role role, Status status) {
+    User user = userDetails.getUser();
     Group group = groupValidator.findByIdOrThrow(groupId);
-    groupParticipantValidator.validateJoinedParticipant(groupId, userId);
+    groupParticipantValidator.validateJoinedParticipant(groupId, user.getId());
     groupValidator.validateGroupIsNotFull(group);
 
     GroupParticipants participant = GroupParticipants.builder()

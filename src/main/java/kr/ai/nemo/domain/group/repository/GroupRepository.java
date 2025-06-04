@@ -15,9 +15,12 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
   @EntityGraph(attributePaths = {"groupTags", "groupTags.tag"})
   @Query("""
     SELECT DISTINCT g FROM Group g
+    LEFT JOIN g.groupTags gt
+    LEFT JOIN gt.tag t
     WHERE g.status <> 'DISBANDED' AND (
         g.name LIKE %:keyword% OR
-        g.summary LIKE %:keyword%
+        g.summary LIKE %:keyword% OR
+        t.name LIKE %:keyword%
     )
 """)
   Page<Group> searchWithKeywordOnly(@Param("keyword") String keyword, Pageable pageable);
@@ -27,6 +30,4 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
 
   @EntityGraph(attributePaths = {"groupTags", "groupTags.tag"})
   Page<Group> findByStatusNot(GroupStatus status, Pageable pageable);
-
-  Group getGroupById(Long id);
 }

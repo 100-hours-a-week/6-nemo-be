@@ -1,11 +1,12 @@
 package kr.ai.nemo.domain.auth.dto;
 
-public record KakaoTokenResponse (
-  String tokenType,
-  String accessToken,
-  int expiresIn,
-  String refreshToken,
-  int refreshTokenExpiresIn,
-  String scope
-) {}
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+public record KakaoTokenResponse(
+    @JsonProperty("token_type") String tokenType,
+    @JsonProperty("access_token") String accessToken,
+    @JsonProperty("expires_in") int expiresIn,
+    @JsonProperty("refresh_token") String refreshToken,
+    @JsonProperty("refresh_token_expires_in") int refreshTokenExpiresIn,
+    @JsonProperty("scope") String scope
+) {}

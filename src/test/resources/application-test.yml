@@ -1,0 +1,53 @@
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+    defer-datasource-initialization: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+
+# 테스트용 설정
+sentry:
+  dsn: ""  # 빈 값으로 설정하여 Sentry 비활성화
+
+oauth:
+  kakao:
+    rest-api-key: test-api-key
+    redirect-uri: http://localhost:8080/test
+
+jwt:
+  secret: test-secret-key-for-test-only-should-be-long-enough
+  access-token-validity: 3600000
+  refresh-token-validity: 86400000
+
+cloud:
+  aws:
+    credentials:
+      access-key: test
+      secret-key: test
+    region:
+      static: ap-northeast-2
+    s3:
+      bucket: test-bucket
+
+ai:
+  service:
+    url: http://localhost:8081/test

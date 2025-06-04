@@ -18,11 +18,9 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
   Page<Schedule> findByGroupIdAndStatusNot(Long groupId, PageRequest pageRequest, ScheduleStatus scheduleStatus);
 
-  List<Schedule> findByGroupAndStatus(Group group, ScheduleStatus scheduleStatus);
+  List<Schedule> findByGroupIdAndStatus(Long groupId, ScheduleStatus scheduleStatus);
 
   List<Schedule> findByStartAtBeforeAndStatus(LocalDateTime now, ScheduleStatus scheduleStatus);
-
-  Optional<Schedule> findByIdAndStatusNot(Long scheduleId, ScheduleStatus scheduleStatus);
 
   // Group과 Owner 정보를 함께 가져오는 메서드 추가
   @Query("SELECT s FROM Schedule s JOIN FETCH s.group JOIN FETCH s.owner WHERE s.id = :scheduleId")
