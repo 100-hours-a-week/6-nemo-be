@@ -9,12 +9,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(name = "나의 일정 리스트 조회 응답", description = "내 일정 응답 DTO")
 public record MySchedulesResponse(
-    @Schema(description = "미응답 일정 목록")
+    @Schema(description = "진행전 미응답 목록")
     List<ScheduleParticipation> notResponded,
-    @Schema(description = "응답했으며 진행중인 일정 목록")
-    List<ScheduleParticipation> respondedOngoing,
-    @Schema(description = "응답했으며 완료된 일정 목록")
-    List<ScheduleParticipation> respondedCompleted
+    @Schema(description = "진행전 응답 목록")
+    List<ScheduleParticipation> respondedOngoing
 ) {
 
   @Schema(description = "일정 참여 정보")
