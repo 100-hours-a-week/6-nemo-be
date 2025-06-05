@@ -3,7 +3,9 @@ package kr.ai.nemo.domain.groupparticipants.controller;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -123,5 +125,22 @@ class GroupParticipantsControllerTest {
         .andExpect(jsonPath("$.data.groups[0].name").value("테스트 모임"))
         .andExpect(jsonPath("$.data.groups[1].groupId").value(2L))
         .andExpect(jsonPath("$.data.groups[1].name").value("테스트 모임"));
+  }
+
+  @Test
+  @DisplayName("[성공] 모임원 추방 테스트")
+  void kickGroupParticipant_Success() throws Exception {
+    // given
+    Long groupId = 1L;
+    Long userId = 1L;
+    CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+    // when
+    mockMvc.perform(delete("/api/v2/groups/{groupId}/participants/{userId}", groupId, userId)
+          .with(csrf()))
+        .andExpect(status().isNoContent());
+
+    // then
+    verify(groupParticipantsCommandService).kickOut(groupId, userId, userDetails);
   }
 }
