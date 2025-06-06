@@ -2,6 +2,7 @@ package kr.ai.nemo.domain.groupparticipants.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.repository.GroupRepository;
 import kr.ai.nemo.domain.groupparticipants.domain.GroupParticipants;
@@ -25,82 +26,96 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("GroupParticipantsRepository 테스트")
 class GroupParticipantsRepositoryTest {
 
-    @Autowired
-    private GroupParticipantsRepository groupParticipantsRepository;
+  @Autowired
+  private GroupParticipantsRepository groupParticipantsRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+  @Autowired
+  private UserRepository userRepository;
 
-    @Autowired
-    private GroupRepository groupRepository;
+  @Autowired
+  private GroupRepository groupRepository;
 
-    Group savedGroup;
-    User savedUser;
-    User savedUser1;
-    GroupParticipants participant;
-    @BeforeEach
-    void setUp() {
-        User user = UserFixture.createDefaultUser();
-        savedUser = userRepository.save(user);
+  Group savedGroup;
+  User savedUser;
+  User savedUser1;
+  GroupParticipants participant;
 
-        User user1 = UserFixture.createUser("testUser", "test11@example.com", "kakao", "12341234");
-        savedUser1 = userRepository.save(user1);
+  @BeforeEach
+  void setUp() {
+    User user = UserFixture.createDefaultUser();
+    savedUser = userRepository.save(user);
 
-        Group group = GroupFixture.createDefaultGroup(savedUser);
-        savedGroup = groupRepository.save(group);
+    User user1 = UserFixture.createUser("testUser", "test11@example.com", "kakao", "12341234");
+    savedUser1 = userRepository.save(user1);
 
-        participant = GroupParticipants.builder()
-            .user(savedUser1)
-            .group(savedGroup)
-            .role(Role.MEMBER)
-            .status(Status.JOINED)
-            .appliedAt(LocalDateTime.now())
-            .build();
+    Group group = GroupFixture.createDefaultGroup(savedUser);
+    savedGroup = groupRepository.save(group);
 
-        participant = groupParticipantsRepository.save(participant);
-    }
+    participant = GroupParticipants.builder()
+        .user(savedUser1)
+        .group(savedGroup)
+        .role(Role.MEMBER)
+        .status(Status.JOINED)
+        .appliedAt(LocalDateTime.now())
+        .build();
 
-    @Test
-    @DisplayName("[성공] 모임원 저장 테스트")
-    void save_Success() {
-        // when
-        GroupParticipants savedParticipant = groupParticipantsRepository.save(participant);
-        
-        // then
-        assertThat(savedParticipant.getUser()).isEqualTo(savedUser1);
-        assertThat(savedParticipant.getId()).isNotNull();
-        assertThat(savedParticipant.getRole()).isEqualTo(Role.MEMBER);
-        assertThat(savedParticipant.getStatus()).isEqualTo(Status.JOINED);
-    }
+    participant = groupParticipantsRepository.save(participant);
+  }
 
-    @Test
-    @DisplayName("[성공] 이미 모임에 신청했는지 검증 테스트")
-    void existsByGroupIdAndUserIdAndStatusIn_success() {
-        // when
-        boolean exists = groupParticipantsRepository.existsByGroupIdAndUserIdAndStatusIn(savedGroup.getId(), savedUser1.getId(), List.of(Status.JOINED));
+  @Test
+  @DisplayName("[성공] 모임원 저장 테스트")
+  void save_Success() {
+    // when
+    GroupParticipants savedParticipant = groupParticipantsRepository.save(participant);
 
-        // then
-        assertThat(exists).isTrue();
-    }
+    // then
+    assertThat(savedParticipant.getUser()).isEqualTo(savedUser1);
+    assertThat(savedParticipant.getId()).isNotNull();
+    assertThat(savedParticipant.getRole()).isEqualTo(Role.MEMBER);
+    assertThat(savedParticipant.getStatus()).isEqualTo(Status.JOINED);
+  }
 
-    @Test
-    @DisplayName("[성공] 모임원 list 조회 테스트")
-    void findByGroupIdAndStatusIn_success() {
-        // when
-        List<GroupParticipants> participants = groupParticipantsRepository.findByGroupIdAndStatus(savedGroup.getId(), Status.JOINED);
+  @Test
+  @DisplayName("[성공] 이미 모임에 신청했는지 검증 테스트")
+  void existsByGroupIdAndUserIdAndStatusIn_success() {
+    // when
+    boolean exists = groupParticipantsRepository.existsByGroupIdAndUserIdAndStatusIn(
+        savedGroup.getId(), savedUser1.getId(), List.of(Status.JOINED));
 
-        // then
-        assertThat(participants).hasSize(1);
-        assertThat(participants.getFirst().getUser()).isEqualTo(savedUser1);
-    }
+    // then
+    assertThat(exists).isTrue();
+  }
 
-    @Test
-    @DisplayName("[성공] 모임원인지 검증 테스트")
-    void existsByGroupIdAndUserIdAndStatus_success() {
-        // when
-        boolean exists = groupParticipantsRepository.existsByGroupIdAndUserIdAndStatus(savedGroup.getId(), savedUser1.getId(), Status.JOINED);
+  @Test
+  @DisplayName("[성공] 모임원 list 조회 테스트")
+  void findByGroupIdAndStatusIn_success() {
+    // when
+    List<GroupParticipants> participants = groupParticipantsRepository.findByGroupIdAndStatus(
+        savedGroup.getId(), Status.JOINED);
 
-        // then
-        assertThat(exists).isTrue();
-    }
+    // then
+    assertThat(participants).hasSize(1);
+    assertThat(participants.getFirst().getUser()).isEqualTo(savedUser1);
+  }
+
+  @Test
+  @DisplayName("[성공] 모임원인지 검증 테스트")
+  void existsByGroupIdAndUserIdAndStatus_success() {
+    // when
+    boolean exists = groupParticipantsRepository.existsByGroupIdAndUserIdAndStatus(
+        savedGroup.getId(), savedUser1.getId(), Status.JOINED);
+
+    // then
+    assertThat(exists).isTrue();
+  }
+
+  @Test
+  @DisplayName("[성공] 모임원 조회")
+  void findByGroupIdAndUserId_success() {
+    // when
+    Optional<GroupParticipants> findParticipant = groupParticipantsRepository.findByGroupIdAndUserId(savedGroup.getId(), savedUser1.getId());
+
+    // then
+    assertThat(findParticipant).isPresent();
+  }
 }

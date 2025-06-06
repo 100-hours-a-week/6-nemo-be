@@ -45,4 +45,24 @@ public class GroupParticipantsCommandService {
     group.addCurrentUserCount();
     scheduleParticipantsService.addParticipantToUpcomingSchedules(group, user);
   }
+
+  @TimeTrace
+  @Transactional
+  public void kickOut(Long groupId, Long userId, CustomUserDetails userDetails) {
+    Group group = groupValidator.isOwner(groupId, userDetails.getUserId());
+    GroupParticipants participants = groupParticipantValidator.getParticipant(groupId, userId);
+    groupParticipantValidator.checkOwner(participants);
+    participants.setStatus(Status.KICKED);
+    group.decreaseCurrentUserCount();
+  }
+
+  @TimeTrace
+  @Transactional
+  public void withdrawGroup(Long groupId, Long userId) {
+    Group group = groupValidator.findByIdOrThrow(groupId);
+    GroupParticipants participants = groupParticipantValidator.getParticipant(groupId, userId);
+    groupParticipantValidator.checkOwner(participants);
+    participants.setStatus(Status.WITHDRAWN);
+    group.decreaseCurrentUserCount();
+  }
 }

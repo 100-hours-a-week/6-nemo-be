@@ -1,4 +1,4 @@
-package kr.ai.nemo.domain.groupparticipants.controller;
+package kr.ai.nemo.domain.groupparticipants.controller.v1;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -29,8 +29,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "모임원 API", description = "모임원 관련 API 입니다.")
-@RestController
+@Tag(name = "모임원 API (v1)", description = "모임원 관련 API 입니다.")
+@RestController("groupParticipantsControllerV1")
 @RequestMapping("/api/v1/groups")
 @RequiredArgsConstructor
 public class GroupParticipantsController {

@@ -47,7 +47,6 @@ public class GroupParticipants {
   @Column(name = "role", nullable = false)
   private Role role;
 
-  @Setter
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false)
   private Status status;
@@ -71,5 +70,10 @@ public class GroupParticipants {
   public void markAsJoined() {
     this.joinedAt = LocalDateTime.now();
     this.status = Status.JOINED;
+  }
+
+  public void setStatus(Status status) {
+    this.status = status;
+    this.deletedAt = LocalDateTime.now();
   }
 }

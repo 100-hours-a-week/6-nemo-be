@@ -2,6 +2,7 @@ package kr.ai.nemo.domain.group.repository;
 
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.domain.enums.GroupStatus;
+import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -30,4 +31,6 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
 
   @EntityGraph(attributePaths = {"groupTags", "groupTags.tag"})
   Page<Group> findByStatusNot(GroupStatus status, Pageable pageable);
+
+  boolean existsByIdAndOwnerId(Long groupId, Long userId);
 }
