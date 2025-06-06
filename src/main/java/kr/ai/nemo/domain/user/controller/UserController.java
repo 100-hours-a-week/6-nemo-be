@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.user.dto.MyPageResponse;
@@ -44,7 +45,7 @@ public class UserController {
   @TimeTrace
   @PatchMapping("/me/nickname")
   public ResponseEntity<BaseApiResponse<NicknameUpdateResponse>> myPage(
-      @RequestBody NicknameUpdateRequest request,
+      @Valid @RequestBody NicknameUpdateRequest request,
       @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
     return ResponseEntity.ok(BaseApiResponse.success(userService.updateMyNickname(userDetails.getUserId(), request)));

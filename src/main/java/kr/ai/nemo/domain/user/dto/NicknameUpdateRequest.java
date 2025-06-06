@@ -1,12 +1,11 @@
 package kr.ai.nemo.domain.user.dto;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public record NicknameUpdateRequest(
-    @NotNull
-    @Min(2) @Max(20)
+    @NotBlank(message = "닉네임은 필수입니다.")
+    @Size(min = 2, max = 20)
     String nickname
 ) {
 
