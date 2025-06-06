@@ -114,6 +114,8 @@ class GroupParticipantsCommandServiceTest {
         null
     );
 
+    willDoNothing().given(groupParticipantValidator).checkOwner(mockParticipant);
+
     given(groupValidator.isOwner(groupId, userDetails.getUserId()))
         .willReturn(group);
     given(groupParticipantValidator.getParticipant(anyLong(), anyLong()))
@@ -148,6 +150,8 @@ class GroupParticipantsCommandServiceTest {
         LocalDateTime.now(),
         null
     );
+
+    willDoNothing().given(groupParticipantValidator).checkOwner(mockParticipant);
 
     given(groupValidator.findByIdOrThrow(groupId))
         .willReturn(group);

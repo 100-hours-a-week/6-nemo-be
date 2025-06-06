@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.auth.security.JwtProvider;
-import kr.ai.nemo.domain.groupparticipants.controller.v1.GroupParticipantsController;
+import kr.ai.nemo.domain.auth.service.CustomUserDetailsService;
 import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsCommandService;
 import kr.ai.nemo.domain.user.repository.UserRepository;
 import kr.ai.nemo.global.testUtil.MockMember;
@@ -23,7 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(controllers = kr.ai.nemo.domain.groupparticipants.controller.v2.GroupParticipantsController.class)
 @MockMember
-@Import(JwtProvider.class)
+@Import({JwtProvider.class, CustomUserDetailsService.class})
 @ActiveProfiles("test")
 @DisplayName("GroupParticipantsController 테스트")
 class GroupParticipantsControllerTest {
@@ -43,11 +43,12 @@ class GroupParticipantsControllerTest {
     // given
     Long groupId = 1L;
     Long userId = 1L;
-    CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext()
+        .getAuthentication().getPrincipal();
 
     // when
     mockMvc.perform(delete("/api/v2/groups/{groupId}/participants/{userId}", groupId, userId)
-          .with(csrf()))
+            .with(csrf()))
         .andExpect(status().isNoContent());
 
     // then
@@ -60,11 +61,12 @@ class GroupParticipantsControllerTest {
     // given
     Long groupId = 1L;
     Long userId = 1L;
-    CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext()
+        .getAuthentication().getPrincipal();
 
     // when
     mockMvc.perform(delete("/api/v2/groups/{groupId}/participants/me", groupId, userId)
-        .with(csrf()))
+            .with(csrf()))
         .andExpect(status().isNoContent());
 
     // then

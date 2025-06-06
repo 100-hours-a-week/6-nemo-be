@@ -60,4 +60,10 @@ public class GroupParticipantValidator {
     }
     return participants;
   }
+
+  public void checkOwner(GroupParticipants participants) {
+    if(participants.getRole()==Role.LEADER){
+      throw new GroupParticipantException(GroupParticipantErrorCode.LEADER_CANNOT_BE_REMOVED);
+    }
+  }
 }
