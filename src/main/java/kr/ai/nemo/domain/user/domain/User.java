@@ -41,6 +41,7 @@ public class User {
   @Column(name = "email", nullable = false)
   private String email;
 
+  @Setter
   @Column(name = "nickname", nullable = false)
   private String nickname;
 
@@ -60,15 +61,19 @@ public class User {
   @Column(name = "deleted_at")
   private LocalDateTime deletedAt;
 
+  @Builder.Default
   @OneToMany(mappedBy = "owner")
   private List<Group> ownedGroups = new ArrayList<>();
 
+  @Builder.Default
   @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
   private List<GroupParticipants> groupParticipants = new ArrayList<>();
 
+  @Builder.Default
   @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY)
   private List<Schedule> schedule = new ArrayList<>();
 
+  @Builder.Default
   @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
   private List<ScheduleParticipant> scheduleParticipants = new ArrayList<>();
 }
