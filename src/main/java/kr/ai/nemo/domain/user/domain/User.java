@@ -41,6 +41,7 @@ public class User {
   @Column(name = "email", nullable = false)
   private String email;
 
+  @Setter
   @Column(name = "nickname", nullable = false)
   private String nickname;
 

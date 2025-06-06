@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.user.dto.MyPageResponse;
+import kr.ai.nemo.domain.user.dto.NicknameUpdateRequest;
+import kr.ai.nemo.domain.user.dto.NicknameUpdateResponse;
 import kr.ai.nemo.domain.user.service.UserService;
 import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.global.swagger.group.SwaggerGroupListResponse;
@@ -15,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,5 +37,16 @@ public class UserController {
       @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
     return ResponseEntity.ok(BaseApiResponse.success(userService.getMyPage(userDetails.getUserId())));
+  }
+
+  @Operation(summary = "닉네임 변경", description = "사용자의 닉네임을 변경합니다.")
+  @ApiResponse(responseCode = "200", description = "성공적으로 조회되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupListResponse.class)))
+  @TimeTrace
+  @PatchMapping("/me/nickname")
+  public ResponseEntity<BaseApiResponse<NicknameUpdateResponse>> myPage(
+      @RequestBody NicknameUpdateRequest request,
+      @AuthenticationPrincipal CustomUserDetails userDetails
+  ) {
+    return ResponseEntity.ok(BaseApiResponse.success(userService.updateMyNickname(userDetails.getUserId(), request)));
   }
 }

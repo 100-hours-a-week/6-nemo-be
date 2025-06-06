@@ -1,5 +1,8 @@
 package kr.ai.nemo.domain.user.repository;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import java.util.Optional;
 import kr.ai.nemo.domain.user.domain.User;
 import kr.ai.nemo.domain.user.dto.MyPageResponse;
@@ -18,4 +21,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     WHERE u.id = :id
 """)
   MyPageResponse findDtoById(Long id);
+
+  boolean existsByNickname(@NotNull @Min(2) @Max(20) String nickname);
 }
