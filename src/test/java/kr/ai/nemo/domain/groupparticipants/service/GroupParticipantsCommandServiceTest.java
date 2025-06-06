@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
@@ -58,7 +59,7 @@ class GroupParticipantsCommandServiceTest {
   private GroupParticipantsCommandService groupParticipantsCommandService;
 
   @Test
-  @DisplayName("[성공] 모임 신청 테스트")
+  @DisplayName("[성공] 모임 신청 테스트 (새가입)")
   void applyToGroup_Success() {
     // given
     Long groupId = 1L;
@@ -68,13 +69,16 @@ class GroupParticipantsCommandServiceTest {
     Group mockGroup = mock(Group.class);
     groupRepository.save(mockGroup);
 
-    Role mockRole = mock(Role.class);
-    Status mockStatus = mock(Status.class);
-
     CustomUserDetails userDetails = new CustomUserDetails(mockUser);
-    when(groupValidator.findByIdOrThrow(groupId)).thenReturn(mockGroup);
-    willDoNothing().given(groupParticipantValidator).validateJoinedParticipant(groupId, mockUser.getId());
-    willDoNothing().given(groupValidator).validateGroupIsNotFull(any(Group.class));
+    Role mockRole = Role.MEMBER;
+    Status mockStatus = Status.JOINED;
+
+    // 이미 참여 이력이 없음 (Optional.empty)
+    given(groupParticipantsRepository.findByGroupIdAndUserId(groupId, mockUser.getId()))
+        .willReturn(Optional.empty());
+
+    given(groupValidator.findByIdOrThrow(groupId)).willReturn(mockGroup);
+    willDoNothing().given(groupValidator).validateGroupIsNotFull(mockGroup);
     willDoNothing().given(scheduleParticipantsService).addParticipantToUpcomingSchedules(mockGroup, mockUser);
 
     // when
@@ -82,12 +86,53 @@ class GroupParticipantsCommandServiceTest {
 
     // then
     verify(groupValidator).findByIdOrThrow(groupId);
-    verify(groupParticipantValidator).validateJoinedParticipant(groupId, mockUser.getId());
-    verify(groupValidator).validateGroupIsNotFull(any(Group.class));
+    verify(groupValidator).validateGroupIsNotFull(mockGroup);
     verify(groupParticipantsRepository).save(any(GroupParticipants.class));
     verify(mockGroup).addCurrentUserCount();
     verify(scheduleParticipantsService).addParticipantToUpcomingSchedules(mockGroup, mockUser);
   }
+
+  @Test
+  @DisplayName("[성공] 모임 신청 테스트 (재가입)")
+  void rejoinToGroup_Success() {
+    // given
+    Long groupId = 1L;
+    User user = UserFixture.createDefaultUser();
+    userRepository.save(user);
+
+    Group group = GroupFixture.createDefaultGroup(user);
+    groupRepository.save(group);
+
+    CustomUserDetails userDetails = new CustomUserDetails(user);
+    GroupParticipants participant = GroupParticipants.builder()
+        .group(group)
+        .user(user)
+        .role(Role.MEMBER)
+        .status(Status.KICKED)
+        .appliedAt(LocalDateTime.now().minusDays(5))
+        .build();
+
+    groupParticipantsRepository.saveAndFlush(participant);
+
+    // 이미 참여 이력이 있음
+    given(groupParticipantsRepository.findByGroupIdAndUserId(groupId, user.getId()))
+        .willReturn(Optional.of(participant));
+    given(groupValidator.findByIdOrThrow(groupId)).willReturn(group);
+    willDoNothing().given(groupValidator).validateGroupIsNotFull(group);
+    willDoNothing().given(groupParticipantValidator).validateJoinedParticipant(participant);
+    willDoNothing().given(scheduleParticipantsService).addParticipantToUpcomingSchedules(group, user);
+
+    // when
+    groupParticipantsCommandService.applyToGroup(groupId, userDetails, Role.MEMBER, Status.JOINED);
+
+    // then
+    verify(groupValidator).findByIdOrThrow(groupId);
+    verify(groupValidator).validateGroupIsNotFull(group);
+    verify(groupParticipantValidator).validateJoinedParticipant(participant);
+    verify(scheduleParticipantsService).addParticipantToUpcomingSchedules(group, user);
+    assertThat(participant.getStatus()).isEqualTo(Status.JOINED);
+  }
+
 
   @Test
   @DisplayName("[성공] 모임원 추방 테스트")
