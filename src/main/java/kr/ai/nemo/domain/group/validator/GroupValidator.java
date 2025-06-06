@@ -37,10 +37,11 @@ public class GroupValidator {
     }
   }
 
-  public void isOwner(Long groupId, Long userId) {
+  public Group isOwner(Long groupId, Long userId) {
     Group group = findByIdOrThrow(groupId);
     if(!group.getOwner().getId().equals(userId)) {
       throw new GroupException(GroupErrorCode.NOT_GROUP_OWNER);
     }
+    return group;
   }
 }

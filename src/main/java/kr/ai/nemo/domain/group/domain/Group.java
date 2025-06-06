@@ -112,6 +112,10 @@ public class Group {
     this.currentUserCount++;
   }
 
+  public void decreaseCurrentUserCount() {
+    this.currentUserCount--;
+  }
+
   public void addCompleteSchedule() {
     this.completedScheduleTotal++;
   }

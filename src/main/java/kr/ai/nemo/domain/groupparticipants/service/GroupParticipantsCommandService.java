@@ -49,8 +49,9 @@ public class GroupParticipantsCommandService {
   @TimeTrace
   @Transactional
   public void kickOut(Long groupId, Long userId, CustomUserDetails userDetails) {
-    groupValidator.isOwner(groupId, userDetails.getUserId());
+    Group group = groupValidator.isOwner(groupId, userDetails.getUserId());
     GroupParticipants participants = groupParticipantValidator.getParticipant(groupId, userId);
     participants.setStatus(Status.KICKED);
+    group.decreaseCurrentUserCount();
   }
 }
