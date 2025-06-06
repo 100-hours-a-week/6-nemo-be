@@ -97,7 +97,9 @@ class GroupParticipantsCommandServiceTest {
     Long userId = 1L;
 
     User user = mock(User.class);
-    Group group = mock(Group.class);
+    Group group = GroupFixture.createDefaultGroup(user);
+    groupRepository.saveAndFlush(group);
+    group.setCurrentUserCount(5);
 
     CustomUserDetails userDetails = new CustomUserDetails(user);
 
@@ -112,7 +114,8 @@ class GroupParticipantsCommandServiceTest {
         null
     );
 
-    doNothing().when(groupValidator).isOwner(groupId, userDetails.getUserId());
+    given(groupValidator.isOwner(groupId, userDetails.getUserId()))
+        .willReturn(group);
     given(groupParticipantValidator.getParticipant(anyLong(), anyLong()))
         .willReturn(mockParticipant);
 
@@ -121,5 +124,6 @@ class GroupParticipantsCommandServiceTest {
 
     // then
     assertThat(mockParticipant.getStatus()).isEqualTo(Status.KICKED);
+    assertThat(group.getCurrentUserCount()).isEqualTo(4);
   }
 }

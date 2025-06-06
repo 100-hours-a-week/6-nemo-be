@@ -35,7 +35,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(controllers = GroupParticipantsController.class)
+@WebMvcTest(controllers = kr.ai.nemo.domain.groupparticipants.controller.v1.GroupParticipantsController.class)
 @MockMember
 @Import(JwtProvider.class)
 @ActiveProfiles("test")
