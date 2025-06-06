@@ -13,7 +13,8 @@ public enum GroupParticipantErrorCode implements ErrorCode {
   NOT_GROUP_MEMBER("PARTICIPANT_NOT_FOUND", "모임원이 아닙니다.", HttpStatus.NOT_FOUND),
 
   // 409 Conflict
-  ALREADY_KICKED_MEMBER("ALREADY_KICKED_MEMBER", "이미 추방된 모임원입니다.", HttpStatus.CONFLICT);
+  ALREADY_KICKED_MEMBER("ALREADY_KICKED_MEMBER", "추방된 모임원입니다.", HttpStatus.CONFLICT),
+  ALREADY_WITHDRAWN_MEMBER("ALREADY_WITHDRAWN_MEMBER", "탈퇴한 모임원입니다.", HttpStatus.CONFLICT);
 
   private final String code;
   private final String message;

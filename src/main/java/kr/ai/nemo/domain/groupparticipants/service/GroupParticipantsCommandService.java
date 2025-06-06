@@ -54,4 +54,13 @@ public class GroupParticipantsCommandService {
     participants.setStatus(Status.KICKED);
     group.decreaseCurrentUserCount();
   }
+
+  @TimeTrace
+  @Transactional
+  public void withdrawGroup(Long groupId, Long userId) {
+    Group group = groupValidator.findByIdOrThrow(groupId);
+    GroupParticipants participants = groupParticipantValidator.getParticipant(groupId, userId);
+    participants.setStatus(Status.WITHDRAWN);
+    group.decreaseCurrentUserCount();
+  }
 }

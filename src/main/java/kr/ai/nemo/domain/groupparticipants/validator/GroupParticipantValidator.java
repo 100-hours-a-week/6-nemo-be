@@ -55,6 +55,8 @@ public class GroupParticipantValidator {
         .orElseThrow(() -> new GroupParticipantException(GroupParticipantErrorCode.NOT_GROUP_MEMBER));
     if(participants.getStatus()==Status.KICKED){
       throw new GroupParticipantException(GroupParticipantErrorCode.ALREADY_KICKED_MEMBER);
+    } else if(participants.getStatus()==Status.WITHDRAWN){
+      throw new GroupParticipantException(GroupParticipantErrorCode.ALREADY_WITHDRAWN_MEMBER);
     }
     return participants;
   }

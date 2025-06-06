@@ -126,4 +126,40 @@ class GroupParticipantsCommandServiceTest {
     assertThat(mockParticipant.getStatus()).isEqualTo(Status.KICKED);
     assertThat(group.getCurrentUserCount()).isEqualTo(4);
   }
+
+  @Test
+  @DisplayName("[성공] 모임 탈퇴 테스트")
+  void withdrawGroup_Success() {
+    // given
+    Long groupId = 1L;
+    User user = mock(User.class);
+    CustomUserDetails userDetails = new CustomUserDetails(user);
+    Group group = GroupFixture.createDefaultGroup(user);
+    groupRepository.saveAndFlush(group);
+    group.setCurrentUserCount(5);
+
+    GroupParticipants mockParticipant = new GroupParticipants(
+        1L,
+        user,
+        group,
+        Role.MEMBER,
+        Status.JOINED,
+        LocalDateTime.now(),
+        LocalDateTime.now(),
+        null
+    );
+
+    given(groupValidator.findByIdOrThrow(groupId))
+        .willReturn(group);
+    given(groupParticipantValidator.getParticipant(anyLong(), anyLong()))
+        .willReturn(mockParticipant);
+
+    // when
+    groupParticipantsCommandService.withdrawGroup(groupId, userDetails.getUserId());
+
+    // then
+    assertThat(group.getCurrentUserCount()).isEqualTo(4);
+    assertThat(mockParticipant.getStatus()).isEqualTo(Status.WITHDRAWN);
+    assertThat(mockParticipant.getDeletedAt()).isNotNull();
+  }
 }
