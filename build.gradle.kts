@@ -28,6 +28,7 @@ val jjwtVersion = "0.11.5"
 val awsSpringCloud = "3.0.2"
 val awsSdkVersion = "1.12.700"
 val swaggerVersion = "2.7.0"
+val sentryVersion = "8.12.0"
 
 dependencies {
 
@@ -40,7 +41,7 @@ dependencies {
 	implementation("com.amazonaws:aws-java-sdk-s3:$awsSdkVersion")
 	implementation("com.amazonaws:aws-java-sdk-s3")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$swaggerVersion")
-	implementation("io.sentry:sentry-spring-boot-starter-jakarta:8.12.0")
+	implementation("io.sentry:sentry-spring-boot-starter-jakarta:$sentryVersion")
 	implementation("org.springframework.boot:spring-boot-starter-aop")
 
 	implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")

@@ -1,0 +1,37 @@
+package kr.ai.nemo.domain.user.controller;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import kr.ai.nemo.aop.logging.TimeTrace;
+import kr.ai.nemo.domain.auth.security.CustomUserDetails;
+import kr.ai.nemo.domain.user.dto.MyPageResponse;
+import kr.ai.nemo.domain.user.service.UserService;
+import kr.ai.nemo.global.common.BaseApiResponse;
+import kr.ai.nemo.global.swagger.group.SwaggerGroupListResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@Tag(name = "사용자 API", description = "사용자 관련 API 입니다.")
+@RestController
+@RequestMapping("/api/v2/users")
+@RequiredArgsConstructor
+public class UserController {
+  private final UserService userService;
+
+  @Operation(summary = "마이페이지 조회", description = "마이페이지를 조회합니다.")
+  @ApiResponse(responseCode = "200", description = "성공적으로 조회되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupListResponse.class)))
+  @TimeTrace
+  @GetMapping("/me")
+  public ResponseEntity<BaseApiResponse<MyPageResponse>> myPage(
+      @AuthenticationPrincipal CustomUserDetails userDetails
+  ) {
+    return ResponseEntity.ok(BaseApiResponse.success(userService.getMyPage(userDetails.getUserId())));
+  }
+}

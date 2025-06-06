@@ -1,6 +1,7 @@
 package kr.ai.nemo.domain.user.repository;
 
 import kr.ai.nemo.domain.user.domain.User;
+import kr.ai.nemo.domain.user.dto.MyPageResponse;
 import kr.ai.nemo.global.fixture.user.UserFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,5 +48,22 @@ class UserRepositoryTest {
         assertThat(foundUser).isNotNull();
         assertThat(foundUser.getProvider()).isEqualTo("kakao");
         assertThat(foundUser.getProviderId()).isEqualTo("123456789");
+    }
+
+    @Test
+    @DisplayName("[성공] 마이페이지 조회 테스트")
+    void findDtoNyId_Success() {
+        // given
+        User user = UserFixture.createDefaultUser();
+        userRepository.save(user);
+
+        // when
+        MyPageResponse response = userRepository.findDtoById(user.getId());
+
+        // then
+        assertThat(response).isNotNull();
+        assertThat(response.nickname()).isEqualTo(user.getNickname());
+        assertThat(response.email()).isEqualTo(user.getEmail());
+        assertThat(response.profileImageUrl()).isEqualTo(user.getProfileImageUrl());
     }
 }
