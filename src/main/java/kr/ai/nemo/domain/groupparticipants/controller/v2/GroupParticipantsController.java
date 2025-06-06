@@ -50,7 +50,7 @@ public class GroupParticipantsController {
       @PathVariable Long groupId,
       @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
-    groupParticipantsCommandService.withdrawGroup(groupId, userDetails.getUserId());
+    // groupParticipantsCommandService.withdrawGroup(groupId, userDetails.getUserId());
     return ResponseEntity.noContent().build();
   }
 }

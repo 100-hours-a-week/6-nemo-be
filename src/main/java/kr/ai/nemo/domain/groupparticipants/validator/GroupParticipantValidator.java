@@ -36,7 +36,7 @@ public class GroupParticipantValidator {
 
   public Role checkUserRole(CustomUserDetails userDetails, Group group) {
     if (userDetails == null) {
-      return Role.NON_MEMBER;
+      return Role.GUEST;
     }
 
     Long userId = userDetails.getUserId();
