@@ -40,4 +40,17 @@ public class GroupParticipantsController {
     groupParticipantsCommandService.kickOut(groupId, userId, userDetails);
     return ResponseEntity.noContent().build();
   }
+
+  @Operation(summary = "모임 탈퇴", description = "모임을 탈퇴합니다.")
+  @ApiResponse(responseCode = "204", description = "성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
+  @SwaggerJwtErrorResponse
+  @TimeTrace
+  @DeleteMapping("/{groupId}/participants/me")
+  public ResponseEntity<BaseApiResponse<Object>> withdrawGroup(
+      @PathVariable Long groupId,
+      @AuthenticationPrincipal CustomUserDetails userDetails
+  ) {
+    groupParticipantsCommandService.withdrawGroup(groupId, userDetails.getUserId());
+    return ResponseEntity.noContent().build();
+  }
 }

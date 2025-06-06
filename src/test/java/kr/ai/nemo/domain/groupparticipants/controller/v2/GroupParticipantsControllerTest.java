@@ -53,4 +53,21 @@ class GroupParticipantsControllerTest {
     // then
     verify(groupParticipantsCommandService).kickOut(groupId, userId, userDetails);
   }
+
+  @Test
+  @DisplayName("[성공] 모임 탈퇴 테스트")
+  void withdrawFromGroup_Success() throws Exception {
+    // given
+    Long groupId = 1L;
+    Long userId = 1L;
+    CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+    // when
+    mockMvc.perform(delete("/api/v2/groups/{groupId}/participants/me", groupId, userId)
+        .with(csrf()))
+        .andExpect(status().isNoContent());
+
+    // then
+    verify(groupParticipantsCommandService).withdrawGroup(groupId, userDetails.getUserId());
+  }
 }
