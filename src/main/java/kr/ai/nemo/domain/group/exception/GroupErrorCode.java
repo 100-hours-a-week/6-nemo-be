@@ -13,6 +13,9 @@ public enum GroupErrorCode implements ErrorCode {
   // 400 BAD REQUEST
   INVALID_CATEGORY("INVALID_CATEGOTY","올바르지 않은 모임 카테고리입니다.", HttpStatus.BAD_REQUEST ),
 
+  // 403 Forbidden
+  NOT_GROUP_OWNER("GROUP_KICK_FORBIDDEN", "추방 권한이 없습니다.", HttpStatus.FORBIDDEN),
+
   // 404 NOT FOUND
   GROUP_NOT_FOUND("GROUP_NOT_FOUND", "모임을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
