@@ -3,6 +3,7 @@ package kr.ai.nemo.domain.scheduleparticipants.repository;
 import java.util.List;
 import java.util.Optional;
 import kr.ai.nemo.domain.schedule.domain.Schedule;
+import kr.ai.nemo.domain.schedule.domain.enums.ScheduleStatus;
 import kr.ai.nemo.domain.scheduleparticipants.domain.ScheduleParticipant;
 import kr.ai.nemo.domain.user.domain.User;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -24,6 +25,7 @@ public interface ScheduleParticipantRepository extends JpaRepository<SchedulePar
     LEFT JOIN FETCH s.group g
     LEFT JOIN FETCH s.owner o
     WHERE sp.user.id = :userId
+    AND s.status = :status
 """)
-  List<ScheduleParticipant> findByUserId(Long userId);
+  List<ScheduleParticipant> findRecruitingSchedulesByUserId(Long userId, ScheduleStatus status);
 }

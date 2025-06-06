@@ -31,7 +31,6 @@ public record GroupCreateRequest(
     String category,
 
     @Schema(description = "모임 지역", example = "서울 강남구")
-    @NotBlank(message = "{group.location.notBlank}")
     String location,
 
     @Schema(description = "최대 인원 수", example = "10")

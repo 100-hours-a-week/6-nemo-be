@@ -1,12 +1,10 @@
 package kr.ai.nemo.domain.group.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import kr.ai.nemo.domain.group.domain.Group;
+import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 
-@JsonInclude(Include.NON_EMPTY)
 @Schema(name = "모임 상세 조회 응답", description = "모임 상세 조회 응답 DTO")
 public record GroupDetailResponse(
 
@@ -41,10 +39,13 @@ public record GroupDetailResponse(
     List<String> tags,
 
     @Schema(description = "모임장 닉네임", example = "admin")
-    String ownerName
+    String ownerName,
+
+    @Schema(description = "조회한 사용자의 상태", example = "LEADER")
+    Role role
 ) {
 
-  public static GroupDetailResponse from(Group group, List<String> tags) {
+  public static GroupDetailResponse from(Group group, List<String> tags, Role role) {
     return new GroupDetailResponse(
         group.getName(),
         group.getCategory(),
@@ -56,7 +57,8 @@ public record GroupDetailResponse(
         group.getMaxUserCount(),
         group.getImageUrl(),
         tags,
-        group.getOwner().getNickname()
+        group.getOwner().getNickname(),
+        role
     );
   }
 }

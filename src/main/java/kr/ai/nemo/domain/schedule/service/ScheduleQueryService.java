@@ -1,6 +1,5 @@
 package kr.ai.nemo.domain.schedule.service;
 
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import kr.ai.nemo.aop.logging.TimeTrace;
@@ -71,9 +70,7 @@ public class ScheduleQueryService {
   @TimeTrace
   @Transactional(readOnly = true)
   public MySchedulesResponse getMySchedules(Long userId) {
-    List<ScheduleParticipant> participants = scheduleParticipantRepository.findByUserId(userId);
-
-    LocalDateTime now = LocalDateTime.now();
+    List<ScheduleParticipant> participants = scheduleParticipantRepository.findRecruitingSchedulesByUserId(userId, ScheduleStatus.RECRUITING);
 
     List<ScheduleParticipation> pending = participants.stream()
         .filter(p -> p.getStatus() == ScheduleParticipantStatus.PENDING)
@@ -81,17 +78,10 @@ public class ScheduleQueryService {
         .toList();
 
     List<ScheduleParticipation> upcoming = participants.stream()
-        .filter(p -> p.getStatus() == ScheduleParticipantStatus.ACCEPTED
-            && p.getSchedule().getStartAt().isAfter(now))
+        .filter(p -> p.getStatus() == ScheduleParticipantStatus.ACCEPTED)
         .map(ScheduleParticipation::from)
         .toList();
 
-    List<ScheduleParticipation> completed = participants.stream()
-        .filter(p -> p.getStatus() == ScheduleParticipantStatus.ACCEPTED
-            && p.getSchedule().getStartAt().isBefore(now))
-        .map(ScheduleParticipation::from)
-        .toList();
-
-    return new MySchedulesResponse(pending, upcoming, completed);
+    return new MySchedulesResponse(pending, upcoming);
     }
 }

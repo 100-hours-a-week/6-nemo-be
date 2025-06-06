@@ -39,7 +39,6 @@ class ScheduleRepositoryTest {
   @Autowired
   private GroupRepository groupRepository;
 
-
   ScheduleStatus recruitingStatus = ScheduleStatus.RECRUITING;
   ScheduleStatus canceledStatus = ScheduleStatus.CANCELED;
   User savedUser;
@@ -54,6 +53,10 @@ class ScheduleRepositoryTest {
 
   @BeforeEach
   void setUp() {
+    // 기존 데이터 정리
+    scheduleRepository.deleteAll();
+    groupRepository.deleteAll();
+    userRepository.deleteAll();
 
     User user = UserFixture.createDefaultUser();
     savedUser = userRepository.save(user);
@@ -76,15 +79,14 @@ class ScheduleRepositoryTest {
         ScheduleStatus.RECRUITING);
 
     scheduleRepository.saveAll(List.of(schedule1, schedule2, schedule3, schedule4, schedule5));
-
   }
 
   @Test
   @DisplayName("[성공] 일정 저장 테스트")
   void save_Success() {
     // then
-    assertThat(scheduleRepository.count()).isEqualTo(2);
-    assertThat(schedule1.getId()).isEqualTo(1L);
+    assertThat(scheduleRepository.count()).isEqualTo(5);
+    assertThat(schedule1.getId()).isNotNull();
     assertThat(schedule1.getStatus()).isEqualTo(canceledStatus);
   }
 
@@ -139,7 +141,7 @@ class ScheduleRepositoryTest {
   @DisplayName("[성공] 일정 상세 조회 테스트 (일정 생성자와 일정의 모임도 함께 가져오는 경우)")
   void findByIdWithGroupAndOwner() {
     // when
-    Optional<Schedule> result = scheduleRepository.findById(1L);
+    Optional<Schedule> result = scheduleRepository.findById(schedule1.getId());
 
     // then
     assertThat(result).isPresent();
@@ -151,8 +153,8 @@ class ScheduleRepositoryTest {
   @DisplayName("[성공] 일정 생성자인지 검증 테스트")
   void existsByIdAndOwnerId() {
     // when
-    boolean exists = scheduleRepository.existsByIdAndOwnerId(1L, 1L);
-    boolean exists2 = scheduleRepository.existsByIdAndOwnerId(2L, 2L);
+    boolean exists = scheduleRepository.existsByIdAndOwnerId(schedule1.getId(), savedUser.getId());
+    boolean exists2 = scheduleRepository.existsByIdAndOwnerId(schedule1.getId(), 999L);
 
     // then
     assertThat(exists).isTrue();

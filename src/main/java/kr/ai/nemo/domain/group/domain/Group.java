@@ -48,7 +48,7 @@ public class Group {
   @Column(name = "category", nullable = false)
   private String category;
 
-  @Column(name = "location", nullable = false)
+  @Column(name = "location")
   private String location;
 
   @Setter

@@ -7,11 +7,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import kr.ai.nemo.domain.auth.exception.AuthErrorCode;
-import kr.ai.nemo.domain.user.domain.User;
-import kr.ai.nemo.domain.user.domain.enums.UserStatus;
+import kr.ai.nemo.domain.auth.service.CustomUserDetailsService;
 import kr.ai.nemo.domain.user.exception.UserErrorCode;
 import kr.ai.nemo.domain.user.exception.UserException;
-import kr.ai.nemo.domain.user.repository.UserRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,7 +29,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private static final String APPLICATION_JSON_UTF8 = "application/json;charset=UTF-8";
 
   private final JwtProvider jwtProvider;
-  private final UserRepository userRepository;
+  private final CustomUserDetailsService customUserDetailsService;
 
   @Override
   protected void doFilterInternal(
@@ -47,22 +45,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       try {
         jwtProvider.validateToken(token);
         Long userId = jwtProvider.getUserIdFromToken(token);
+        CustomUserDetails userDetails = customUserDetailsService.loadUserById(userId);
 
-        User user = userRepository.findById(userId).orElse(null);
-        if (user == null) {
-          setErrorResponse(response, UserErrorCode.USER_NOT_FOUND.getHttpStatus().value(), UserErrorCode.USER_NOT_FOUND.getMessage());
-          return;
-        }
-
-        if (user.getStatus() == UserStatus.WITHDRAWN) {
-          setErrorResponse(response, UserErrorCode.USER_WITHDRAWN.getHttpStatus().value(), UserErrorCode.USER_WITHDRAWN.getMessage());
-          return;
-        }
-
-        CustomUserDetails userDetails = new CustomUserDetails(user);
         UsernamePasswordAuthenticationToken authentication =
             new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
       } catch (ExpiredJwtException e) {
@@ -70,6 +56,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return;
       } catch (JwtException | IllegalArgumentException e) {
         setErrorResponse(response, AuthErrorCode.INVALID_TOKEN.getHttpStatus().value(), AuthErrorCode.INVALID_TOKEN.getMessage());
+        return;
+      } catch (UserException e) {
+        if (e.getErrorCode() == UserErrorCode.USER_WITHDRAWN) {
+          setErrorResponse(response, UserErrorCode.USER_WITHDRAWN.getHttpStatus().value(), UserErrorCode.USER_WITHDRAWN.getMessage());
+        } else {
+          setErrorResponse(response, UserErrorCode.USER_NOT_FOUND.getHttpStatus().value(), UserErrorCode.USER_NOT_FOUND.getMessage());
+        }
         return;
       }
     }

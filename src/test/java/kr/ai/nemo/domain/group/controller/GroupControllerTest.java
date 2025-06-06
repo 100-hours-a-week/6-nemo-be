@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.auth.security.JwtProvider;
+import kr.ai.nemo.domain.auth.service.CustomUserDetailsService;
 import kr.ai.nemo.domain.group.dto.request.GroupCreateRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupGenerateRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupCreateResponse;
@@ -24,6 +25,7 @@ import kr.ai.nemo.domain.group.dto.response.GroupListResponse;
 import kr.ai.nemo.domain.group.service.GroupCommandService;
 import kr.ai.nemo.domain.group.service.GroupGenerateService;
 import kr.ai.nemo.domain.group.service.GroupQueryService;
+import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.schedule.domain.enums.ScheduleStatus;
 import kr.ai.nemo.domain.schedule.dto.response.ScheduleListResponse;
 import kr.ai.nemo.domain.schedule.service.ScheduleQueryService;
@@ -68,7 +70,7 @@ class GroupControllerTest {
   private ScheduleQueryService scheduleQueryService;
 
   @MockitoBean
-  private UserRepository userRepository;
+  private CustomUserDetailsService customUserDetailsService;
 
   @Test
   @DisplayName("모임 list 조회 API 테스트")
@@ -86,6 +88,7 @@ class GroupControllerTest {
             .imageUrl("image1.jpg")
             .tags(List.of("자바", "백엔드"))
             .build(),
+
         GroupDto.builder()
             .groupId(2L)
             .name("운동 모임")
@@ -244,10 +247,11 @@ class GroupControllerTest {
         15,
         "img.jpg",
         List.of("test1", "test2"),
-        "test1"
+        "test1",
+        Role.LEADER
     );
 
-    given(groupQueryService.detailGroup(anyLong())).willReturn(mockResponse);
+    given(groupQueryService.detailGroup(anyLong(), any())).willReturn(mockResponse);
 
     mockMvc.perform(get("/api/v1/groups/1"))
         .andExpect(status().isOk())
