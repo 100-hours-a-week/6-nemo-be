@@ -18,13 +18,9 @@ import org.springframework.stereotype.Component;
 public class GroupParticipantValidator {
 
   private final GroupParticipantsRepository repository;
-  private final GroupParticipantsRepository groupParticipantsRepository;
 
-  public void validateJoinedParticipant(Long groupId, Long userId) {
-    boolean exists = repository.existsByGroupIdAndUserIdAndStatus(
-        groupId, userId, Status.JOINED);
-
-    if (exists) {
+  public void validateJoinedParticipant(GroupParticipants groupParticipant) {
+    if(groupParticipant.getStatus() == Status.JOINED) {
       throw new GroupException(GroupErrorCode.ALREADY_APPLIED_OR_JOINED);
     }
   }
@@ -51,7 +47,7 @@ public class GroupParticipantValidator {
   }
 
   public GroupParticipants getParticipant(Long groupId, Long userId) {
-    GroupParticipants participants = groupParticipantsRepository.findByGroupIdAndUserId(groupId, userId)
+    GroupParticipants participants = repository.findByGroupIdAndUserId(groupId, userId)
         .orElseThrow(() -> new GroupParticipantException(GroupParticipantErrorCode.NOT_GROUP_MEMBER));
     if(participants.getStatus()==Status.KICKED){
       throw new GroupParticipantException(GroupParticipantErrorCode.ALREADY_KICKED_MEMBER);

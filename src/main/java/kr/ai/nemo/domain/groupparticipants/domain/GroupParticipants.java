@@ -76,4 +76,10 @@ public class GroupParticipants {
     this.status = status;
     this.deletedAt = LocalDateTime.now();
   }
+
+  public void rejoin() {
+    this.appliedAt = LocalDateTime.now();
+    this.deletedAt = null;
+    this.status = Status.JOINED;
+  }
 }

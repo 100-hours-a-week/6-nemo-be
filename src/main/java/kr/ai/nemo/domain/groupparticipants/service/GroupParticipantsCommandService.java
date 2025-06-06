@@ -1,6 +1,7 @@
 package kr.ai.nemo.domain.groupparticipants.service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
@@ -30,18 +31,26 @@ public class GroupParticipantsCommandService {
   public void applyToGroup(Long groupId, CustomUserDetails userDetails, Role role, Status status) {
     User user = userDetails.getUser();
     Group group = groupValidator.findByIdOrThrow(groupId);
-    groupParticipantValidator.validateJoinedParticipant(groupId, user.getId());
     groupValidator.validateGroupIsNotFull(group);
 
-    GroupParticipants participant = GroupParticipants.builder()
-        .user(user)
-        .group(group)
-        .role(role)
-        .status(status)
-        .appliedAt(LocalDateTime.now())
-        .build();
+    Optional<GroupParticipants> participant = groupParticipantsRepository.findByGroupIdAndUserId(groupId, user.getId());
 
-    groupParticipantsRepository.save(participant);
+    if (participant.isPresent()) {
+      GroupParticipants groupParticipant = participant.get();
+      groupParticipantValidator.validateJoinedParticipant(groupParticipant);
+      groupParticipant.rejoin();
+
+    } else {
+      GroupParticipants newParticipant = GroupParticipants.builder()
+          .user(user)
+          .group(group)
+          .role(role)
+          .status(status)
+          .appliedAt(LocalDateTime.now())
+          .build();
+
+      groupParticipantsRepository.save(newParticipant);
+    }
     group.addCurrentUserCount();
     scheduleParticipantsService.addParticipantToUpcomingSchedules(group, user);
   }
