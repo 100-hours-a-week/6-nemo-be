@@ -61,4 +61,11 @@ public class GroupCommandService {
 
     return GroupCreateResponse.from(savedGroup, tags);
   }
+
+  @TimeTrace
+  @Transactional
+  public void deleteGroup(Long userId, Long groupId) {
+    Group group = groupValidator.isOwnerForGroupDelete(groupId, userId);
+    group.deleteGroup();
+  }
 }
