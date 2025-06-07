@@ -22,5 +22,5 @@ jobs:
         run: chmod +x ./gradlew
 
       # 3. 테스트 실행
-#      - name: Run Tests (추후 테스트 코드 추가 시 추가 예정)
-#        run: ./gradlew clean test
+      - name: Run Tests (추후 테스트 코드 추가 시 추가 예정)
+        run: ./gradlew clean test
