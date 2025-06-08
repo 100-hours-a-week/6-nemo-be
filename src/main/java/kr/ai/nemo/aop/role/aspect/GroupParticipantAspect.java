@@ -1,5 +1,6 @@
 package kr.ai.nemo.aop.role.aspect;
 
+import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.exception.GroupErrorCode;
 import kr.ai.nemo.domain.group.exception.GroupException;
 import kr.ai.nemo.domain.groupparticipants.exception.GroupParticipantErrorCode;
@@ -22,7 +23,8 @@ public class GroupParticipantAspect {
 
   @Before("@annotation(kr.ai.nemo.aop.role.annotation.RequireGroupParticipant)")
   public void checkGroupMembership(JoinPoint joinPoint) {
-    Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    Long userId = userDetails.getUserId();
     Long groupId = extractGroupId(joinPoint);
 
     if (!groupParticipantValidator.validateIsJoinedMember(groupId, userId)) {
