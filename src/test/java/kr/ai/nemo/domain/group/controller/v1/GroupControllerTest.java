@@ -1,4 +1,4 @@
-package kr.ai.nemo.domain.group.controller;
+package kr.ai.nemo.domain.group.controller.v1;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -29,7 +29,6 @@ import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.schedule.domain.enums.ScheduleStatus;
 import kr.ai.nemo.domain.schedule.dto.response.ScheduleListResponse;
 import kr.ai.nemo.domain.schedule.service.ScheduleQueryService;
-import kr.ai.nemo.domain.user.repository.UserRepository;
 import kr.ai.nemo.global.testUtil.MockMember;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,11 +43,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(controllers = GroupController.class)
+@WebMvcTest(controllers = kr.ai.nemo.domain.group.controller.v1.GroupController.class)
 @MockMember
 @Import(JwtProvider.class)
 @ActiveProfiles("test")
-@DisplayName("GroupController 테스트")
+@DisplayName("GroupControllerV1 테스트")
 class GroupControllerTest {
 
   @Autowired

@@ -1,4 +1,4 @@
-package kr.ai.nemo.domain.group.controller;
+package kr.ai.nemo.domain.group.controller.v1;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -45,7 +45,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 
 @Tag(name = "모임 API", description = "모임 관련 API 입니다.")
-@RestController
+@RestController("groupControllerV1")
 @RequestMapping("/api/v1/groups")
 @RequiredArgsConstructor
 public class GroupController {

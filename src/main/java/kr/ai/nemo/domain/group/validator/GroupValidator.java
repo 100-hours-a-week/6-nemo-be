@@ -40,7 +40,23 @@ public class GroupValidator {
   public Group isOwner(Long groupId, Long userId) {
     Group group = findByIdOrThrow(groupId);
     if(!group.getOwner().getId().equals(userId)) {
-      throw new GroupException(GroupErrorCode.NOT_GROUP_OWNER);
+      throw new GroupException(GroupErrorCode.GROUP_KICK_FORBIDDEN);
+    }
+    return group;
+  }
+
+  public Group isOwnerForGroupDelete(Long groupId, Long userId) {
+    Group group = findByIdOrThrow(groupId);
+    if(!group.getOwner().getId().equals(userId)) {
+      throw new GroupException(GroupErrorCode.GROUP_DELETE_FORBIDDEN);
+    }
+    return group;
+  }
+
+  public Group isOwnerForGroupUpdate(Long groupId, Long userId) {
+    Group group = findByIdOrThrow(groupId);
+    if(!group.getOwner().getId().equals(userId)) {
+      throw new GroupException(GroupErrorCode.GROUP_UPDATE_FORBIDDEN);
     }
     return group;
   }

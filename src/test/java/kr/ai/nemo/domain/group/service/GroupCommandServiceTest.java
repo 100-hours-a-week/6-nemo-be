@@ -1,17 +1,21 @@
 package kr.ai.nemo.domain.group.service;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.util.List;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
+import kr.ai.nemo.domain.group.domain.enums.GroupStatus;
 import kr.ai.nemo.domain.group.dto.request.GroupCreateRequest;
+import kr.ai.nemo.domain.group.dto.request.UpdateGroupImageRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupCreateResponse;
 import kr.ai.nemo.domain.group.repository.GroupRepository;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
@@ -19,6 +23,7 @@ import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Status;
 import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsCommandService;
 import kr.ai.nemo.domain.user.domain.User;
+import kr.ai.nemo.global.fixture.group.GroupFixture;
 import kr.ai.nemo.global.fixture.user.UserFixture;
 import kr.ai.nemo.global.testUtil.TestReflectionUtils;
 import kr.ai.nemo.infra.ImageService;
@@ -110,5 +115,50 @@ class GroupCommandServiceTest {
     then(groupParticipantsCommandService).should()
         .applyToGroup(anyLong(), any(CustomUserDetails.class), any(Role.class), any(Status.class));
     then(groupTagService).should().getTagNamesByGroupId(any(Long.class));
+  }
+
+  @Test
+  @DisplayName("[성공] 모임 해체 테스트")
+  void deleteGroup_Success() {
+    // given
+    Long userId = 1L;
+    Long groupId = 1L;
+
+    User user = mock(User.class);
+    Group group = GroupFixture.createDefaultGroup(user);
+
+    given(groupValidator.isOwnerForGroupDelete(groupId, userId)).willReturn(group);
+
+    // when
+    groupCommandService.deleteGroup(groupId, userId);
+
+    // then
+    assertThat(group.getStatus()).isEqualTo(GroupStatus.DISBANDED);
+    assertThat(group.getDeletedAt()).isNotNull();
+    assertThat(group.getGroupTags()).isEmpty();
+  }
+
+  @Test
+  @DisplayName("[성공] 모임 대표 사진 수정 테스트")
+  void updateGroupImage_Success() {
+    // given
+    Long userId = 1L;
+    Long groupId = 1L;
+    User user = mock(User.class);
+
+    Group group = GroupFixture.createDefaultGroup(user);
+    String oldImage = group.getImageUrl();
+
+    UpdateGroupImageRequest request = new UpdateGroupImageRequest("newGroupImage");
+
+    given(groupValidator.isOwnerForGroupUpdate(groupId, userId)).willReturn(group);
+    given(imageService.updateImage(group.getImageUrl(), request.imageUrl())).willReturn("newGroupImage.jpg");
+
+    // when
+    groupCommandService.updateGroupImage(groupId, userId, request);
+
+    // then
+    assertThat(group.getImageUrl()).isEqualTo("newGroupImage.jpg");
+    verify(imageService).updateImage(oldImage, request.imageUrl());
   }
 }

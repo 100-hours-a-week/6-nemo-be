@@ -119,4 +119,10 @@ public class Group {
   public void addCompleteSchedule() {
     this.completedScheduleTotal++;
   }
+
+  public void deleteGroup() {
+    this.status = GroupStatus.DISBANDED;
+    this.groupTags.clear();
+    this.deletedAt = LocalDateTime.now();
+  }
 }

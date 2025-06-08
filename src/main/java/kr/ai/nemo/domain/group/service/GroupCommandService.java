@@ -7,6 +7,7 @@ import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.domain.enums.GroupStatus;
 import kr.ai.nemo.domain.group.dto.request.GroupCreateRequest;
+import kr.ai.nemo.domain.group.dto.request.UpdateGroupImageRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupCreateResponse;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
@@ -60,5 +61,19 @@ public class GroupCommandService {
     List<String> tags = groupTagService.getTagNamesByGroupId(savedGroup.getId());
 
     return GroupCreateResponse.from(savedGroup, tags);
+  }
+
+  @TimeTrace
+  @Transactional
+  public void deleteGroup(Long groupId, Long userId) {
+    Group group = groupValidator.isOwnerForGroupDelete(groupId, userId);
+    group.deleteGroup();
+  }
+
+  @TimeTrace
+  @Transactional
+  public void updateGroupImage(Long groupId, Long userId, UpdateGroupImageRequest request) {
+    Group group = groupValidator.isOwnerForGroupUpdate(groupId, userId);
+    group.setImageUrl(imageService.updateImage(group.getImageUrl(), request.imageUrl()));
   }
 }
