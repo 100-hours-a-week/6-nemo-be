@@ -85,8 +85,6 @@ public class ImageService {
 
   private String uploadBase64Image(String base64Data) {
     try {
-      log.info("Processing base64 image. Data starts with: {}", base64Data.substring(0, Math.min(50, base64Data.length())));
-
       String[] parts = base64Data.split(",", 2);
       if (parts.length != 2) {
         log.error("Invalid base64 format. Parts length: {}", parts.length);
@@ -95,9 +93,6 @@ public class ImageService {
       
       String header = parts[0];
       String base64Content = parts[1].trim();
-      
-      log.info("Base64 header: {}", header);
-      log.info("Base64 content length before cleaning: {}", base64Content.length());
 
       base64Content = base64Content.replaceAll("[^A-Za-z0-9+/=]", "");
 
@@ -105,8 +100,6 @@ public class ImageService {
       if (padding > 0) {
         base64Content += "=".repeat(4 - padding);
       }
-      
-      log.info("Base64 content length after cleaning: {}", base64Content.length());
 
       String mimeType = MIME_TYPE_JPEG;
       if (header.contains(":") && header.contains(";")) {
@@ -116,18 +109,12 @@ public class ImageService {
           mimeType = mimeAndEncoding.split(";")[0];
         }
       }
-      
-      log.info("Extracted MIME type: {}", mimeType);
 
       byte[] imageBytes = java.util.Base64.getDecoder().decode(base64Content);
-      log.info("Decoded image size: {} bytes", imageBytes.length);
-      
       ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes);
 
       ImageTypeInfo imageInfo = getImageTypeInfoFromMimeType(mimeType);
       String fileName = String.format("groups/profile_%s%s", UUID.randomUUID(), imageInfo.extension);
-      
-      log.info("Uploading to S3 with filename: {} and content-type: {}", fileName, imageInfo.contentType);
 
       ObjectMetadata metadata = new ObjectMetadata();
       metadata.setContentType(imageInfo.contentType);
@@ -136,7 +123,7 @@ public class ImageService {
       amazonS3.putObject(bucket, fileName, inputStream, metadata);
 
       String s3Url = amazonS3.getUrl(bucket, fileName).toString();
-      log.info("Successfully uploaded base64 image to S3: {}", s3Url);
+      log.debug("Successfully uploaded base64 image to S3: {}", s3Url);  // DEBUG 레벨로 변경
       
       return s3Url;
     } catch (Exception e) {
@@ -174,6 +161,42 @@ public class ImageService {
     } else {
       return new ImageTypeInfo(EXT_JPEG, MIME_TYPE_JPEG);
     }
+  }
+
+  public String updateImage(String oldImageUrl, String imageUrl) {
+    if (isS3Image(oldImageUrl)) {
+      deleteImage(oldImageUrl);
+    }
+    return uploadGroupImage(imageUrl);
+  }
+
+  public void deleteImage(String imageUrl) {
+    if (!isS3Image(imageUrl)) return;
+    
+    try {
+      String key = extractS3Key(imageUrl);
+      amazonS3.deleteObject(bucket, key);
+      log.debug("Successfully deleted S3 image: {}", imageUrl);  // DEBUG 레벨로 변경
+    } catch (Exception e) {
+      log.warn("Failed to delete S3 image: {}. Error: {}", imageUrl, e.getMessage(), e);
+    }
+  }
+
+  private boolean isS3Image(String imageUrl) {
+    return imageUrl != null && 
+           !imageUrl.isBlank() && 
+           imageUrl.contains(bucket);
+  }
+
+  private String extractS3Key(String imageUrl) {
+    String amazonDomain = ".amazonaws.com/";
+    int keyStartIndex = imageUrl.indexOf(amazonDomain);
+
+    if (keyStartIndex == -1) {
+      throw new IllegalArgumentException("Invalid S3 URL format: " + imageUrl);
+    }
+
+    return imageUrl.substring(keyStartIndex + amazonDomain.length());
   }
 
   private record ImageTypeInfo(String extension, String contentType) {

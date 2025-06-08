@@ -16,6 +16,7 @@ public enum GroupErrorCode implements ErrorCode {
   // 403 Forbidden
   GROUP_KICK_FORBIDDEN("GROUP_KICK_FORBIDDEN", "추방 권한이 없습니다.", HttpStatus.FORBIDDEN),
   GROUP_DELETE_FORBIDDEN("GROUP_DELETE_FORBIDDEN", "해체 권한이 없습니다.", HttpStatus.FORBIDDEN),
+  GROUP_UPDATE_FORBIDDEN("GROUP_UPDATE_FORBIDDEN", "변경 권한이 없습니다.", HttpStatus.FORBIDDEN),
 
   // 404 NOT FOUND
   GROUP_NOT_FOUND("GROUP_NOT_FOUND", "모임을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
