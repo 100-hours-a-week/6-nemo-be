@@ -7,25 +7,25 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(name = "일정 생성 응답", description = "일정 생성 응답 DTO")
 public record ScheduleCreateResponse(
-    @Schema(description = "일정 ID", example = "1001")
+    @Schema(description = "일정 ID", example = "55")
     Long scheduleId,
 
     @Schema(description = "일정 제목", example = "주간 미팅")
     String title,
 
-    @Schema(description = "일정 상세 설명", example = "프로젝트 진행 상황 점검")
+    @Schema(description = "일정 상세 내용", example = "이번 주 진행할 업무 점검")
     String description,
 
-    @Schema(description = "일정 장소 주소", example = "서울시 강남구")
+    @Schema(description = "일정 주소", example = "서울특별시 강남구, 역삼동 123-45")
     String address,
 
-    @Schema(description = "일정 상태", example = "PLANNED")
+    @Schema(description = "일정 상태", example = "RECRUITING")
     ScheduleStatus status,
 
     @Schema(description = "현재 참여 인원", example = "10")
     int currentUserCount,
 
-    @Schema(description = "일정 주최자 이름", example = "홍길동")
+    @Schema(description = "일정 주최자 이름", example = "전상현(Sanghyun Jun)")
     String ownerName,
 
     @Schema(description = "일정 시작 시각 (yyyy-MM-dd HH:mm)", example = "2025-05-25 14:00")

@@ -27,31 +27,34 @@ public record MySchedulesResponse(
 
   @Schema(description = "일정 정보")
   public record ScheduleInfo(
-      @Schema(description = "일정 ID", example = "1001")
+      @Schema(description = "일정 ID", example = "55")
       Long scheduleId,
 
-      @Schema(description = "일정 제목", example = "주간 미팅")
+      @Schema(description = "일정 제목", example = "판교역 베스킨라빈스31")
       String title,
 
-      @Schema(description = "일정 상세 설명", example = "프로젝트 진행 상황 점검")
+      @Schema(description = "일정 상세 내용", example = "아이스크림~")
       String description,
 
-      @Schema(description = "일정 장소 주소", example = "서울시 강남구")
+      @Schema(description = "일정 주소", example = "경기 성남시 분당구 판교역로 166, 베스킨라빈스")
       String address,
 
-      @Schema(description = "일정 상태", example = "ONGOING")
+      @Schema(description = "일정 상태", example = "RECRUITING")
       ScheduleStatus status,
 
-      @Schema(description = "현재 참여 인원", example = "10")
+      @Schema(description = "현재 참여 인원", example = "1")
       int currentUserCount,
 
-      @Schema(description = "소속 그룹 이름", example = "개발팀")
+      @Schema(description = "모임 ID", example = "35")
+      Long groupId,
+
+      @Schema(description = "소속 모임명", example = "로미의 백반기행")
       String groupName,
 
-      @Schema(description = "일정 주최자 이름", example = "홍길동")
+      @Schema(description = "일정 주최자 이름", example = "전상현(Sanghyun Jun)")
       String ownerName,
 
-      @Schema(description = "일정 시작 시각 (yyyy-MM-dd HH:mm)", example = "2025-05-25 14:00")
+      @Schema(description = "일정 시작 시각 (yyyy-MM-dd HH:mm)", example = "2025-12-25 07:00")
       String startAt
   ) {
     public static ScheduleInfo from(ScheduleParticipant participant) {
@@ -63,6 +66,7 @@ public record MySchedulesResponse(
           schedule.getAddress(),
           schedule.getStatus(),
           schedule.getCurrentUserCount(),
+          schedule.getGroup().getId(),
           schedule.getGroup().getName(),
           schedule.getOwner().getNickname(),
           schedule.getStartAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
