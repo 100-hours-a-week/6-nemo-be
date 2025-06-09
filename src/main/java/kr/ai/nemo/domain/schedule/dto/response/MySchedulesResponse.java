@@ -45,7 +45,10 @@ public record MySchedulesResponse(
       @Schema(description = "현재 참여 인원", example = "10")
       int currentUserCount,
 
-      @Schema(description = "소속 그룹 이름", example = "개발팀")
+      @Schema(description = "모임 ID", example = "5")
+      Long groupId,
+
+      @Schema(description = "소속 모임명", example = "개발팀")
       String groupName,
 
       @Schema(description = "일정 주최자 이름", example = "홍길동")
@@ -63,6 +66,7 @@ public record MySchedulesResponse(
           schedule.getAddress(),
           schedule.getStatus(),
           schedule.getCurrentUserCount(),
+          schedule.getGroup().getId(),
           schedule.getGroup().getName(),
           schedule.getOwner().getNickname(),
           schedule.getStartAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
