@@ -19,7 +19,7 @@ jobs:
       REPOSITORY: registry
       SERVICE: backend
       ENVIRONMENT: prod
-      DEPLOY_SCRIPT: /v2/scripts/deploy.sh
+      DEPLOY_SCRIPT: cloud/v2/scripts/deploy.sh
 
     steps:
       - name: Checkout Code
