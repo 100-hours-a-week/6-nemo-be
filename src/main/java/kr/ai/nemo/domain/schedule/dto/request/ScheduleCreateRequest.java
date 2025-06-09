@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(name = "일정 생성 요청", description = "일정 생성 요청 DTO")
 public record ScheduleCreateRequest(
-    @Schema(description = "모임 ID", example = "123")
+    @Schema(description = "모임 ID", example = "32")
     @NotNull
     Long groupId,
 
@@ -27,7 +27,7 @@ public record ScheduleCreateRequest(
     @Schema(description = "상세 주소", example = "역삼동 123-45")
     String addressDetail,
 
-    @Schema(description = "일정 시작 시간 (Asia/Seoul 타임존)", example = "2025-05-25T14:00:00")
+    @Schema(description = "일정 시작 시간", example = "2025-05-25T14:00")
     @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm", timezone = "Asia/Seoul")
     LocalDateTime startAt
