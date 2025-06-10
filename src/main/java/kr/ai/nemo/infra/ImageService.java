@@ -40,6 +40,12 @@ public class ImageService {
   private static final String EXT_BMP = ".bmp";
 
   public String uploadKakaoProfileImage(String imageUrl, Long userId) {
+    if (imageUrl == null || imageUrl.trim().isEmpty()) {
+      return null;
+    }
+    if (imageUrl.startsWith("data:image/")) {
+      return uploadBase64UserImage(imageUrl, userId);
+    }
     try (InputStream inputStream = URI.create(imageUrl).toURL().openStream()) {
       ImageTypeInfo imageInfo = getImageTypeInfo(imageUrl);
       String fileName = String.format("users/%d/profile_%s%s", userId, UUID.randomUUID(), imageInfo.extension);
@@ -79,6 +85,55 @@ public class ImageService {
       throw new CustomException(CommonErrorCode.S3_UPLOAD_FAILED);
     } catch (Exception e) {
       log.error("Unexpected error during group image upload. URL: {}, Error: {}", imageUrl, e.getMessage(), e);
+      throw new CustomException(CommonErrorCode.S3_UPLOAD_FAILED);
+    }
+  }
+
+  private String uploadBase64UserImage(String base64Data, Long userId) {
+    try {
+      String[] parts = base64Data.split(",", 2);
+      if (parts.length != 2) {
+        log.error("Invalid base64 format. Parts length: {}", parts.length);
+        throw new IllegalArgumentException("Invalid base64 data format");
+      }
+
+      String header = parts[0];
+      String base64Content = parts[1].trim();
+
+      base64Content = base64Content.replaceAll("[^A-Za-z0-9+/=]", "");
+
+      int padding = base64Content.length() % 4;
+      if (padding > 0) {
+        base64Content += "=".repeat(4 - padding);
+      }
+
+      String mimeType = MIME_TYPE_JPEG;
+      if (header.contains(":") && header.contains(";")) {
+        String[] headerParts = header.split(":");
+        if (headerParts.length > 1) {
+          String mimeAndEncoding = headerParts[1];
+          mimeType = mimeAndEncoding.split(";")[0];
+        }
+      }
+
+      byte[] imageBytes = java.util.Base64.getDecoder().decode(base64Content);
+      ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes);
+
+      ImageTypeInfo imageInfo = getImageTypeInfoFromMimeType(mimeType);
+      String fileName = String.format("users/%d/profile_%s%s", userId, UUID.randomUUID(), imageInfo.extension);
+
+      ObjectMetadata metadata = new ObjectMetadata();
+      metadata.setContentType(imageInfo.contentType);
+      metadata.setContentLength(imageBytes.length);
+
+      amazonS3.putObject(bucket, fileName, inputStream, metadata);
+
+      String s3Url = amazonS3.getUrl(bucket, fileName).toString();
+      log.debug("Successfully uploaded base64 user image to S3: {}", s3Url);
+
+      return s3Url;
+    } catch (Exception e) {
+      log.error("Failed to upload base64 user image. Error: {}", e.getMessage(), e);
       throw new CustomException(CommonErrorCode.S3_UPLOAD_FAILED);
     }
   }
@@ -168,6 +223,13 @@ public class ImageService {
       deleteImage(oldImageUrl);
     }
     return uploadGroupImage(imageUrl);
+  }
+
+  public String updateUserImage(String oldImageUrl, String imageUrl, Long userId) {
+    if (isS3Image(oldImageUrl)) {
+      deleteImage(oldImageUrl);
+    }
+    return uploadKakaoProfileImage(imageUrl, userId);
   }
 
   public void deleteImage(String imageUrl) {

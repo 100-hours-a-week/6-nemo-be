@@ -11,6 +11,7 @@ import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.user.dto.MyPageResponse;
 import kr.ai.nemo.domain.user.dto.NicknameUpdateRequest;
 import kr.ai.nemo.domain.user.dto.NicknameUpdateResponse;
+import kr.ai.nemo.domain.user.dto.UpdateUserImageRequest;
 import kr.ai.nemo.domain.user.service.UserService;
 import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.global.swagger.group.SwaggerGroupListResponse;
@@ -31,7 +32,7 @@ public class UserController {
   private final UserService userService;
 
   @Operation(summary = "마이페이지 조회", description = "마이페이지를 조회합니다.")
-  @ApiResponse(responseCode = "200", description = "성공적으로 조회되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupListResponse.class)))
+  @ApiResponse(responseCode = "200", description = "성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupListResponse.class)))
   @TimeTrace
   @GetMapping("/me")
   public ResponseEntity<BaseApiResponse<MyPageResponse>> myPage(
@@ -41,7 +42,7 @@ public class UserController {
   }
 
   @Operation(summary = "닉네임 변경", description = "사용자의 닉네임을 변경합니다.")
-  @ApiResponse(responseCode = "200", description = "성공적으로 조회되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupListResponse.class)))
+  @ApiResponse(responseCode = "200", description = "성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupListResponse.class)))
   @TimeTrace
   @PatchMapping("/me/nickname")
   public ResponseEntity<BaseApiResponse<NicknameUpdateResponse>> myPage(
@@ -49,5 +50,17 @@ public class UserController {
       @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
     return ResponseEntity.ok(BaseApiResponse.success(userService.updateMyNickname(userDetails.getUserId(), request)));
+  }
+
+  @Operation(summary = "프로필 사진 변경", description = "사용자 프로필 사진을 변경합니다.")
+  @ApiResponse(responseCode = "200", description = "성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
+  @TimeTrace
+  @PatchMapping("/me/profile-image")
+  public ResponseEntity<BaseApiResponse<Object>> updateProfileImage(
+      @RequestBody UpdateUserImageRequest request,
+      @AuthenticationPrincipal CustomUserDetails userDetails
+  ) {
+    userService.updateUserImage(userDetails.getUserId(), request);
+    return ResponseEntity.noContent().build();
   }
 }
