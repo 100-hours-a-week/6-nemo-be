@@ -20,6 +20,7 @@ jobs:
       SERVICE: backend
       ENVIRONMENT: prod
       DEPLOY_SCRIPT: cloud/v2/scripts/deploy.sh
+      GCP_PROJECT_ID_PROD: ${{ secrets.GCP_PROJECT_ID_PROD }}
 
     steps:
       - name: Checkout Code
