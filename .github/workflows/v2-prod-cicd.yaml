@@ -27,7 +27,7 @@ jobs:
 
       - name: Authenticate to Google Cloud
         run: |
-          echo "${{ secrets.GCP_SA_KEY_PROD }}" > gcp-key.json
+          printf '%s' "${{ secrets.GCP_SA_KEY_PROD }}" > gcp-key.json
           gcloud auth activate-service-account --key-file=gcp-key.json
           gcloud config set project ${{ secrets.GCP_PROJECT_ID_PROD }}
       
