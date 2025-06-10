@@ -40,7 +40,7 @@ public class GroupController {
   }
 
   @Operation(summary = "모임 대표 사진 수정", description = "모임을 해체합니다.")
-  @ApiResponse(responseCode = "200", description = "성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
+  @ApiResponse(responseCode = "204", description = "성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
   @TimeTrace
   @PatchMapping("/{groupId}/image")
   public ResponseEntity<BaseApiResponse<Object>> updateGroupImage(

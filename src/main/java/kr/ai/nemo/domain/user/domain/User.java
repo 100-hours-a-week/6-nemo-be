@@ -45,6 +45,7 @@ public class User {
   @Column(name = "nickname", nullable = false)
   private String nickname;
 
+  @Setter
   @Column(name = "profile_image_url", nullable = false)
   private String profileImageUrl;
 

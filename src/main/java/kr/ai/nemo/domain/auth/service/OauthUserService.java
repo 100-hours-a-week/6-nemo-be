@@ -32,10 +32,9 @@ public class OauthUserService {
     final String providerId = userResponse.id().toString();
 
     return userRepository.findByProviderAndProviderId(provider, providerId)
-        .orElseGet(() -> userRepository.save(createUserFromResponse(userResponse)));
+        .orElseGet(() -> createUserFromResponse(userResponse));
   }
 
-  @TimeTrace
   private User createUserFromResponse(KakaoUserResponse userResponse) {
     KakaoUserResponse.KakaoAccount account = userResponse.kakaoAccount();
     KakaoUserResponse.Profile profile = (account != null) ? account.profile() : null;
@@ -48,14 +47,35 @@ public class OauthUserService {
         ? profile.nickname()
         : DefaultUserValue.UNKNOWN_NICKNAME;
 
+    // 프로필 이미지 URL 결정
     String profileImageUrl;
-    if (profile.isDefaultImage()) {
+    if (profile != null && !profile.isDefaultImage() && profile.profileImageUrl() != null) {
+
+      User tempUser = User.builder()
+          .provider(OAuthProvider.KAKAO.name())
+          .providerId(userResponse.id().toString())
+          .email(email)
+          .nickname(nickname)
+          .profileImageUrl(null)
+          .status(UserStatus.ACTIVE)
+          .createdAt(LocalDateTime.now())
+          .updatedAt(LocalDateTime.now())
+          .build();
+
+      userRepository.save(tempUser);
+
+      profileImageUrl = imageService.uploadKakaoProfileImage(profile.profileImageUrl(), tempUser.getId());
+      tempUser.setProfileImageUrl(profileImageUrl);
+
+      return userRepository.save(tempUser);
+    } else if (profile != null) {
       profileImageUrl = profile.profileImageUrl();
     } else {
-      profileImageUrl = imageService.uploadKakaoProfileImage(profile.profileImageUrl(), userResponse.id());
+      profileImageUrl = null;
     }
 
-    return User.builder()
+    // userId 필요 없는 경우 바로 저장
+    User user = User.builder()
         .provider(OAuthProvider.KAKAO.name())
         .providerId(userResponse.id().toString())
         .email(email)
@@ -65,5 +85,7 @@ public class OauthUserService {
         .createdAt(LocalDateTime.now())
         .updatedAt(LocalDateTime.now())
         .build();
+
+    return userRepository.save(user);
   }
 }
