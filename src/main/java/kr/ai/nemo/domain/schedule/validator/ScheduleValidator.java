@@ -1,6 +1,5 @@
 package kr.ai.nemo.domain.schedule.validator;
 
-import java.time.LocalDateTime;
 import kr.ai.nemo.domain.schedule.domain.Schedule;
 import kr.ai.nemo.domain.schedule.domain.enums.ScheduleStatus;
 import kr.ai.nemo.domain.schedule.exception.ScheduleErrorCode;
@@ -39,7 +38,7 @@ public class ScheduleValidator {
   }
 
   public void validateScheduleStart(Schedule schedule) {
-    if (schedule.getStartAt().isBefore(LocalDateTime.now())) {
+    if (schedule.getStatus().equals(ScheduleStatus.CLOSED)) {
       throw new ScheduleException(ScheduleErrorCode.SCHEDULE_ALREADY_STARTED_OR_ENDED);
     }
   }
