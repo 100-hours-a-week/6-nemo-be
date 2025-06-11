@@ -6,9 +6,17 @@ import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.domain.enums.GroupStatus;
+import kr.ai.nemo.domain.group.dto.request.GroupAiGenerateRequest;
+import kr.ai.nemo.domain.group.dto.request.GroupAiRecommendRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupCreateRequest;
+import kr.ai.nemo.domain.group.dto.request.GroupGenerateRequest;
+import kr.ai.nemo.domain.group.dto.request.GroupRecommendRequest;
 import kr.ai.nemo.domain.group.dto.request.UpdateGroupImageRequest;
+import kr.ai.nemo.domain.group.dto.response.GroupAiGenerateResponse;
+import kr.ai.nemo.domain.group.dto.response.GroupAiRecommendResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupCreateResponse;
+import kr.ai.nemo.domain.group.dto.response.GroupDto;
+import kr.ai.nemo.domain.group.dto.response.GroupGenerateResponse;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Status;
@@ -26,8 +34,17 @@ public class GroupCommandService {
   private final GroupRepository groupRepository;
   private final GroupTagService groupTagService;
   private final GroupParticipantsCommandService groupParticipantsCommandService;
+  private final AiGroupService aiClient;
   private final ImageService imageService;
   private final GroupValidator groupValidator;
+
+  @TimeTrace
+  @Transactional
+  public GroupGenerateResponse generate(GroupGenerateRequest request) {
+    GroupAiGenerateRequest aiRequest = GroupAiGenerateRequest.from(request);
+    GroupAiGenerateResponse aiResponse = aiClient.call(aiRequest);
+    return GroupGenerateResponse.from(request, aiResponse);
+  }
 
   @TimeTrace
   @Transactional
@@ -75,5 +92,14 @@ public class GroupCommandService {
   public void updateGroupImage(Long groupId, Long userId, UpdateGroupImageRequest request) {
     Group group = groupValidator.isOwnerForGroupUpdate(groupId, userId);
     group.setImageUrl(imageService.updateImage(group.getImageUrl(), request.imageUrl()));
+  }
+
+  @TimeTrace
+  @Transactional
+  public GroupDto recommendGroupFreeform(GroupRecommendRequest request, Long userId) {
+    GroupAiRecommendRequest airequest = new GroupAiRecommendRequest(userId, request.requestText());
+    GroupAiRecommendResponse response = aiClient.recommendGroupFreeform(airequest);
+    Group group = groupValidator.findByIdOrThrow(response.groupId());
+    return GroupDto.from(group);
   }
 }

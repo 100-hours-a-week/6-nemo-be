@@ -1,6 +1,8 @@
 package kr.ai.nemo.domain.group.service;
 
 import kr.ai.nemo.aop.logging.TimeTrace;
+import kr.ai.nemo.domain.group.dto.request.GroupAiRecommendRequest;
+import kr.ai.nemo.domain.group.dto.response.GroupAiRecommendResponse;
 import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.global.error.code.CommonErrorCode;
 import kr.ai.nemo.global.error.exception.CustomException;
@@ -15,14 +17,15 @@ import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Component
-public class AiGroupGenerateClient {
+public class AiGroupService {
 
   private final RestTemplate restTemplate;
   private final String baseUrl;
 
   private static final String GROUP_AI_GENERATE_PATH = "/ai/v1/groups/information";
+  private static final String GROUP_RECOMMEND_FREEFORM_PATH = "/ai/v2/groups/recommendations/freeform";
 
-  public AiGroupGenerateClient(
+  public AiGroupService(
       RestTemplate restTemplate,
       @Value("${ai.service.url:http://localhost:8000}") String baseUrl
   ) {
@@ -54,6 +57,34 @@ public class AiGroupGenerateClient {
 
       return body.getData();
 
+    } catch (Exception e) {
+      throw new CustomException(CommonErrorCode.AI_SERVER_CONNECTION_FAILED);
+    }
+  }
+
+  @TimeTrace
+  public GroupAiRecommendResponse recommendGroupFreeform(GroupAiRecommendRequest request) {
+    try {
+      String url = baseUrl + GROUP_RECOMMEND_FREEFORM_PATH;
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+      HttpEntity<GroupAiRecommendRequest> httpEntity = new HttpEntity<>(request, headers);
+
+      ResponseEntity<BaseApiResponse<GroupAiRecommendResponse>> response = restTemplate.exchange(
+          url,
+          HttpMethod.POST,
+          httpEntity,
+          new ParameterizedTypeReference<>() {}
+      );
+
+      BaseApiResponse<GroupAiRecommendResponse> body = response.getBody();
+
+      if (body == null || body.getData() == null) {
+        throw new CustomException(CommonErrorCode.AI_RESPONSE_PARSE_ERROR);
+      }
+
+      return body.getData();
     } catch (Exception e) {
       throw new CustomException(CommonErrorCode.AI_SERVER_CONNECTION_FAILED);
     }
