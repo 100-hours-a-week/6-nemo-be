@@ -1,5 +1,6 @@
 package kr.ai.nemo.domain.schedule.service;
 
+import java.time.LocalDateTime;
 import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
@@ -40,6 +41,7 @@ public class ScheduleCommandService {
         .build();
 
     scheduleRepository.save(schedule);
+    group.setUpdatedAt(LocalDateTime.now());
     scheduleParticipantsService.addAllParticipantsForNewSchedule(schedule);
     return ScheduleCreateResponse.from(schedule);
   }
