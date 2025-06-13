@@ -97,8 +97,8 @@ public class GroupCommandService {
   @TimeTrace
   @Transactional
   public GroupDto recommendGroupFreeform(GroupRecommendRequest request, Long userId) {
-    GroupAiRecommendRequest airequest = new GroupAiRecommendRequest(userId, request.requestText());
-    GroupAiRecommendResponse response = aiClient.recommendGroupFreeform(airequest);
+    GroupAiRecommendRequest aiRequest = new GroupAiRecommendRequest(userId, request.requestText());
+    GroupAiRecommendResponse response = aiClient.recommendGroupFreeform(aiRequest);
     Group group = groupValidator.findByIdOrThrow(response.groupId());
     return GroupDto.from(group);
   }
