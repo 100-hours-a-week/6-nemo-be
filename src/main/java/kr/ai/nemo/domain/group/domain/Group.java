@@ -82,7 +82,7 @@ public class Group {
   @Column(name = "created_at", updatable = false)
   private LocalDateTime createdAt;
 
-  @LastModifiedDate
+  @Setter
   @Column(name = "updated_at")
   private LocalDateTime updatedAt;
 
@@ -106,6 +106,7 @@ public class Group {
     this.currentUserCount = currentUserCount;
     this.maxUserCount = maxUserCount;
     this.status = status;
+    this.updatedAt = LocalDateTime.now();
   }
 
   public void addCurrentUserCount() {
