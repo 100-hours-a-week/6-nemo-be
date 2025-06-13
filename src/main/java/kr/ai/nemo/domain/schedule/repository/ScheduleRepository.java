@@ -3,6 +3,7 @@ package kr.ai.nemo.domain.schedule.repository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.schedule.domain.Schedule;
 import kr.ai.nemo.domain.schedule.domain.enums.ScheduleStatus;
 import org.springframework.data.domain.Page;
