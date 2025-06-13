@@ -20,7 +20,7 @@ public class GroupSearchRequest {
   private String category;
 
   @Schema(description = "검색 키워드", example = "Spring")
-  @Size(min = 2, max = 64)
+  @Size(min = 1, max = 64)
   private String keyword;
 
   @Schema(description = "페이지 번호 (0부터 시작)", example = "0")

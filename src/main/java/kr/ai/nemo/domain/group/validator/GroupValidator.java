@@ -16,7 +16,7 @@ public class GroupValidator {
   private final GroupRepository repository;
 
   public Group findByIdOrThrow(Long groupId) {
-    return repository.findByIdGroupActive(groupId);
+    return repository.findByIdGroupId(groupId);
   }
 
   public void isCategory(String category){
