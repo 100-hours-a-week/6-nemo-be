@@ -17,7 +17,6 @@ import kr.ai.nemo.domain.group.dto.response.GroupGenerateResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupListResponse;
 import kr.ai.nemo.domain.group.dto.request.GroupSearchRequest;
 import kr.ai.nemo.domain.group.service.GroupCommandService;
-import kr.ai.nemo.domain.group.service.GroupGenerateService;
 import kr.ai.nemo.domain.group.service.GroupQueryService;
 import kr.ai.nemo.global.dto.PageRequestDto;
 import kr.ai.nemo.domain.schedule.dto.response.ScheduleListResponse;
@@ -50,7 +49,6 @@ import java.net.URI;
 @RequiredArgsConstructor
 public class GroupController {
 
-  private final GroupGenerateService groupGenerateService;
   private final GroupCommandService groupCommandService;
   private final GroupQueryService groupQueryService;
   private final ScheduleQueryService scheduleQueryService;
@@ -126,6 +124,6 @@ public class GroupController {
   public ResponseEntity<BaseApiResponse<GroupGenerateResponse>> generateGroup(
       @Valid @RequestBody GroupGenerateRequest request
   ) {
-    return ResponseEntity.ok(BaseApiResponse.success(groupGenerateService.generate(request)));
+    return ResponseEntity.ok(BaseApiResponse.success(groupCommandService.generate(request)));
   }
 }

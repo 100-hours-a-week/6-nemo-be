@@ -7,6 +7,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
+import kr.ai.nemo.domain.group.dto.request.GroupRecommendRequest;
+import kr.ai.nemo.domain.group.dto.request.UpdateGroupImageRequest;
+import kr.ai.nemo.domain.group.dto.response.GroupDto;
+import kr.ai.nemo.domain.group.service.GroupCommandService;
+import kr.ai.nemo.global.common.BaseApiResponse;
+import kr.ai.nemo.global.swagger.groupparticipant.SwaggerGroupParticipantsListResponse;
 import kr.ai.nemo.domain.group.dto.request.UpdateGroupImageRequest;
 import kr.ai.nemo.domain.group.service.GroupCommandService;
 import kr.ai.nemo.global.common.BaseApiResponse;
@@ -16,6 +22,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -50,5 +57,16 @@ public class GroupController {
   ) {
     groupCommandService.updateGroupImage(groupId, userDetails.getUserId(), request);
     return ResponseEntity.noContent().build();
+  }
+
+  @Operation(summary = "텍스트 기반 모임 추천", description = "모임을 추천합니다.")
+  @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupParticipantsListResponse.class)))
+  @TimeTrace
+  @PostMapping("/recommendations/freeform")
+  public ResponseEntity<BaseApiResponse<GroupDto>> recommendGroupFreeform(
+    @RequestBody GroupRecommendRequest request,
+      @AuthenticationPrincipal CustomUserDetails userDetails
+  ) {
+    return ResponseEntity.ok(BaseApiResponse.success(groupCommandService.recommendGroupFreeform(request, userDetails.getUserId())));
   }
 }

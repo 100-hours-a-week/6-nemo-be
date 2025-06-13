@@ -23,7 +23,6 @@ import kr.ai.nemo.domain.group.dto.response.GroupDto;
 import kr.ai.nemo.domain.group.dto.response.GroupGenerateResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupListResponse;
 import kr.ai.nemo.domain.group.service.GroupCommandService;
-import kr.ai.nemo.domain.group.service.GroupGenerateService;
 import kr.ai.nemo.domain.group.service.GroupQueryService;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.schedule.domain.enums.ScheduleStatus;
@@ -55,9 +54,6 @@ class GroupControllerTest {
 
   @Autowired
   private ObjectMapper objectMapper;
-
-  @MockitoBean
-  private GroupGenerateService groupGenerateService;
 
   @MockitoBean
   private GroupCommandService groupCommandService;
@@ -324,7 +320,8 @@ class GroupControllerTest {
         List.of("test1", "test2")
     );
 
-    given(groupGenerateService.generate(any(GroupGenerateRequest.class)))
+    given(groupCommandService.generate(any(GroupGenerateRequest.class)))
+
         .willReturn(mockResponse);
 
     mockMvc.perform(post("/api/v1/groups/ai-generate")
