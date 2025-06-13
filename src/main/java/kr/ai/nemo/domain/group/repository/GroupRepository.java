@@ -53,11 +53,10 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
   boolean existsByIdAndOwnerId(Long groupId, Long userId);
 
   @Query("""
-    SELECT DISTINCT g FROM Group g
-    LEFT JOIN g.groupTags gt
-    LEFT JOIN gt.tag t
-    WHERE g.status <> 'DISBANDED'
-    ORDER BY g.updatedAt DESC
+  SELECT g FROM Group g
+  LEFT JOIN FETCH g.groupTags gt
+  LEFT JOIN FETCH gt.tag t
+  WHERE g.status <> 'DISBANDED' AND g.id = :groupId
 """)
   Group findByIdGroupId(Long groupId);
 }
