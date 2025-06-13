@@ -40,6 +40,7 @@ public class ScheduleCommandService {
         .build();
 
     scheduleRepository.save(schedule);
+    group.setUpdatedAt(LocalDateTime.now());
     scheduleParticipantsService.addAllParticipantsForNewSchedule(schedule);
     return ScheduleCreateResponse.from(schedule);
   }

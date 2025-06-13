@@ -321,6 +321,7 @@ class GroupControllerTest {
     );
 
     given(groupCommandService.generate(any(GroupGenerateRequest.class)))
+
         .willReturn(mockResponse);
 
     mockMvc.perform(post("/api/v1/groups/ai-generate")
