@@ -10,7 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -82,7 +81,7 @@ public class Group {
   @Column(name = "created_at", updatable = false)
   private LocalDateTime createdAt;
 
-  @LastModifiedDate
+  @Setter
   @Column(name = "updated_at")
   private LocalDateTime updatedAt;
 
@@ -106,6 +105,7 @@ public class Group {
     this.currentUserCount = currentUserCount;
     this.maxUserCount = maxUserCount;
     this.status = status;
+    this.updatedAt = LocalDateTime.now();
   }
 
   public void addCurrentUserCount() {

@@ -83,10 +83,15 @@ public class ScheduleParticipantsService {
     if (currentStatus == ScheduleParticipantStatus.ACCEPTED && status == ScheduleParticipantStatus.REJECTED) {
       schedule.subtractCurrentUserCount();
       participant.reject();
-    } else if ((currentStatus == ScheduleParticipantStatus.PENDING || currentStatus == ScheduleParticipantStatus.REJECTED) 
+    } else if (currentStatus == ScheduleParticipantStatus.PENDING && status == ScheduleParticipantStatus.REJECTED) {
+      participant.reject();
+    } else if ((currentStatus == ScheduleParticipantStatus.PENDING || currentStatus == ScheduleParticipantStatus.REJECTED)
                && status == ScheduleParticipantStatus.ACCEPTED) {
       schedule.addCurrentUserCount();
       participant.accept();
     }
+
+    participant.setStatus(status);
+    participant.setJoinedAt(LocalDateTime.now());
   }
 }
