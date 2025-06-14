@@ -29,9 +29,10 @@ public class RedisCacheService {
   public <T> Optional<T> get(String key, Class<T> clazz) {
     try {
       String json = redisTemplate.opsForValue().get(key);
-      if (json != null) {
+      if (json == null) {
         return Optional.empty();
-      } return Optional.of(objectMapper.readValue(json, clazz));
+      }
+      return Optional.of(objectMapper.readValue(json, clazz));
     } catch (Exception e) {
       log.error("redis 조회 실패: key = {}, because {}", key, e.getMessage());
       return Optional.empty();

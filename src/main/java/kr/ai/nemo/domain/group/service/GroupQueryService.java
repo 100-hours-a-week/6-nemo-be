@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.core.util.Json;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
@@ -18,11 +19,12 @@ import kr.ai.nemo.domain.group.repository.GroupRepository;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.groupparticipants.validator.GroupParticipantValidator;
+import kr.ai.nemo.global.redis.CacheKeyUtil;
+import kr.ai.nemo.global.redis.RedisCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +38,7 @@ public class GroupQueryService {
   private final GroupValidator groupValidator;
   private final GroupTagService groupTagService;
   private final GroupParticipantValidator groupParticipantValidator;
-  private final RedisTemplate<String, String> redisTemplate;
+  private final RedisCacheService redisCacheService;
 
   @Transactional(readOnly = true)
   public GroupListResponse getGroups(GroupSearchRequest request, Pageable pageable) {
@@ -68,25 +70,15 @@ public class GroupQueryService {
   @Transactional(readOnly = true)
   public GroupChatbotSessionResponse getChatbotSession(Long userId, String sessionId) {
     // redis에 저장되어 있는 key로 변환
-    String redisKey = "chatbot:session:" + sessionId;
-    log.info("Get chatbot session response: {}", redisKey);
+    String redisKey = CacheKeyUtil.key("chatbot", userId, sessionId);
 
-    Boolean hasKey = redisTemplate.hasKey(redisKey);
-
-    if (Boolean.FALSE.equals(hasKey)) {
+    Optional<JsonNode> sessionJson = redisCacheService.get(redisKey, JsonNode.class);
+    if (sessionJson.isEmpty())
       return new GroupChatbotSessionResponse(null);
-    }
 
-    String sessionJson = redisTemplate.opsForValue().get(redisKey);
-    if (sessionJson == null) {
-      return new GroupChatbotSessionResponse(null);
-    }
-
-    // JSON 처리를 위한 Jackson 설정
-    ObjectMapper objectMapper = new ObjectMapper();
     try {
       // 트리 형태로 저장
-      JsonNode root = objectMapper.readTree(sessionJson);
+      JsonNode root = sessionJson.get();
 
       // root에서 answers로 저장된 값 꺼내기
       JsonNode answers = root.get("answers");
@@ -111,6 +103,9 @@ public class GroupQueryService {
 
         messages.add(new GroupChatbotSessionResponse.Message(role, text, options));
       }
+      if (messages.isEmpty()) {
+        return new GroupChatbotSessionResponse(null);
+      }
 
       return new GroupChatbotSessionResponse(messages);
 
@@ -119,5 +114,4 @@ public class GroupQueryService {
       return new GroupChatbotSessionResponse(null);
     }
   }
-
 }
