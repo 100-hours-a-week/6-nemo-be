@@ -88,6 +88,17 @@ public class GroupController {
         groupQueryService.getChatbotSession(userDetails.getUserId(), sessionId)));
   }
 
+  @Operation(summary = "선택지 기반 모임 추천 - 새 session 등록", description = "새로운 세션을 시작합니다.")
+  @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.")
+  @TimeTrace
+  @PostMapping("/recommendations/session")
+  public ResponseEntity<BaseApiResponse<Object>> newChatbotSession(
+      @AuthenticationPrincipal CustomUserDetails userDetails
+  ) {
+    groupCommandService.createNewChatbotSesssion(userDetails);
+    return ResponseEntity.ok(BaseApiResponse.noContent());
+  }
+
   @Operation(summary = "선택지 기반 모임 추천 - 질문 생성/답장", description = "모임의 질문을 생성/답장 합니다.")
   @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.")
   @TimeTrace
