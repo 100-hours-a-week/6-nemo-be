@@ -69,6 +69,8 @@ public class GroupQueryService {
   public GroupChatbotSessionResponse getChatbotSession(Long userId, String sessionId) {
     // redis에 저장되어 있는 key로 변환
     String redisKey = "chatbot:session:" + sessionId;
+    log.info("Get chatbot session response: {}", redisKey);
+
     Boolean hasKey = redisTemplate.hasKey(redisKey);
 
     if (Boolean.FALSE.equals(hasKey)) {
