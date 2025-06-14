@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -34,6 +35,8 @@ import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Status;
 import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsCommandService;
 import kr.ai.nemo.domain.group.repository.GroupRepository;
+import kr.ai.nemo.global.redis.CacheKeyUtil;
+import kr.ai.nemo.global.redis.RedisCacheService;
 import kr.ai.nemo.global.util.AuthConstants;
 import kr.ai.nemo.infra.ImageService;
 import lombok.RequiredArgsConstructor;
@@ -55,7 +58,7 @@ public class GroupCommandService {
   private final AiGroupService aiClient;
   private final ImageService imageService;
   private final GroupValidator groupValidator;
-  private final RedisTemplate<Object, Object> redisTemplate;
+  private final RedisCacheService redisCacheService;
 
   @TimeTrace
   @Transactional
@@ -136,17 +139,15 @@ public class GroupCommandService {
 
   @TimeTrace
   @Transactional
-  public String createNewChatbotSesssion(CustomUserDetails userDetails) {
+  public String createNewChatbotSession(CustomUserDetails userDetails) {
     String sessionId = UUID.randomUUID().toString();
 
-    Map<String, Object> sessionData = Map.of(
-        "step", 0,
-        "answers", new ArrayList<>()
-    );
+    Map<String, Object> sessionData = new HashMap<>();
+    sessionData.put("step", 0);
+    sessionData.put("answers", new ArrayList<>());
 
-    String redisKey = "chatbot:session:" + sessionId;
-
-    redisTemplate.opsForValue().set(redisKey, sessionData, Duration.ofMinutes(30));
+    String redisKey = CacheKeyUtil.key("chatbot",userDetails.getUser().getId(), sessionId);
+    redisCacheService.set(redisKey, sessionData, Duration.ofMinutes(30));
 
     return sessionId;
   }

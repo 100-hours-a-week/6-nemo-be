@@ -101,7 +101,7 @@ public class GroupController {
       HttpServletResponse response,
       @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
-    String sessionId = groupCommandService.createNewChatbotSesssion(userDetails);
+    String sessionId = groupCommandService.createNewChatbotSession(userDetails);
     Cookie sessionCookie = new Cookie(CookieConstants.CHATBOT_SESSION_ID, sessionId);
     sessionCookie.setHttpOnly(true);
     sessionCookie.setSecure(true);
