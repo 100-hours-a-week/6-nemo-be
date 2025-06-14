@@ -1,10 +1,15 @@
 package kr.ai.nemo.domain.group.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.core.util.Json;
+import java.util.ArrayList;
 import java.util.List;
 import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.domain.enums.GroupStatus;
+import kr.ai.nemo.domain.group.dto.response.GroupChatbotSessionResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupDetailResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupDto;
 import kr.ai.nemo.domain.group.dto.response.GroupListResponse;
@@ -17,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +36,7 @@ public class GroupQueryService {
   private final GroupValidator groupValidator;
   private final GroupTagService groupTagService;
   private final GroupParticipantValidator groupParticipantValidator;
+  private final RedisTemplate<String, String> redisTemplate;
 
   @Transactional(readOnly = true)
   public GroupListResponse getGroups(GroupSearchRequest request, Pageable pageable) {
@@ -56,4 +63,59 @@ public class GroupQueryService {
     Role role = groupParticipantValidator.checkUserRole(customUserDetails, group);
     return GroupDetailResponse.from(group, tags, role);
   }
+
+  @TimeTrace
+  @Transactional(readOnly = true)
+  public GroupChatbotSessionResponse getChatbotSession(Long userId, String sessionId) {
+    // redis에 저장되어 있는 key로 변환
+    String redisKey = "chatbot:session:" + sessionId;
+    Boolean hasKey = redisTemplate.hasKey(redisKey);
+
+    if (Boolean.FALSE.equals(hasKey)) {
+      return new GroupChatbotSessionResponse(null);
+    }
+
+    String sessionJson = redisTemplate.opsForValue().get(redisKey);
+    if (sessionJson == null) {
+      return new GroupChatbotSessionResponse(null);
+    }
+
+    // JSON 처리를 위한 Jackson 설정
+    ObjectMapper objectMapper = new ObjectMapper();
+    try {
+      // 트리 형태로 저장
+      JsonNode root = objectMapper.readTree(sessionJson);
+
+      // root에서 answers로 저장된 값 꺼내기
+      JsonNode answers = root.get("answers");
+
+      if (answers == null || !answers.isArray()) {
+        return new GroupChatbotSessionResponse(null);
+      }
+
+      List<GroupChatbotSessionResponse.Message> messages = new ArrayList<>();
+
+      for (JsonNode answerNode : answers) {
+        String role = answerNode.get("role").asText();
+        String text = answerNode.get("text").asText();
+        List<String> options = new ArrayList<>();
+
+        JsonNode optionNode = answerNode.get("option");
+        if (optionNode != null && optionNode.isArray()) {
+          for (JsonNode opt : optionNode) {
+            options.add(opt.asText());
+          }
+        }
+
+        messages.add(new GroupChatbotSessionResponse.Message(role, text, options));
+      }
+
+      return new GroupChatbotSessionResponse(messages);
+
+    } catch (Exception e) {
+      log.error("Redis 세션 데이터 파싱 실패: {}", e.getMessage());
+      return new GroupChatbotSessionResponse(null);
+    }
+  }
+
 }
