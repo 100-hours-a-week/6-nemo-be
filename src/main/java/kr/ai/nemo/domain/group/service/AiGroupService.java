@@ -39,7 +39,6 @@ public class AiGroupService {
   private final AiApiProperties aiApiProperties;
   private final GroupValidator groupValidator;
 
-
   @TimeTrace
   public GroupAiGenerateResponse call(GroupAiGenerateRequest request) {
     return postForData(

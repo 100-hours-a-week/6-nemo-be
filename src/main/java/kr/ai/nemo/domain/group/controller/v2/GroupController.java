@@ -81,7 +81,7 @@ public class GroupController {
     return ResponseEntity.ok(BaseApiResponse.success(
         groupCommandService.recommendGroupFreeform(request, userDetails.getUserId())));
   }
-
+  
   @Operation(summary = "선택지 기반 모임 추천 - session 정보 가져오가", description = "기존에 대화 세션이 있었는지 확인합니다.")
   @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.")
   @TimeTrace
