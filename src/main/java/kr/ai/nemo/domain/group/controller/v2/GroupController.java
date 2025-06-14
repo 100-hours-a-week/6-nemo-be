@@ -5,6 +5,9 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+import java.time.Duration;
 import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.dto.request.GroupChatbotQuestionRequest;
@@ -16,8 +19,10 @@ import kr.ai.nemo.domain.group.dto.response.GroupChatbotSessionResponse;
 import kr.ai.nemo.domain.group.service.GroupCommandService;
 import kr.ai.nemo.domain.group.service.GroupQueryService;
 import kr.ai.nemo.global.common.BaseApiResponse;
+import kr.ai.nemo.global.common.constants.CookieConstants;
 import kr.ai.nemo.global.swagger.groupparticipant.SwaggerGroupParticipantsListResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -82,7 +87,7 @@ public class GroupController {
   @GetMapping("/recommendations/session")
   public ResponseEntity<BaseApiResponse<GroupChatbotSessionResponse>> getChatbotSession(
       @AuthenticationPrincipal CustomUserDetails userDetails,
-      @CookieValue String sessionId
+      @CookieValue(name = CookieConstants.CHATBOT_SESSION_ID) String sessionId
   ) {
     return ResponseEntity.ok(BaseApiResponse.success(
         groupQueryService.getChatbotSession(userDetails.getUserId(), sessionId)));
@@ -93,9 +98,17 @@ public class GroupController {
   @TimeTrace
   @PostMapping("/recommendations/session")
   public ResponseEntity<BaseApiResponse<Object>> newChatbotSession(
+      HttpServletResponse response,
       @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
-    groupCommandService.createNewChatbotSesssion(userDetails);
+    String sessionId = groupCommandService.createNewChatbotSesssion(userDetails);
+    Cookie sessionCookie = new Cookie(CookieConstants.CHATBOT_SESSION_ID, sessionId);
+    sessionCookie.setHttpOnly(true);
+    sessionCookie.setSecure(true);
+    sessionCookie.setPath("/api/v2/groups/recommendations");
+    sessionCookie.setMaxAge(CookieConstants.CHATBOT_SESSION_TTL);
+    response.addCookie(sessionCookie);
+
     return ResponseEntity.ok(BaseApiResponse.noContent());
   }
 

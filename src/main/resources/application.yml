@@ -16,6 +16,14 @@ spring:
     password: ${PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  data:
+    redis:
+      host: ${REDIS_URL:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2s
+      password: ${REDIS_PASSWORD}
+
+
   jpa:
     hibernate:
       ddl-auto: none
