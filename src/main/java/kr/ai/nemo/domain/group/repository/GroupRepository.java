@@ -1,5 +1,6 @@
 package kr.ai.nemo.domain.group.repository;
 
+import java.util.Optional;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.domain.enums.GroupStatus;
 import org.springframework.data.domain.Page;
@@ -57,5 +58,5 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
   LEFT JOIN FETCH gt.tag t
   WHERE g.status <> 'DISBANDED' AND g.id = :groupId
 """)
-  Group findByIdGroupId(Long groupId);
+  Optional<Group> findByIdGroupId(Long groupId);
 }
