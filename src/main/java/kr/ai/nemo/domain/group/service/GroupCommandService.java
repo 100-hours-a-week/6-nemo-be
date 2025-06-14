@@ -16,6 +16,7 @@ import kr.ai.nemo.domain.group.dto.request.GroupRecommendRequest;
 import kr.ai.nemo.domain.group.dto.request.UpdateGroupImageRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupAiGenerateResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupAiRecommendResponse;
+import kr.ai.nemo.domain.group.dto.response.GroupAiRecommendTextResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupChatbotQuestionResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupCreateResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupDto;
@@ -99,11 +100,12 @@ public class GroupCommandService {
 
   @TimeTrace
   @Transactional
-  public GroupDto recommendGroupFreeform(GroupRecommendRequest request, Long userId) {
+  public GroupAiRecommendTextResponse recommendGroupFreeform(GroupRecommendRequest request, Long userId) {
     GroupAiRecommendRequest aiRequest = new GroupAiRecommendRequest(userId, request.requestText());
-    GroupAiRecommendResponse response = aiClient.recommendGroupFreeform(aiRequest);
-    Group group = groupValidator.findByIdOrThrow(response.groupId());
-    return GroupDto.from(group);
+    GroupAiRecommendResponse aiResponse = aiClient.recommendGroupFreeform(aiRequest);
+    Group group = groupValidator.findByIdOrThrow(aiResponse.groupId());
+    GroupDto groupDto = GroupDto.from(group);
+    return new GroupAiRecommendTextResponse(groupDto, aiResponse.responseText());
   }
 
   @TimeTrace

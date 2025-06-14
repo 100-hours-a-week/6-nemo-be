@@ -10,6 +10,7 @@ import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.dto.request.GroupChatbotQuestionRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupRecommendRequest;
 import kr.ai.nemo.domain.group.dto.request.UpdateGroupImageRequest;
+import kr.ai.nemo.domain.group.dto.response.GroupAiRecommendTextResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupChatbotQuestionResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupDto;
 import kr.ai.nemo.domain.group.service.GroupCommandService;
@@ -67,7 +68,7 @@ public class GroupController {
   @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupParticipantsListResponse.class)))
   @TimeTrace
   @PostMapping("/recommendations/freeform")
-  public ResponseEntity<BaseApiResponse<GroupDto>> recommendGroupFreeform(
+  public ResponseEntity<BaseApiResponse<GroupAiRecommendTextResponse>> recommendGroupFreeform(
       @RequestBody GroupRecommendRequest request,
       @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
