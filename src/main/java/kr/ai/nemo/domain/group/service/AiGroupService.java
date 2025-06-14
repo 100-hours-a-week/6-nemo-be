@@ -93,6 +93,7 @@ public class AiGroupService {
     }
   }
 
+  @TimeTrace
   public GroupChatbotQuestionResponse recommendGroupQuestion(GroupAiQuestionRequest aiRequest, String sessionId) {
     try {
       String url = baseUrl + GROUP_RECOMMEND_QUESTIONS_PATH;
