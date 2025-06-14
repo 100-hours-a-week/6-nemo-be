@@ -1,8 +1,6 @@
 package kr.ai.nemo.domain.group.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.v3.core.util.Json;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -97,6 +95,7 @@ public class GroupQueryService {
       }
 
       List<GroupChatbotSessionResponse.Message> messages = new ArrayList<>();
+
       for (JsonNode dataNode : data) {
         String role = dataNode.get("role").asText();
         String text = dataNode.get("text").asText();
@@ -125,7 +124,8 @@ public class GroupQueryService {
 
   @TimeTrace
   @Transactional(readOnly = true)
-  public GroupRecommendResponse recommendGroup(GroupChatbotSessionResponse session, String sessionId) {
+  public GroupRecommendResponse recommendGroup(GroupChatbotSessionResponse session,
+      String sessionId) {
 
     List<GroupChatbotSessionResponse.Message> messages = session.messages();
 
