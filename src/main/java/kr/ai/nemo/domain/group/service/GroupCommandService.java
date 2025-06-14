@@ -7,13 +7,16 @@ import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.domain.enums.GroupStatus;
 import kr.ai.nemo.domain.group.dto.request.GroupAiGenerateRequest;
+import kr.ai.nemo.domain.group.dto.request.GroupAiQuestionRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupAiRecommendRequest;
+import kr.ai.nemo.domain.group.dto.request.GroupChatbotQuestionRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupCreateRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupGenerateRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupRecommendRequest;
 import kr.ai.nemo.domain.group.dto.request.UpdateGroupImageRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupAiGenerateResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupAiRecommendResponse;
+import kr.ai.nemo.domain.group.dto.response.GroupChatbotQuestionResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupCreateResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupDto;
 import kr.ai.nemo.domain.group.dto.response.GroupGenerateResponse;
@@ -101,5 +104,12 @@ public class GroupCommandService {
     GroupAiRecommendResponse response = aiClient.recommendGroupFreeform(aiRequest);
     Group group = groupValidator.findByIdOrThrow(response.groupId());
     return GroupDto.from(group);
+  }
+
+  @TimeTrace
+  @Transactional
+  public GroupChatbotQuestionResponse recommendGroupQuestion(GroupChatbotQuestionRequest request, Long userId, String sessionId) {
+    GroupAiQuestionRequest aiRequest = new GroupAiQuestionRequest(userId, request.answer());
+    return aiClient.recommendGroupQuestion(aiRequest, sessionId);
   }
 }

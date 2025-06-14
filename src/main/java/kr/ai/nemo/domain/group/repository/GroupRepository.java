@@ -1,6 +1,5 @@
 package kr.ai.nemo.domain.group.repository;
 
-import java.util.Optional;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.domain.enums.GroupStatus;
 import org.springframework.data.domain.Page;
