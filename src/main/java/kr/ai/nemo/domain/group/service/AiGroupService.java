@@ -185,4 +185,20 @@ public class AiGroupService {
       log.error("[AI] notifyGroupJoined 호출 중 오류", e);
     }
   }
+
+
+  @Async
+  @TimeTrace
+  public void notifyGroupLeft(Long userId, Long groupId) {
+    try {
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+      HttpEntity<GroupParticipantAiRequest> httpEntity = new HttpEntity<>(new GroupParticipantAiRequest(userId, groupId), headers);
+
+      restTemplate.postForEntity(aiApiProperties.getGroupLeaveUrl(), httpEntity, Void.class);
+
+    } catch (Exception e) {
+      log.error("[AI] notifyGroupLeft 호출 중 오류", e);
+    }
+  }
 }
