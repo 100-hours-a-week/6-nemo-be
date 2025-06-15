@@ -1,6 +1,7 @@
 package kr.ai.nemo.domain.group.service;
 
 import kr.ai.nemo.aop.logging.TimeTrace;
+import kr.ai.nemo.domain.group.dto.request.GroupAiDeleteRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupAiQuestionRecommendRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupAiQuestionRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupAiRecommendRequest;
@@ -151,6 +152,21 @@ public class AiGroupService {
 
     } catch (Exception e) {
       log.error("[AI] notifyGroupCreated 호출 중 오류", e);
+    }
+  }
+
+  @Async
+  @TimeTrace
+  public void notifyGroupDeleted(Long groupId) {
+    try {
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+      HttpEntity<GroupAiDeleteRequest> httpEntity = new HttpEntity<>(new GroupAiDeleteRequest(groupId), headers);
+
+      restTemplate.postForEntity(aiApiProperties.getGroupDeleteUrl(), httpEntity, Void.class);
+
+    } catch (Exception e) {
+      log.error("[AI] notifyGroupDeleted 호출 중 오류", e);
     }
   }
 }

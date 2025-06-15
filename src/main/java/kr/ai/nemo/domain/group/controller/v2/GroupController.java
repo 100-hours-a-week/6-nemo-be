@@ -15,6 +15,7 @@ import kr.ai.nemo.domain.group.dto.request.UpdateGroupImageRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupRecommendResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupChatbotQuestionResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupChatbotSessionResponse;
+import kr.ai.nemo.domain.group.service.AiGroupService;
 import kr.ai.nemo.domain.group.service.GroupCommandService;
 import kr.ai.nemo.domain.group.service.GroupQueryService;
 import kr.ai.nemo.global.common.BaseApiResponse;
@@ -41,6 +42,7 @@ public class GroupController {
 
   private final GroupCommandService groupCommandService;
   private final GroupQueryService groupQueryService;
+  private final AiGroupService aiGroupService;
 
   @Operation(summary = "모임 해체", description = "모임을 해체합니다.")
   @ApiResponse(responseCode = "204", description = "성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
@@ -51,6 +53,7 @@ public class GroupController {
       @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
     groupCommandService.deleteGroup(groupId, userDetails.getUserId());
+    aiGroupService.notifyGroupDeleted(groupId);
     return ResponseEntity.noContent().build();
   }
 
