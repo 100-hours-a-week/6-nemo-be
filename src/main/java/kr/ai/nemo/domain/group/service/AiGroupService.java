@@ -4,8 +4,10 @@ import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.group.dto.request.GroupAiQuestionRecommendRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupAiQuestionRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupAiRecommendRequest;
+import kr.ai.nemo.domain.group.dto.request.GroupCreateRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupAiRecommendResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupChatbotQuestionResponse;
+import kr.ai.nemo.domain.group.dto.response.GroupCreateResponse;
 import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.global.config.AiApiProperties;
 import kr.ai.nemo.global.error.code.CommonErrorCode;
@@ -18,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -109,6 +112,7 @@ public class AiGroupService {
     }
   }
 
+  @TimeTrace
   public GroupAiRecommendResponse recommendGroup(GroupAiQuestionRecommendRequest aiRequest, String sessionId) {
     try {
       HttpHeaders headers = new HttpHeaders();
@@ -132,6 +136,21 @@ public class AiGroupService {
       return body.getData();
     } catch (Exception e) {
       throw new CustomException(CommonErrorCode.AI_SERVER_CONNECTION_FAILED);
+    }
+  }
+
+  @Async
+  @TimeTrace
+  public void notifyGroupCreated(GroupCreateResponse data) {
+    try {
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+      HttpEntity<GroupCreateResponse> httpEntity = new HttpEntity<>(data, headers);
+
+      restTemplate.postForEntity(aiApiProperties.getGroupCreateUrl(), httpEntity, Void.class);
+
+    } catch (Exception e) {
+      log.error("[AI] notifyGroupCreated 호출 중 오류", e);
     }
   }
 }
