@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
+import kr.ai.nemo.domain.group.service.AiGroupService;
 import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsCommandService;
 import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.global.swagger.jwt.SwaggerJwtErrorResponse;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class GroupParticipantsController {
 
   private final GroupParticipantsCommandService groupParticipantsCommandService;
+  private final AiGroupService aiGroupService;
 
   @Operation(summary = "모임원 추방", description = "모임장이 모임원을 추방합니다.")
   @ApiResponse(responseCode = "204", description = "성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
@@ -38,6 +40,7 @@ public class GroupParticipantsController {
       @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
     groupParticipantsCommandService.kickOut(groupId, userId, userDetails);
+    aiGroupService.notifyGroupLeft(userId, groupId);
     return ResponseEntity.noContent().build();
   }
 
@@ -51,6 +54,7 @@ public class GroupParticipantsController {
       @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
     groupParticipantsCommandService.withdrawGroup(groupId, userDetails.getUserId());
+    aiGroupService.notifyGroupLeft(userDetails.getUserId(), groupId);
     return ResponseEntity.noContent().build();
   }
 }

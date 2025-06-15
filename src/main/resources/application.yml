@@ -16,6 +16,14 @@ spring:
     password: ${PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  data:
+    redis:
+      host: ${REDIS_URL:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2s
+      password: ${REDIS_PASSWORD}
+
+
   jpa:
     hibernate:
       ddl-auto: none
@@ -64,6 +72,20 @@ cloud:
 ai:
   service:
     url: ${AI_SERVICE_URL}
+    endpoints:
+      group-generate: /ai/v1/group/information
+      group-chatbot:
+        group-recommend-freeform: /ai/v2/groups/recommendations/freeform
+        group-recommend-questions: /ai/v2/groups/recommendations/questions
+        group-recommend: /ai/v2/groups/recommendations
+      group-data:
+        group-create: /ai/v2/groups
+        group-delete: /ai/v2/groups/delete
+        group-join: /ai/v2/groups/participants
+        group-leave: /ai/v2/groups/participants/delete
+
+
+
 
 sentry:
   dsn: ${SENTRY_DSN}

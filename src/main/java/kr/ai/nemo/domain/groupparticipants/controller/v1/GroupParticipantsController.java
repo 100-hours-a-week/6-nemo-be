@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
+import kr.ai.nemo.domain.group.service.AiGroupService;
 import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Status;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class GroupParticipantsController {
   private final GroupParticipantsCommandService groupParticipantsCommandService;
   private final GroupParticipantsQueryService groupParticipantsQueryService;
+  private final AiGroupService aiGroupService;
 
   @Operation(summary = "모임 신청", description = "사용자가 특정 모임에 가입 신청을 합니다.")
   @ApiResponse(responseCode = "204", description = "성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
@@ -49,6 +51,8 @@ public class GroupParticipantsController {
       @Parameter(hidden = true)
       @AuthenticationPrincipal CustomUserDetails userDetails){
     groupParticipantsCommandService.applyToGroup(groupId, userDetails, Role.MEMBER, Status.JOINED);
+    aiGroupService.notifyGroupJoined(userDetails.getUserId(), groupId);
+
     return ResponseEntity.noContent().build();
   }
 

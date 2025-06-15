@@ -58,5 +58,5 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
   LEFT JOIN FETCH gt.tag t
   WHERE g.status <> 'DISBANDED' AND g.id = :groupId
 """)
-  Group findByIdGroupId(Long groupId);
+  Optional<Group> findByIdGroupId(Long groupId);
 }
