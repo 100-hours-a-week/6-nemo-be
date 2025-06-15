@@ -7,11 +7,14 @@ import kr.ai.nemo.domain.group.dto.request.GroupAiRecommendRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupAiRecommendResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupChatbotQuestionResponse;
 import kr.ai.nemo.global.common.BaseApiResponse;
+import kr.ai.nemo.global.config.AiApiProperties;
 import kr.ai.nemo.global.error.code.CommonErrorCode;
 import kr.ai.nemo.global.error.exception.CustomException;
 import kr.ai.nemo.domain.group.dto.request.GroupAiGenerateRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupAiGenerateResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -20,35 +23,21 @@ import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class AiGroupService {
 
   private final RestTemplate restTemplate;
-  private final String baseUrl;
-
-  private static final String GROUP_AI_GENERATE_PATH = "/ai/v1/groups/information";
-  private static final String GROUP_RECOMMEND_FREEFORM_PATH = "/ai/v2/groups/recommendations/freeform";
-  private static final String GROUP_RECOMMEND_QUESTIONS_PATH = "/ai/v2/groups/recommendations/questions";
-  private static final String GROUP_RECOMMEND_PATH = "/ai/v2/groups/recommendations";
-
-  public AiGroupService(
-      RestTemplate restTemplate,
-      @Value("${ai.service.url:http://localhost:8000}") String baseUrl
-  ) {
-    this.restTemplate = restTemplate;
-    this.baseUrl = baseUrl;
-  }
+  private final AiApiProperties aiApiProperties;
 
   @TimeTrace
   public GroupAiGenerateResponse call(GroupAiGenerateRequest request) {
     try {
-      String url = baseUrl + GROUP_AI_GENERATE_PATH;
-
       HttpHeaders headers = new HttpHeaders();
       headers.setContentType(MediaType.APPLICATION_JSON);
       HttpEntity<GroupAiGenerateRequest> httpEntity = new HttpEntity<>(request, headers);
 
       ResponseEntity<BaseApiResponse<GroupAiGenerateResponse>> response = restTemplate.exchange(
-          url,
+          aiApiProperties.getGroupGenerateUrl(),
           HttpMethod.POST,
           httpEntity,
           new ParameterizedTypeReference<>() {}
@@ -70,14 +59,12 @@ public class AiGroupService {
   @TimeTrace
   public GroupAiRecommendResponse recommendGroupFreeform(GroupAiRecommendRequest request) {
     try {
-      String url = baseUrl + GROUP_RECOMMEND_FREEFORM_PATH;
-
       HttpHeaders headers = new HttpHeaders();
       headers.setContentType(MediaType.APPLICATION_JSON);
       HttpEntity<GroupAiRecommendRequest> httpEntity = new HttpEntity<>(request, headers);
 
       ResponseEntity<BaseApiResponse<GroupAiRecommendResponse>> response = restTemplate.exchange(
-          url,
+          aiApiProperties.getGroupRecommendFreeformUrl(),
           HttpMethod.POST,
           httpEntity,
           new ParameterizedTypeReference<>() {}
@@ -98,15 +85,13 @@ public class AiGroupService {
   @TimeTrace
   public GroupChatbotQuestionResponse recommendGroupQuestion(GroupAiQuestionRequest aiRequest, String sessionId) {
     try {
-      String url = baseUrl + GROUP_RECOMMEND_QUESTIONS_PATH;
-
       HttpHeaders headers = new HttpHeaders();
       headers.setContentType(MediaType.APPLICATION_JSON);
       headers.set("X-Session-ID", sessionId);
       HttpEntity<GroupAiQuestionRequest> httpEntity = new HttpEntity<>(aiRequest, headers);
 
       HttpEntity<BaseApiResponse<GroupChatbotQuestionResponse>> response = restTemplate.exchange(
-          url,
+          aiApiProperties.getGroupRecommendQuestionsUrl(),
           HttpMethod.POST,
           httpEntity,
           new ParameterizedTypeReference<>() {}
@@ -126,15 +111,13 @@ public class AiGroupService {
 
   public GroupAiRecommendResponse recommendGroup(GroupAiQuestionRecommendRequest aiRequest, String sessionId) {
     try {
-      String url = baseUrl + GROUP_RECOMMEND_PATH;
-
       HttpHeaders headers = new HttpHeaders();
       headers.setContentType(MediaType.APPLICATION_JSON);
       headers.set("X-Session-ID", sessionId);
       HttpEntity<GroupAiQuestionRecommendRequest> httpEntity = new HttpEntity<>(aiRequest, headers);
 
       HttpEntity<BaseApiResponse<GroupAiRecommendResponse>> response = restTemplate.exchange(
-          url,
+          aiApiProperties.getGroupRecommendUrl(),
           HttpMethod.POST,
           httpEntity,
           new ParameterizedTypeReference<>() {}
