@@ -1,6 +1,6 @@
 package kr.ai.nemo.domain.group.dto.response;
 
-public record GroupAiRecommendTextResponse(
+public record GroupRecommendResponse(
     GroupDto group,
     String reason
 ) {

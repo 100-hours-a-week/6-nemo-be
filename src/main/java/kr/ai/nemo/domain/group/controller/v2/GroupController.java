@@ -7,13 +7,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
-import java.time.Duration;
 import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.dto.request.GroupChatbotQuestionRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupRecommendRequest;
 import kr.ai.nemo.domain.group.dto.request.UpdateGroupImageRequest;
-import kr.ai.nemo.domain.group.dto.response.GroupAiRecommendTextResponse;
+import kr.ai.nemo.domain.group.dto.response.GroupRecommendResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupChatbotQuestionResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupChatbotSessionResponse;
 import kr.ai.nemo.domain.group.service.GroupCommandService;
@@ -22,7 +21,6 @@ import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.global.common.constants.CookieConstants;
 import kr.ai.nemo.global.swagger.groupparticipant.SwaggerGroupParticipantsListResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -73,7 +71,7 @@ public class GroupController {
   @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupParticipantsListResponse.class)))
   @TimeTrace
   @PostMapping("/recommendations/freeform")
-  public ResponseEntity<BaseApiResponse<GroupAiRecommendTextResponse>> recommendGroupFreeform(
+  public ResponseEntity<BaseApiResponse<GroupRecommendResponse>> recommendGroupFreeform(
       @RequestBody GroupRecommendRequest request,
       @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
@@ -123,5 +121,19 @@ public class GroupController {
       ) {
     return ResponseEntity.ok(BaseApiResponse.success(
         groupCommandService.recommendGroupQuestion(request, userDetails.getUserId(), sessionId)));
+  }
+
+  @Operation(summary = "선택지 기반 모임 추천 - 모임 추천 요청", description = "모든 선택지에 응답 후 모임 추천을 요청합니다.")
+  @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.")
+  @TimeTrace
+  @GetMapping("/recommendations")
+  public ResponseEntity<BaseApiResponse<GroupRecommendResponse>> recommendGroupRecommendation(
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @CookieValue(name = "sessionId") String sessionId
+  ) {
+    GroupChatbotSessionResponse chatbotSession = groupQueryService.getChatbotSession(
+        userDetails.getUserId(), sessionId);
+    return ResponseEntity.ok(BaseApiResponse.success(
+        groupQueryService.recommendGroup(chatbotSession, sessionId)));
   }
 }

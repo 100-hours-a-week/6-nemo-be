@@ -1,6 +1,7 @@
 package kr.ai.nemo.domain.group.service;
 
 import kr.ai.nemo.aop.logging.TimeTrace;
+import kr.ai.nemo.domain.group.dto.request.GroupAiQuestionRecommendRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupAiQuestionRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupAiRecommendRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupAiRecommendResponse;
@@ -27,6 +28,7 @@ public class AiGroupService {
   private static final String GROUP_AI_GENERATE_PATH = "/ai/v1/groups/information";
   private static final String GROUP_RECOMMEND_FREEFORM_PATH = "/ai/v2/groups/recommendations/freeform";
   private static final String GROUP_RECOMMEND_QUESTIONS_PATH = "/ai/v2/groups/recommendations/questions";
+  private static final String GROUP_RECOMMEND_PATH = "/ai/v2/groups/recommendations";
 
   public AiGroupService(
       RestTemplate restTemplate,
@@ -100,7 +102,7 @@ public class AiGroupService {
 
       HttpHeaders headers = new HttpHeaders();
       headers.setContentType(MediaType.APPLICATION_JSON);
-      headers.set("sessionId", sessionId);
+      headers.set("X-Session-ID", sessionId);
       HttpEntity<GroupAiQuestionRequest> httpEntity = new HttpEntity<>(aiRequest, headers);
 
       HttpEntity<BaseApiResponse<GroupChatbotQuestionResponse>> response = restTemplate.exchange(
@@ -111,6 +113,34 @@ public class AiGroupService {
       );
 
       BaseApiResponse<GroupChatbotQuestionResponse> body = response.getBody();
+
+      if (body == null || body.getData() == null) {
+        throw new CustomException(CommonErrorCode.AI_RESPONSE_PARSE_ERROR);
+      }
+
+      return body.getData();
+    } catch (Exception e) {
+      throw new CustomException(CommonErrorCode.AI_SERVER_CONNECTION_FAILED);
+    }
+  }
+
+  public GroupAiRecommendResponse recommendGroup(GroupAiQuestionRecommendRequest aiRequest, String sessionId) {
+    try {
+      String url = baseUrl + GROUP_RECOMMEND_PATH;
+
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+      headers.set("X-Session-ID", sessionId);
+      HttpEntity<GroupAiQuestionRecommendRequest> httpEntity = new HttpEntity<>(aiRequest, headers);
+
+      HttpEntity<BaseApiResponse<GroupAiRecommendResponse>> response = restTemplate.exchange(
+          url,
+          HttpMethod.POST,
+          httpEntity,
+          new ParameterizedTypeReference<>() {}
+      );
+
+      BaseApiResponse<GroupAiRecommendResponse> body = response.getBody();
 
       if (body == null || body.getData() == null) {
         throw new CustomException(CommonErrorCode.AI_RESPONSE_PARSE_ERROR);

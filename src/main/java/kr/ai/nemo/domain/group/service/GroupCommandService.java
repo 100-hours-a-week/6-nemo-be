@@ -1,11 +1,7 @@
 package kr.ai.nemo.domain.group.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.Cookie;
 import jakarta.validation.Valid;
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,7 +21,7 @@ import kr.ai.nemo.domain.group.dto.request.GroupRecommendRequest;
 import kr.ai.nemo.domain.group.dto.request.UpdateGroupImageRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupAiGenerateResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupAiRecommendResponse;
-import kr.ai.nemo.domain.group.dto.response.GroupAiRecommendTextResponse;
+import kr.ai.nemo.domain.group.dto.response.GroupRecommendResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupChatbotQuestionResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupCreateResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupDto;
@@ -37,13 +33,9 @@ import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsCommandServi
 import kr.ai.nemo.domain.group.repository.GroupRepository;
 import kr.ai.nemo.global.redis.CacheKeyUtil;
 import kr.ai.nemo.global.redis.RedisCacheService;
-import kr.ai.nemo.global.util.AuthConstants;
 import kr.ai.nemo.infra.ImageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -120,13 +112,13 @@ public class GroupCommandService {
 
   @TimeTrace
   @Transactional
-  public GroupAiRecommendTextResponse recommendGroupFreeform(GroupRecommendRequest request,
+  public GroupRecommendResponse recommendGroupFreeform(GroupRecommendRequest request,
       Long userId) {
     GroupAiRecommendRequest aiRequest = new GroupAiRecommendRequest(userId, request.requestText());
     GroupAiRecommendResponse aiResponse = aiClient.recommendGroupFreeform(aiRequest);
     Group group = groupValidator.findByIdOrThrow(aiResponse.groupId());
     GroupDto groupDto = GroupDto.from(group);
-    return new GroupAiRecommendTextResponse(groupDto, aiResponse.responseText());
+    return new GroupRecommendResponse(groupDto, aiResponse.responseText());
   }
 
   @TimeTrace
