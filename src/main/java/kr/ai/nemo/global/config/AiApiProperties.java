@@ -25,7 +25,7 @@ public record AiApiProperties(
   public record GroupData(
       String groupCreate,
       String groupDelete,
-      String groupParticipant,
+      String groupJoin,
       String groupLeave
   ) {
   }
@@ -58,8 +58,8 @@ public record AiApiProperties(
     return url() + endpoints().groupData().groupDelete();
   }
 
-  public String getGroupParticipantUrl() {
-    return url() + endpoints().groupData().groupParticipant();
+  public String getGroupJoinUrl() {
+    return url() + endpoints().groupData().groupJoin();
   }
 
   public String getGroupLeaveUrl() {

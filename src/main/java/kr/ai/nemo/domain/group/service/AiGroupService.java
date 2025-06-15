@@ -9,6 +9,7 @@ import kr.ai.nemo.domain.group.dto.request.GroupCreateRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupAiRecommendResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupChatbotQuestionResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupCreateResponse;
+import kr.ai.nemo.domain.groupparticipants.dto.request.GroupParticipantAiRequest;
 import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.global.config.AiApiProperties;
 import kr.ai.nemo.global.error.code.CommonErrorCode;
@@ -167,6 +168,21 @@ public class AiGroupService {
 
     } catch (Exception e) {
       log.error("[AI] notifyGroupDeleted 호출 중 오류", e);
+    }
+  }
+
+  @Async
+  @TimeTrace
+  public void notifyGroupJoined(Long userId, Long groupId) {
+    try {
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+      HttpEntity<GroupParticipantAiRequest> httpEntity = new HttpEntity<>(new GroupParticipantAiRequest(userId, groupId), headers);
+
+      restTemplate.postForEntity(aiApiProperties.getGroupJoinUrl(), httpEntity, Void.class);
+
+    } catch (Exception e) {
+      log.error("[AI] notifyGroupJoined 호출 중 오류", e);
     }
   }
 }

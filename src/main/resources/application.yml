@@ -81,7 +81,7 @@ ai:
       group-data:
         group-create: /ai/v2/groups
         group-delete: /ai/v2/groups/delete
-        group-participant: /ai/v2/groups/participants
+        group-join: /ai/v2/groups/participants
         group-leave: /ai/v2/groups/participants/delete
 
 
