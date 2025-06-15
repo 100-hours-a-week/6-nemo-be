@@ -84,7 +84,7 @@ public class GroupQueryService {
     if (sessionJson.isEmpty()) {
       return new GroupChatbotSessionResponse(null);
     }
-    
+
     try {
       // 트리 형태로 저장
       JsonNode root = sessionJson.get();

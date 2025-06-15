@@ -96,11 +96,11 @@ public class AiGroupService {
           .body(data)
           .retrieve()
           .toEntity(String.class);
-
     } catch (Exception e) {
       log.error("[AI] notifyGroupCreated 호출 중 오류", e);
     }
   }
+
 
   @Async
   @TimeTrace
