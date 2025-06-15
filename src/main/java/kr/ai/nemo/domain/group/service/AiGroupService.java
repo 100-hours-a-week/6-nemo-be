@@ -101,7 +101,6 @@ public class AiGroupService {
     }
   }
 
-
   @Async
   @TimeTrace
   public void notifyGroupDeleted(Long groupId) {
