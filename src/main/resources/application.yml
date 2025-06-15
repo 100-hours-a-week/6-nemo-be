@@ -78,6 +78,11 @@ ai:
         group-recommend-freeform: /ai/v2/groups/recommendations/freeform
         group-recommend-questions: /ai/v2/groups/recommendations/questions
         group-recommend: /ai/v2/groups/recommendations
+      group-data:
+        group-create: /ai/v2/groups
+        group-delete: /ai/v2/groups/delete
+        group-participant: /ai/v2/groups/participants
+        group-leave: /ai/v2/groups/participants/delete
 
 
 
