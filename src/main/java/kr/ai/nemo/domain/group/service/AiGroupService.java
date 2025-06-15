@@ -178,7 +178,6 @@ public class AiGroupService {
   private <T, R> R postForDataWithSession(String url, T requestBody, String sessionId,
       ParameterizedTypeReference<BaseApiResponse<R>> typeRef) {
     try {
-
       BaseApiResponse<R> response =  restClient.post()
           .uri(url)
           .contentType(MediaType.APPLICATION_JSON)
@@ -188,7 +187,6 @@ public class AiGroupService {
           .body(typeRef);
 
       if (response == null || response.getData() == null) {
-
         throw new CustomException(CommonErrorCode.AI_RESPONSE_PARSE_ERROR);
       }
 
