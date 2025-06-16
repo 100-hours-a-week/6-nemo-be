@@ -23,7 +23,6 @@ spring:
       timeout: 2s
       password: ${REDIS_PASSWORD}
 
-
   jpa:
     hibernate:
       ddl-auto: none
