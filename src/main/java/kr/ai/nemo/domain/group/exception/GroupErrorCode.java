@@ -20,6 +20,7 @@ public enum GroupErrorCode implements ErrorCode {
 
   // 404 NOT FOUND
   GROUP_NOT_FOUND("GROUP_NOT_FOUND", "모임을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+  CHAT_SESSION_NOT_FOUND("CHAT_SESSION_NOT_FOUND", "채팅 내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
   // 409 Conflict
   GROUP_DISBANDED("GROUP_DISBANDED", "해체된 모임입니다.", HttpStatus.CONFLICT),

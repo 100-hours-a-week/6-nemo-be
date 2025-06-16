@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
+import kr.ai.nemo.domain.group.service.AiGroupService;
 import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.domain.group.dto.request.GroupCreateRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupCreateResponse;
@@ -17,7 +18,6 @@ import kr.ai.nemo.domain.group.dto.response.GroupGenerateResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupListResponse;
 import kr.ai.nemo.domain.group.dto.request.GroupSearchRequest;
 import kr.ai.nemo.domain.group.service.GroupCommandService;
-import kr.ai.nemo.domain.group.service.GroupGenerateService;
 import kr.ai.nemo.domain.group.service.GroupQueryService;
 import kr.ai.nemo.global.dto.PageRequestDto;
 import kr.ai.nemo.domain.schedule.dto.response.ScheduleListResponse;
@@ -50,10 +50,10 @@ import java.net.URI;
 @RequiredArgsConstructor
 public class GroupController {
 
-  private final GroupGenerateService groupGenerateService;
   private final GroupCommandService groupCommandService;
   private final GroupQueryService groupQueryService;
   private final ScheduleQueryService scheduleQueryService;
+  private final AiGroupService aiGroupService;
 
   @Operation(summary = "모임 리스트 조회", description = "카테고리별 모임의 리스트를 조회합니다.")
   @ApiResponse(responseCode = "200", description = "성공적으로 조회되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupListResponse.class)))
@@ -106,6 +106,7 @@ public class GroupController {
       @AuthenticationPrincipal CustomUserDetails userDetails) {
 
     GroupCreateResponse createdGroup = groupCommandService.createGroup(request, userDetails);
+    aiGroupService.notifyGroupCreated(createdGroup);
 
     URI location = ServletUriComponentsBuilder
         .fromCurrentRequest()
@@ -126,6 +127,6 @@ public class GroupController {
   public ResponseEntity<BaseApiResponse<GroupGenerateResponse>> generateGroup(
       @Valid @RequestBody GroupGenerateRequest request
   ) {
-    return ResponseEntity.ok(BaseApiResponse.success(groupGenerateService.generate(request)));
+    return ResponseEntity.ok(BaseApiResponse.success(groupCommandService.generate(request)));
   }
 }

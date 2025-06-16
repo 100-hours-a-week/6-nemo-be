@@ -90,5 +90,7 @@ public class ScheduleParticipantsService {
       schedule.addCurrentUserCount();
       participant.accept();
     }
+    participant.setStatus(status);
+    participant.setJoinedAt(LocalDateTime.now());
   }
 }
