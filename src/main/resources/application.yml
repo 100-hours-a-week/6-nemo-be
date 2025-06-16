@@ -73,7 +73,7 @@ ai:
   service:
     url: ${AI_SERVICE_URL}
     endpoints:
-      group-generate: /ai/v1/group/information
+      group-generate: /ai/v2/group/information
       group-chatbot:
         group-recommend-freeform: /ai/v2/groups/recommendations/freeform
         group-recommend-questions: /ai/v2/groups/recommendations/questions
