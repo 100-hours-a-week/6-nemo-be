@@ -120,7 +120,7 @@ public class GroupController {
   public ResponseEntity<BaseApiResponse<GroupChatbotQuestionResponse>> recommendGroupQuestions(
       @RequestBody GroupChatbotQuestionRequest request,
       @AuthenticationPrincipal CustomUserDetails userDetails,
-      @CookieValue(name = "sessionId") String sessionId
+      @CookieValue(name = "chatbot_session_id") String sessionId
       ) {
     return ResponseEntity.ok(BaseApiResponse.success(
         groupCommandService.recommendGroupQuestion(request, userDetails.getUserId(), sessionId)));
