@@ -191,6 +191,7 @@ public class AiGroupService {
       }
 
       return response.getData();
+
     } catch (Exception e) {
       throw new CustomException(CommonErrorCode.AI_SERVER_CONNECTION_FAILED);
     }
