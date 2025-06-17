@@ -119,12 +119,7 @@ public class GroupCommandService {
       Long userId) {
     GroupAiRecommendRequest aiRequest = new GroupAiRecommendRequest(userId, request.requestText());
     GroupAiRecommendResponse aiResponse = aiClient.recommendGroupFreeform(aiRequest);
-<<<<<<< HEAD
     GroupDto groupDto = GroupDto.from(aiResponse.group());
-=======
-    Group group = groupValidator.findByIdOrThrow(aiResponse.groupId());
-    GroupDto groupDto = GroupDto.from(group);
->>>>>>> 3397a83 (feat: AI에 모임 추천 요청 API 개발 (#144))
     return new GroupRecommendResponse(groupDto, aiResponse.responseText());
   }
 
