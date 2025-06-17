@@ -66,15 +66,5 @@ jobs:
             -t "${IMAGE_URI}:${{ env.ENVIRONMENT }}-latest" \
             --output=type=image,push=true .
       
-      - name: Checkout cloud repo for deploy script
-        uses: actions/checkout@v3
-        with:
-          repository: 100-hours-a-week/6-nemo-cloud
-          path: cloud
-          token: ${{ secrets.CLOUD_REPO_TOKEN }}
-      
-      - name: Execute deploy script
-        run: |
-          bash ${{ env.DEPLOY_SCRIPT }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}
 
       
