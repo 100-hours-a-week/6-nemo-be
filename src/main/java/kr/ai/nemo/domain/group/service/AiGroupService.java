@@ -1,5 +1,6 @@
 package kr.ai.nemo.domain.group.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.group.dto.request.GroupAiDeleteRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupAiQuestionRecommendRequest;
@@ -30,6 +31,7 @@ public class AiGroupService {
 
   private final RestClient.Builder restClientBuilder;
   private final AiApiProperties aiApiProperties;
+  private final ObjectMapper objectMapper;
 
   @TimeTrace
   public GroupAiGenerateResponse call(GroupAiGenerateRequest request) {
@@ -73,6 +75,8 @@ public class AiGroupService {
   @TimeTrace
   public void notifyGroupCreated(GroupCreateResponse data) {
     try {
+      String json = objectMapper.writeValueAsString(data);
+      log.info("[요청 JSON] {}", json);
       restClientBuilder.baseUrl(aiApiProperties.getGroupCreateUrl())
           .build()
           .post()
@@ -89,6 +93,8 @@ public class AiGroupService {
   @TimeTrace
   public void notifyGroupDeleted(Long groupId) {
     try {
+      String json = objectMapper.writeValueAsString(new GroupAiDeleteRequest(groupId));
+      log.info("[요청 JSON] {}", objectMapper.writeValueAsString(json));
       restClientBuilder.baseUrl(aiApiProperties.getGroupDeleteUrl())
           .build()
           .post()
