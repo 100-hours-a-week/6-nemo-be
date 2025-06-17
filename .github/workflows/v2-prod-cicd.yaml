@@ -66,5 +66,3 @@ jobs:
             -t "${IMAGE_URI}:${{ env.ENVIRONMENT }}-latest" \
             --output=type=image,push=true .
       
-
-      

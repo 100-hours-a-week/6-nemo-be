@@ -149,8 +149,8 @@ public class GroupCommandService {
 
     Map<String, Object> sessionData = new HashMap<>();
     sessionData.put(CacheConstants.REDIS_CHATBOT_MESSAGES_FIELD, new ArrayList<>());
-
     String redisKey = CacheKeyUtil.key(CacheConstants.REDIS_CHATBOT_PREFIX,userDetails.getUser().getId(), sessionId);
+
     redisCacheService.set(redisKey, sessionData, Duration.ofMinutes(30));
 
     return sessionId;

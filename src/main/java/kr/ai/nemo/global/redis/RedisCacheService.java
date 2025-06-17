@@ -74,7 +74,6 @@ public class RedisCacheService {
     }
   }
 
-
   public void del(String key) {
     redisTemplate.delete(key);
   }
