@@ -76,7 +76,6 @@ public class GroupQueryService {
   @Transactional(readOnly = true)
   public GroupChatbotSessionResponse getChatbotSession(Long userId, String sessionId) {
     // redis에 저장되어 있는 key로 변환
-
     String redisKey = CacheKeyUtil.key(CacheConstants.REDIS_CHATBOT_PREFIX, userId, sessionId);
 
     log.info("getChatbotSession redisKey: {}", redisKey);
