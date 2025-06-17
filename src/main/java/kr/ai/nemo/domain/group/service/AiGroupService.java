@@ -1,7 +1,8 @@
 package kr.ai.nemo.domain.group.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import kr.ai.nemo.aop.logging.TimeTrace;
+import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.dto.request.GroupAiDeleteRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupAiQuestionRecommendRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupAiQuestionRequest;
@@ -9,6 +10,8 @@ import kr.ai.nemo.domain.group.dto.request.GroupAiRecommendRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupAiRecommendResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupChatbotQuestionResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupCreateResponse;
+import kr.ai.nemo.domain.group.exception.GroupException;
+import kr.ai.nemo.domain.group.validator.GroupValidator;
 import kr.ai.nemo.domain.groupparticipants.dto.request.GroupParticipantAiRequest;
 import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.global.config.AiApiProperties;
@@ -20,8 +23,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClient;
 
 @Slf4j
@@ -29,9 +35,10 @@ import org.springframework.web.client.RestClient;
 @RequiredArgsConstructor
 public class AiGroupService {
 
-  private final RestClient.Builder restClientBuilder;
+  private final RestClient restClient;
   private final AiApiProperties aiApiProperties;
-  private final ObjectMapper objectMapper;
+  private final GroupValidator groupValidator;
+
 
   @TimeTrace
   public GroupAiGenerateResponse call(GroupAiGenerateRequest request) {
@@ -42,13 +49,21 @@ public class AiGroupService {
     );
   }
 
+
+  @Retryable(
+      value = {HttpServerErrorException.class, IOException.class, GroupException.class},
+      maxAttempts = 2,
+      backoff = @Backoff(delay = 1000)
+  )
   @TimeTrace
   public GroupAiRecommendResponse recommendGroupFreeform(GroupAiRecommendRequest request) {
-    return postForData(
+    GroupAiRecommendResponse response = postForData(
         aiApiProperties.getGroupRecommendFreeformUrl(),
         request,
         new ParameterizedTypeReference<>() {}
     );
+    Group group = groupValidator.findByIdOrThrow(response.groupId());
+    return new GroupAiRecommendResponse(response.groupId(), response.responseText(), group);
   }
 
   @TimeTrace
@@ -75,16 +90,14 @@ public class AiGroupService {
   @TimeTrace
   public void notifyGroupCreated(GroupCreateResponse data) {
     try {
-      String json = objectMapper.writeValueAsString(data);
-      log.info("[요청 JSON] {}", json);
-
-      restClientBuilder.baseUrl(aiApiProperties.getGroupCreateUrl())
-          .build()
-          .post()
+      restClient.post()
+          .uri(aiApiProperties.getGroupCreateUrl())
           .contentType(MediaType.APPLICATION_JSON)
+          .headers(httpHeaders -> httpHeaders.setContentType(MediaType.APPLICATION_JSON))
           .body(data)
           .retrieve()
-          .toBodilessEntity();
+          .toEntity(String.class);
+
     } catch (Exception e) {
       log.error("[AI] notifyGroupCreated 호출 중 오류", e);
     }
@@ -94,19 +107,17 @@ public class AiGroupService {
   @TimeTrace
   public void notifyGroupDeleted(Long groupId) {
     try {
-      String json = objectMapper.writeValueAsString(new GroupAiDeleteRequest(groupId));
-      String fullUrl = aiApiProperties.getGroupDeleteUrl() + "/" + groupId;
-      log.info("[요청 JSON] {}, {}", fullUrl, json);
 
-      GroupAiDeleteRequest requestBody = new GroupAiDeleteRequest(groupId);
-
-      restClientBuilder.baseUrl(aiApiProperties.getGroupDeleteUrl())
-          .build()
-          .post()
+      restClient.post()
+          .uri(aiApiProperties.getGroupDeleteUrl())
           .contentType(MediaType.APPLICATION_JSON)
-          .bodyValue
+          .headers(httpHeaders -> httpHeaders.setContentType(MediaType.APPLICATION_JSON))
+          .body(new GroupAiDeleteRequest(groupId))
           .retrieve()
           .toBodilessEntity();
+
+      log.info("[AI] notifyGroupDeleted 호출 완료");
+
     } catch (Exception e) {
       log.error("[AI] notifyGroupDeleted 호출 중 오류", e);
     }
@@ -116,10 +127,10 @@ public class AiGroupService {
   @TimeTrace
   public void notifyGroupJoined(Long userId, Long groupId) {
     try {
-      restClientBuilder.baseUrl(aiApiProperties.getGroupJoinUrl())
-          .build()
-          .post()
+      restClient.post()
+          .uri(aiApiProperties.getGroupJoinUrl())
           .contentType(MediaType.APPLICATION_JSON)
+          .headers(httpHeaders -> httpHeaders.setContentType(MediaType.APPLICATION_JSON))
           .body(new GroupParticipantAiRequest(userId, groupId))
           .retrieve()
           .toBodilessEntity();
@@ -132,10 +143,10 @@ public class AiGroupService {
   @TimeTrace
   public void notifyGroupLeft(Long userId, Long groupId) {
     try {
-      restClientBuilder.baseUrl(aiApiProperties.getGroupLeaveUrl())
-          .build()
-          .post()
+      restClient.post()
+          .uri(aiApiProperties.getGroupLeaveUrl())
           .contentType(MediaType.APPLICATION_JSON)
+          .headers(httpHeaders -> httpHeaders.setContentType(MediaType.APPLICATION_JSON))
           .body(new GroupParticipantAiRequest(userId, groupId))
           .retrieve()
           .toBodilessEntity();
@@ -147,9 +158,10 @@ public class AiGroupService {
   // 세션 없는 post 요청
   private <T, R> R postForData(String url, T requestBody, ParameterizedTypeReference<BaseApiResponse<R>> typeRef) {
     try {
-      BaseApiResponse<R> response = restClientBuilder.baseUrl(url).build()
-          .post()
+      BaseApiResponse<R> response = restClient.post()
+          .uri(url)
           .contentType(MediaType.APPLICATION_JSON)
+          .headers(httpHeaders -> httpHeaders.setContentType(MediaType.APPLICATION_JSON))
           .body(requestBody)
           .retrieve()
           .body(typeRef);
@@ -169,8 +181,9 @@ public class AiGroupService {
   private <T, R> R postForDataWithSession(String url, T requestBody, String sessionId,
       ParameterizedTypeReference<BaseApiResponse<R>> typeRef) {
     try {
-      BaseApiResponse<R> response = restClientBuilder.baseUrl(url).build()
-          .post()
+
+      BaseApiResponse<R> response =  restClient.post()
+          .uri(url)
           .contentType(MediaType.APPLICATION_JSON)
           .header("X-Session-ID", sessionId)
           .body(requestBody)
@@ -182,7 +195,6 @@ public class AiGroupService {
       }
 
       return response.getData();
-
     } catch (Exception e) {
       throw new CustomException(CommonErrorCode.AI_SERVER_CONNECTION_FAILED);
     }

@@ -116,8 +116,7 @@ public class GroupCommandService {
       Long userId) {
     GroupAiRecommendRequest aiRequest = new GroupAiRecommendRequest(userId, request.requestText());
     GroupAiRecommendResponse aiResponse = aiClient.recommendGroupFreeform(aiRequest);
-    Group group = groupValidator.findByIdOrThrow(aiResponse.groupId());
-    GroupDto groupDto = GroupDto.from(group);
+    GroupDto groupDto = GroupDto.from(aiResponse.group());
     return new GroupRecommendResponse(groupDto, aiResponse.responseText());
   }
 
