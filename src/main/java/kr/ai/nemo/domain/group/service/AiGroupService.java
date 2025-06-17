@@ -77,6 +77,7 @@ public class AiGroupService {
     try {
       String json = objectMapper.writeValueAsString(data);
       log.info("[요청 JSON] {}", json);
+
       restClientBuilder.baseUrl(aiApiProperties.getGroupCreateUrl())
           .build()
           .post()
@@ -94,12 +95,16 @@ public class AiGroupService {
   public void notifyGroupDeleted(Long groupId) {
     try {
       String json = objectMapper.writeValueAsString(new GroupAiDeleteRequest(groupId));
-      log.info("[요청 JSON] {}", objectMapper.writeValueAsString(json));
+      String fullUrl = aiApiProperties.getGroupDeleteUrl() + "/" + groupId;
+      log.info("[요청 JSON] {}, {}", fullUrl, json);
+
+      GroupAiDeleteRequest requestBody = new GroupAiDeleteRequest(groupId);
+
       restClientBuilder.baseUrl(aiApiProperties.getGroupDeleteUrl())
           .build()
           .post()
           .contentType(MediaType.APPLICATION_JSON)
-          .body(new GroupAiDeleteRequest(groupId))
+          .bodyValue
           .retrieve()
           .toBodilessEntity();
     } catch (Exception e) {
