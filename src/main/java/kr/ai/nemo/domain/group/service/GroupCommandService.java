@@ -10,7 +10,9 @@ import java.util.UUID;
 import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
+import kr.ai.nemo.domain.group.domain.enums.ChatbotRole;
 import kr.ai.nemo.domain.group.domain.enums.GroupStatus;
+import kr.ai.nemo.domain.group.dto.request.ChatMessage;
 import kr.ai.nemo.domain.group.dto.request.GroupAiGenerateRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupAiQuestionRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupAiRecommendRequest;
@@ -31,6 +33,7 @@ import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Status;
 import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsCommandService;
 import kr.ai.nemo.domain.group.repository.GroupRepository;
+import kr.ai.nemo.global.redis.CacheConstants;
 import kr.ai.nemo.global.redis.CacheKeyUtil;
 import kr.ai.nemo.global.redis.RedisCacheService;
 import kr.ai.nemo.infra.ImageService;
@@ -125,7 +128,18 @@ public class GroupCommandService {
   public GroupChatbotQuestionResponse recommendGroupQuestion(GroupChatbotQuestionRequest request,
       Long userId, String sessionId) {
     GroupAiQuestionRequest aiRequest = new GroupAiQuestionRequest(userId, request.answer());
-    return aiClient.recommendGroupQuestion(aiRequest, sessionId);
+    String redisKey = CacheKeyUtil.key(CacheConstants.REDIS_CHATBOT_PREFIX, userId, sessionId);
+
+    // 사용자 답변 저장
+    ChatMessage userMsg = new ChatMessage(ChatbotRole.USER, aiRequest.answer(), null);
+    redisCacheService.appendToList(redisKey, CacheConstants.REDIS_CHATBOT_MESSAGES_FIELD, userMsg, ChatMessage.class);
+
+    GroupChatbotQuestionResponse aiResponse = aiClient.recommendGroupQuestion(aiRequest, sessionId);
+
+    // 사용자 응답 저장
+    ChatMessage aiMsg = new ChatMessage(ChatbotRole.AI, aiResponse.question(), aiResponse.options());
+    redisCacheService.appendToList(redisKey, CacheConstants.REDIS_CHATBOT_MESSAGES_FIELD, aiMsg, ChatMessage.class);
+    return aiResponse;
   }
 
   @TimeTrace
@@ -134,10 +148,9 @@ public class GroupCommandService {
     String sessionId = UUID.randomUUID().toString();
 
     Map<String, Object> sessionData = new HashMap<>();
-    sessionData.put("step", 0);
-    sessionData.put("answers", new ArrayList<>());
+    sessionData.put(CacheConstants.REDIS_CHATBOT_MESSAGES_FIELD, new ArrayList<>());
 
-    String redisKey = CacheKeyUtil.key("chatbot",userDetails.getUser().getId(), sessionId);
+    String redisKey = CacheKeyUtil.key(CacheConstants.REDIS_CHATBOT_PREFIX,userDetails.getUser().getId(), sessionId);
     redisCacheService.set(redisKey, sessionData, Duration.ofMinutes(30));
 
     return sessionId;

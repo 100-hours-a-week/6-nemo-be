@@ -122,8 +122,10 @@ public class GroupController {
       @AuthenticationPrincipal CustomUserDetails userDetails,
       @CookieValue(name = "chatbot_session_id") String sessionId
       ) {
-    return ResponseEntity.ok(BaseApiResponse.success(
-        groupCommandService.recommendGroupQuestion(request, userDetails.getUserId(), sessionId)));
+
+       GroupChatbotQuestionResponse response =
+           groupCommandService.recommendGroupQuestion(request, userDetails.getUserId(), sessionId);
+    return ResponseEntity.ok(BaseApiResponse.success(response));
   }
 
   @Operation(summary = "선택지 기반 모임 추천 - 모임 추천 요청", description = "모든 선택지에 응답 후 모임 추천을 요청합니다.")
@@ -132,7 +134,7 @@ public class GroupController {
   @GetMapping("/recommendations")
   public ResponseEntity<BaseApiResponse<GroupRecommendResponse>> recommendGroupRecommendation(
       @AuthenticationPrincipal CustomUserDetails userDetails,
-      @CookieValue(name = "sessionId") String sessionId
+      @CookieValue(name = "session_session_id") String sessionId
   ) {
     GroupChatbotSessionResponse chatbotSession = groupQueryService.getChatbotSession(
         userDetails.getUserId(), sessionId);
