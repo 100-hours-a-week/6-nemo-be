@@ -2,6 +2,7 @@ package kr.ai.nemo.domain.group.validator;
 
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.domain.enums.CategoryConstants;
+import kr.ai.nemo.domain.group.domain.enums.GroupStatus;
 import kr.ai.nemo.domain.group.exception.GroupErrorCode;
 import kr.ai.nemo.domain.group.exception.GroupException;
 import kr.ai.nemo.domain.group.repository.GroupRepository;
@@ -15,8 +16,13 @@ public class GroupValidator {
   private final GroupRepository repository;
 
   public Group findByIdOrThrow(Long groupId) {
-    return repository.findByIdGroupId(groupId)
+    Group group = repository.findByIdGroupId(groupId)
         .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
+    if (group.getStatus().equals(GroupStatus.DISBANDED)) {
+      throw new GroupException(GroupErrorCode.GROUP_DISBANDED);
+    }
+
+    return group;
   }
 
   public void isCategory(String category){
