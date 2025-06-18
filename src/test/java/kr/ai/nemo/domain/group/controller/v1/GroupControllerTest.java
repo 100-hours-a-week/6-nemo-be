@@ -22,6 +22,7 @@ import kr.ai.nemo.domain.group.dto.response.GroupDetailResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupDto;
 import kr.ai.nemo.domain.group.dto.response.GroupGenerateResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupListResponse;
+import kr.ai.nemo.domain.group.service.AiGroupService;
 import kr.ai.nemo.domain.group.service.GroupCommandService;
 import kr.ai.nemo.domain.group.service.GroupQueryService;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
@@ -63,6 +64,9 @@ class GroupControllerTest {
 
   @MockitoBean
   private ScheduleQueryService scheduleQueryService;
+
+  @MockitoBean
+  private AiGroupService aiGroupService;
 
   @MockitoBean
   private CustomUserDetailsService customUserDetailsService;
