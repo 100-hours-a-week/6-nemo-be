@@ -1,0 +1,88 @@
+name: Backend CD for v2-prod
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '릴리즈 버전 태그 (예: v1.3.0)'
+        required: true
+  push:
+    branches: [ infra/v2-cicd ]
+
+jobs:
+  pull-and-deploy:
+    name: Pull & Deploy to Prod Server
+    runs-on: ubuntu-latest
+    environment: prod
+
+    env:
+      REGION: asia-northeast3
+      REPOSITORY: registry
+      SERVICE: backend
+      ENVIRONMENT: prod
+      DEPLOY_SCRIPT: cloud/v2/scripts/deploy.sh
+
+    steps:
+    - name: Set image tags and URI
+      run: |
+        TIME_TAG="${{ env.ENVIRONMENT }}-$(TZ=Asia/Seoul date +'%Y%m%d-%H%M')"
+        echo "TIME_TAG=$TIME_TAG" >> $GITHUB_ENV
+
+        VERSION_TAG="prod-${{ github.event.inputs.version }}"
+        echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
+
+        IMAGE_URI_DEV="${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_DEV }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}"
+        echo "IMAGE_URI_DEV=$IMAGE_URI_DEV" >> $GITHUB_ENV
+
+        IMAGE_URI_PROD="${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_PROD }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}"
+        echo "IMAGE_URI_PROD=$IMAGE_URI_PROD" >> $GITHUB_ENV
+
+    # dev 프로젝트 인증 및 이미지 pull
+    - name: Docker Login for dev project
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGION }}-docker.pkg.dev
+        username: _json_key
+        password: ${{ secrets.GCP_SA_KEY_DEV }}
+
+    - name: Pull dev-latest image
+      run: docker pull ${{ env.IMAGE_URI_DEV }}:dev-latest
+
+    # prod 프로젝트 인증 및 이미지 push
+    - name: Docker Login for prod project
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGION }}-docker.pkg.dev
+        username: _json_key
+        password: ${{ secrets.GCP_SA_KEY_PROD }}
+
+    - name: Retag and Push to Prod
+      run: |
+        docker tag ${{ env.IMAGE_URI_DEV }}:dev-latest ${{ env.IMAGE_URI_PROD }}:$TIME_TAG
+        docker tag ${{ env.IMAGE_URI_DEV }}:dev-latest ${{ env.IMAGE_URI_PROD }}:$VERSION_TAG
+        docker tag ${{ env.IMAGE_URI_DEV }}:dev-latest ${{ env.IMAGE_URI_PROD }}:prod-latest
+
+        docker push ${{ env.IMAGE_URI_PROD }}:$TIME_TAG
+        docker push ${{ env.IMAGE_URI_PROD }}:$VERSION_TAG
+        docker push ${{ env.IMAGE_URI_PROD }}:prod-latest
+
+    - name: Checkout Cloud Repo for Deploy Script
+      uses: actions/checkout@v3
+      with:
+        repository: 100-hours-a-week/6-nemo-cloud
+        path: cloud
+        token: ${{ secrets.CLOUD_REPO_TOKEN }}
+
+    - name: Deploy via Bastion to Dev Server
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.DEV_HOST }}
+        username: ${{ secrets.DEV_USER }}
+        key: ${{ secrets.DEV_SSH_KEY }}
+
+        proxy_host: ${{ secrets.BASTION_HOST }}
+        proxy_username: ${{ secrets.BASTION_USER }}
+        proxy_key: ${{ secrets.BASTION_SSH_KEY }}
+
+        script: |
+          bash ${{ env.DEPLOY_SCRIPT }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}
