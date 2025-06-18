@@ -14,7 +14,7 @@ jobs:
       REPOSITORY: registry
       SERVICE: backend
       ENVIRONMENT: dev
-      DEPLOY_SCRIPT: /nemo/cloud/v2/scripts/deploy.sh
+      DEPLOY_SCRIPT: ~/nemo/cloud/v2/scripts/deploy.sh
 
     steps:
     - name: Checkout Code
