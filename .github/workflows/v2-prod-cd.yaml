@@ -20,7 +20,7 @@ jobs:
       REPOSITORY: registry
       SERVICE: backend
       ENVIRONMENT: prod
-      DEPLOY_SCRIPT_REMOTE: /home/deploy/v2/scripts/deploy.sh
+      DEPLOY_SCRIPT: /nemo/cloud/v2/scripts/deploy.sh
 
     steps:
     - name: Set image tags and URI
@@ -66,13 +66,6 @@ jobs:
         docker push ${{ env.IMAGE_URI_PROD }}:$VERSION_TAG
         docker push ${{ env.IMAGE_URI_PROD }}:prod-latest
 
-    - name: Checkout Cloud Repo for Deploy Script
-      uses: actions/checkout@v3
-      with:
-        repository: 100-hours-a-week/6-nemo-cloud
-        path: cloud
-        token: ${{ secrets.CLOUD_REPO_TOKEN }}
-
     - name: Deploy via Bastion to Dev Server
       uses: appleboy/ssh-action@v1.0.0
       with:
@@ -85,4 +78,4 @@ jobs:
         proxy_key: ${{ secrets.BASTION_SSH_KEY }}
 
         script: |
-          bash ${{ env.DEPLOY_SCRIPT_REMOTE }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}
+          bash ${{ env.DEPLOY_SCRIPT }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}
