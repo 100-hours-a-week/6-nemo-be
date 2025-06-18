@@ -134,7 +134,7 @@ public class GroupController {
   @GetMapping("/recommendations")
   public ResponseEntity<BaseApiResponse<GroupRecommendResponse>> recommendGroupRecommendation(
       @AuthenticationPrincipal CustomUserDetails userDetails,
-      @CookieValue(name = "session_session_id") String sessionId
+      @CookieValue(name = "chatbot_session_id") String sessionId
   ) {
     GroupChatbotSessionResponse chatbotSession = groupQueryService.getChatbotSession(
         userDetails.getUserId(), sessionId);
