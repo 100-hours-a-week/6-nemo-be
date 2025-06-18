@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -215,6 +216,7 @@ class GroupControllerTest {
 
     given(groupCommandService.createGroup(any(GroupCreateRequest.class), any(CustomUserDetails.class)))
         .willReturn(mockResponse);
+    doNothing().when(aiGroupService).notifyGroupCreated(mockResponse);
 
     // when & then
     mockMvc.perform(post("/api/v1/groups")
