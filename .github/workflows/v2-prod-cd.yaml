@@ -58,6 +58,9 @@ jobs:
         username: _json_key
         password: ${{ secrets.GCP_SA_KEY_PROD }}
 
+    - name: Set GCP Project
+      run: gcloud config set project ${{ secrets.GCP_PROJECT_ID_DEV }}
+
     - name: Retag and Push to Prod
       run: |
         docker tag ${{ env.IMAGE_URI_DEV }}:dev-latest ${{ env.IMAGE_URI_PROD }}:$TIME_TAG
