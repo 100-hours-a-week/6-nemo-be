@@ -39,6 +39,7 @@ public class AiGroupService {
   private final AiApiProperties aiApiProperties;
   private final GroupValidator groupValidator;
 
+
   @TimeTrace
   public GroupAiGenerateResponse call(GroupAiGenerateRequest request) {
     return postForData(
@@ -96,6 +97,7 @@ public class AiGroupService {
           .body(data)
           .retrieve()
           .toEntity(String.class);
+
     } catch (Exception e) {
       log.error("[AI] notifyGroupCreated 호출 중 오류", e);
     }
@@ -105,6 +107,7 @@ public class AiGroupService {
   @TimeTrace
   public void notifyGroupDeleted(Long groupId) {
     try {
+
       restClient.post()
           .uri(aiApiProperties.getGroupDeleteUrl())
           .contentType(MediaType.APPLICATION_JSON)
@@ -178,6 +181,7 @@ public class AiGroupService {
   private <T, R> R postForDataWithSession(String url, T requestBody, String sessionId,
       ParameterizedTypeReference<BaseApiResponse<R>> typeRef) {
     try {
+
       BaseApiResponse<R> response =  restClient.post()
           .uri(url)
           .contentType(MediaType.APPLICATION_JSON)
@@ -191,7 +195,6 @@ public class AiGroupService {
       }
 
       return response.getData();
-
     } catch (Exception e) {
       throw new CustomException(CommonErrorCode.AI_SERVER_CONNECTION_FAILED);
     }

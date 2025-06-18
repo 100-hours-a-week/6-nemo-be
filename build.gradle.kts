@@ -29,6 +29,7 @@ val awsSpringCloud = "3.0.2"
 val awsSdkVersion = "1.12.700"
 val swaggerVersion = "2.7.0"
 val sentryVersion = "8.12.0"
+val retryVersion = "1.3.4"
 
 dependencies {
 
