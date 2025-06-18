@@ -62,12 +62,16 @@ jobs:
 
     - name: Retag and Push to Prod
       run: |
-        echo "Checking pushed image: ${IMAGE_URI_PROD}:${TIME_TAG}"
-        echo "Checking pushed image: ${IMAGE_URI_PROD}:${VERSION_TAG}"
-        echo "Checking pushed image: ${IMAGE_URI_PROD}:${{ env.ENVIRONMENT }}-latest"
+        docker tag ${{ env.IMAGE_URI_DEV }}:dev-latest ${{ env.IMAGE_URI_PROD }}:${{ env.TIME_TAG }}
+        docker tag ${{ env.IMAGE_URI_DEV }}:dev-latest ${{ env.IMAGE_URI_PROD }}:${{ env.VERSION_TAG }}
+        docker tag ${{ env.IMAGE_URI_DEV }}:dev-latest ${{ env.IMAGE_URI_PROD }}:prod-latest
 
-        docker push ${{ env.IMAGE_URI_PROD }}:$TIME_TAG
-        docker push ${{ env.IMAGE_URI_PROD }}:$VERSION_TAG
+        echo "Checking pushed image: ${{ env.IMAGE_URI_PROD }}:${{ env.TIME_TAG }}"
+        echo "Checking pushed image: ${{ env.IMAGE_URI_PROD }}:${{ env.VERSION_TAG }}"
+        echo "Checking pushed image: ${{ env.IMAGE_URI_PROD }}:prod-latest"
+
+        docker push ${{ env.IMAGE_URI_PROD }}:${{ env.TIME_TAG }}
+        docker push ${{ env.IMAGE_URI_PROD }}:${{ env.VERSION_TAG }}
         docker push ${{ env.IMAGE_URI_PROD }}:prod-latest
 
     - name: Deploy via Bastion to Prod Server
