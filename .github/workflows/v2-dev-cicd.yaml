@@ -33,7 +33,7 @@ jobs:
         TIME_TAG="${{ env.ENVIRONMENT }}-$(TZ=Asia/Seoul date +'%Y%m%d-%H%M')"
         echo "TIME_TAG=$TIME_TAG" >> $GITHUB_ENV
 
-        IMAGE_URI="${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}"
+        IMAGE_URI="${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_DEV }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}"
         echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
 
     - name: Set up Docker Buildx
