@@ -59,9 +59,9 @@ jobs:
 
     - name: Build and Push Docker Image
       run: |
-        echo "Checking pushed image: ${IMAGE_URI}:${TIME_TAG}"
-        echo "Checking pushed image: ${IMAGE_URI}:${VERSION_TAG}"
-        echo "Checking pushed image: ${IMAGE_URI}:${{ env.ENVIRONMENT }}-latest"
+        echo Checking pushed image: ${IMAGE_URI}:${TIME_TAG}"
+        echo Checking pushed image: ${IMAGE_URI}:${VERSION_TAG}"
+        echo Checking pushed image: ${IMAGE_URI}:${{ env.ENVIRONMENT }}-latest"
 
         docker buildx build \
           --platform linux/amd64 \
