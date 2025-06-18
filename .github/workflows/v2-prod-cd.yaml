@@ -6,8 +6,6 @@ on:
       version:
         description: '릴리즈 버전 태그 (예: v1.3.0)'
         required: true
-  push:
-    branches: [ infra/v2-cicd ]
 
 jobs:
   pull-and-deploy:
@@ -20,7 +18,7 @@ jobs:
       REPOSITORY: registry
       SERVICE: backend
       ENVIRONMENT: prod
-      DEPLOY_SCRIPT: /nemo/cloud/v2/scripts/deploy.sh
+      DEPLOY_SCRIPT: ~/nemo/cloud/v2/scripts/deploy.sh
 
     steps:
     - name: Set image tags and URI
@@ -43,7 +41,7 @@ jobs:
       with:
         registry: ${{ env.REGION }}-docker.pkg.dev
         username: _json_key
-        password: ${{ secrets.GCP_SA_KEY_DEV }}
+        password: ${{ secrets.GCP_SA_KEY }}
 
     - name: Pull dev-latest image
       run: docker pull ${{ env.IMAGE_URI_DEV }}:dev-latest
