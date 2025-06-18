@@ -39,7 +39,7 @@ public class RedisCacheService {
     }
   }
 
-  public <T> void appendToList(String key, String fieldName, T newItem, Class<T> clazz) {
+  public <T> void appendToList(String key, String fieldName, T newItem, Class<T> clazz, Duration ttl) {
     try {
       String existingJson = redisTemplate.opsForValue().get(key);
       if (existingJson == null) {
@@ -64,7 +64,7 @@ public class RedisCacheService {
       // 다시 덮어쓰기
       objectNode.set(fieldName, arrayNode);
       String updatedJson = objectMapper.writeValueAsString(objectNode);
-      redisTemplate.opsForValue().set(key, updatedJson);
+      redisTemplate.opsForValue().set(key, updatedJson, ttl);
 
     } catch (Exception e) {
       log.error("redis 리스트 필드 추가 실패: key = {}, because {}", key, e.getMessage());
