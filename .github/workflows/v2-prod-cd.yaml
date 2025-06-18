@@ -1,4 +1,4 @@
-name: Backend CI/CD for v2-prod
+name: Backend CD for v2-prod
 
 on:
   workflow_dispatch:
@@ -24,17 +24,6 @@ jobs:
       DEPLOY_SCRIPT: ~/nemo/cloud/v2/scripts/deploy.sh
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
-
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: '${{ secrets.GCP_SA_KEY_PROD }}'
-
-    - name: Set GCP Project
-      run: gcloud config set project ${{ secrets.GCP_PROJECT_ID_PROD }}
-
     - name: Set image tags and URI
       run: |
         TIME_TAG="${{ env.ENVIRONMENT }}-$(TZ=Asia/Seoul date +'%Y%m%d-%H%M')"
@@ -43,39 +32,50 @@ jobs:
         VERSION_TAG="prod-${{ github.event.inputs.version }}"
         echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
 
+        IMAGE_URI_DEV="${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_DEV }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}"
+        echo "IMAGE_URI_DEV=$IMAGE_URI_DEV" >> $GITHUB_ENV
+
         IMAGE_URI_PROD="${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_PROD }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}"
-        echo "IMAGE_URI=$IMAGE_URI_PROD" >> $GITHUB_ENV
+        echo "IMAGE_URI_PROD=$IMAGE_URI_PROD" >> $GITHUB_ENV
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+    # dev 프로젝트 인증 및 이미지 pull
+    - name: Docker Login for dev project
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGION }}-docker.pkg.dev
+        username: _json_key
+        password: ${{ secrets.GCP_SA_KEY }}
 
-    - name: Configure Docker for Artifact Registry
-      run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+    - name: Pull dev-latest image
+      run: docker pull ${{ env.IMAGE_URI_DEV }}:dev-latest
 
-    - name: Gradle Build
-      env:
-        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      run: ./gradlew build -x test --no-daemon
+    # prod 프로젝트 인증 및 이미지 push
+    - name: Docker Login for prod project
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGION }}-docker.pkg.dev
+        username: _json_key
+        password: ${{ secrets.GCP_SA_KEY_PROD }}
 
-    - name: Build and Push Docker Image
+    - name: Set GCP Project
+      run: gcloud config set project ${{ secrets.GCP_PROJECT_ID_PROD }}
+
+    - name: Retag and Push to Prod
       run: |
-        echo "Checking pushed image: ${IMAGE_URI}:${TIME_TAG}"
-        echo "Checking pushed image: ${IMAGE_URI}:${VERSION_TAG}"
-        echo "Checking pushed image: ${IMAGE_URI}:${{ env.ENVIRONMENT }}-latest"
+        echo "Checking pushed image: ${IMAGE_URI_PROD}:${TIME_TAG}"
+        echo "Checking pushed image: ${IMAGE_URI_PROD}:${VERSION_TAG}"
+        echo "Checking pushed image: ${IMAGE_URI_PROD}:${{ env.ENVIRONMENT }}-latest"
 
-        docker buildx build \
-          --platform linux/amd64 \
-          -t "${IMAGE_URI}:${TIME_TAG}" \
-          -t "${IMAGE_URI}:${VERSION_TAG}" \
-          -t "${IMAGE_URI}:${{ env.ENVIRONMENT }}-latest" \
-          --push .
+        docker push ${{ env.IMAGE_URI_PROD }}:$TIME_TAG
+        docker push ${{ env.IMAGE_URI_PROD }}:$VERSION_TAG
+        docker push ${{ env.IMAGE_URI_PROD }}:prod-latest
 
-    - name: Deploy via Bastion to Dev Server
+    - name: Deploy via Bastion to Prod Server
       uses: appleboy/ssh-action@v1.0.0
       with:
-        host: ${{ secrets.DEV_HOST }}
-        username: ${{ secrets.DEV_USER }}
-        key: ${{ secrets.DEV_SSH_KEY }}
+        host: ${{ secrets.PROD_HOST }}
+        username: ${{ secrets.PROD_USER }}
+        key: ${{ secrets.PROD_SSH_KEY }}
 
         proxy_host: ${{ secrets.BASTION_HOST }}
         proxy_username: ${{ secrets.BASTION_USER }}
