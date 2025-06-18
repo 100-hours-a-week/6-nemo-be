@@ -130,15 +130,20 @@ public class GroupCommandService {
     GroupAiQuestionRequest aiRequest = new GroupAiQuestionRequest(userId, request.answer());
     String redisKey = CacheKeyUtil.key(CacheConstants.REDIS_CHATBOT_PREFIX, userId, sessionId);
 
-    // 사용자 답변 저장
-    ChatMessage userMsg = new ChatMessage(ChatbotRole.USER, aiRequest.answer(), null);
-    redisCacheService.appendToList(redisKey, CacheConstants.REDIS_CHATBOT_MESSAGES_FIELD, userMsg, ChatMessage.class);
+    // 사용자 답변이 Null이 아닌 경우 -> 1번째 질문 요청이 아닌 경우 답변을 저장
+    if (request.answer() != null) {
+      ChatMessage userMsg = new ChatMessage(ChatbotRole.USER, aiRequest.answer());
+      redisCacheService.appendToList(redisKey, CacheConstants.REDIS_CHATBOT_MESSAGES_FIELD, userMsg,
+          ChatMessage.class, CacheConstants.CHATBOT_SESSION_TTL);
+    }
 
     GroupChatbotQuestionResponse aiResponse = aiClient.recommendGroupQuestion(aiRequest, sessionId);
 
-    // 사용자 응답 저장
-    ChatMessage aiMsg = new ChatMessage(ChatbotRole.AI, aiResponse.question(), aiResponse.options());
-    redisCacheService.appendToList(redisKey, CacheConstants.REDIS_CHATBOT_MESSAGES_FIELD, aiMsg, ChatMessage.class);
+    // AI 응답 저장
+    ChatMessage aiMsg = new ChatMessage(ChatbotRole.AI, aiResponse.question(),
+        aiResponse.options());
+    redisCacheService.appendToList(redisKey, CacheConstants.REDIS_CHATBOT_MESSAGES_FIELD, aiMsg,
+        ChatMessage.class, CacheConstants.CHATBOT_SESSION_TTL);
     return aiResponse;
   }
 
@@ -149,8 +154,9 @@ public class GroupCommandService {
 
     Map<String, Object> sessionData = new HashMap<>();
     sessionData.put(CacheConstants.REDIS_CHATBOT_MESSAGES_FIELD, new ArrayList<>());
-    String redisKey = CacheKeyUtil.key(CacheConstants.REDIS_CHATBOT_PREFIX,userDetails.getUser().getId(), sessionId);
 
+    String redisKey = CacheKeyUtil.key(CacheConstants.REDIS_CHATBOT_PREFIX,
+        userDetails.getUser().getId(), sessionId);
     redisCacheService.set(redisKey, sessionData, Duration.ofMinutes(30));
 
     return sessionId;
