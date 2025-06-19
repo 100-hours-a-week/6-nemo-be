@@ -139,6 +139,6 @@ public class GroupController {
     GroupChatbotSessionResponse chatbotSession = groupQueryService.getChatbotSession(
         userDetails.getUserId(), sessionId);
     return ResponseEntity.ok(BaseApiResponse.success(
-        groupQueryService.recommendGroup(chatbotSession, sessionId)));
+        groupQueryService.recommendGroup(userDetails.getUserId(), chatbotSession, sessionId)));
   }
 }
