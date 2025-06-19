@@ -51,6 +51,12 @@ jobs:
     - name: Check built JAR file(s)
       run: ls -lh build/libs/
 
+    - name: Rename latest JAR to app.jar
+      run: |
+        LATEST_JAR=$(ls -1t build/libs/*.jar | head -n1)
+        echo "Using JAR: $LATEST_JAR"
+        cp "$LATEST_JAR" build/libs/app.jar
+
     - name: Build and Push Docker Image
       run: |
         echo Checking pushed image: ${IMAGE_URI}:${TIME_TAG}"
