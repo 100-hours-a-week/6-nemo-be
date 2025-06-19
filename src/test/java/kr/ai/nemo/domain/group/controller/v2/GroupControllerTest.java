@@ -1,5 +1,6 @@
 package kr.ai.nemo.domain.group.controller.v2;
 
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -11,7 +12,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.ai.nemo.domain.auth.security.JwtProvider;
 import kr.ai.nemo.domain.auth.service.CustomUserDetailsService;
 import kr.ai.nemo.domain.group.dto.request.UpdateGroupImageRequest;
+import kr.ai.nemo.domain.group.service.AiGroupService;
 import kr.ai.nemo.domain.group.service.GroupCommandService;
+import kr.ai.nemo.domain.group.service.GroupQueryService;
 import kr.ai.nemo.global.testUtil.MockMember;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,7 +40,14 @@ class GroupControllerTest {
   private GroupCommandService groupCommandService;
 
   @MockitoBean
+  private GroupQueryService groupQueryService;
+
+  @MockitoBean
+  private AiGroupService aiGroupService;
+
+  @MockitoBean
   private CustomUserDetailsService customUserDetailsService;
+
   @Autowired
   private ObjectMapper objectMapper;
 
@@ -47,6 +57,8 @@ class GroupControllerTest {
   void deleteGroup_Success() throws Exception {
     // given
     Long groupId = 1L;
+
+    doNothing().when(aiGroupService).notifyGroupDeleted(groupId);
 
     // when
     mockMvc.perform(delete("/api/v2/groups/{groupId}", groupId)
