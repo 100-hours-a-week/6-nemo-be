@@ -62,7 +62,6 @@ public class AiGroupService {
         request,
         new ParameterizedTypeReference<>() {}
     );
-    System.out.println("1312312312   " + response.groupId() + "    AI가 전달해준 내용");
     Group group = groupValidator.findByIdOrThrow(response.groupId());
     return new GroupAiRecommendResponse(response.groupId(), response.reason(), group);
   }
