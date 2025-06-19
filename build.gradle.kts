@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "kr.ai.nemo"
-version = "2.0.6-SNAPSHOT"
+version = "2.0.0-SNAPSHOT"
 
 java {
 	toolchain {
@@ -29,7 +29,6 @@ val awsSpringCloud = "3.0.2"
 val awsSdkVersion = "1.12.700"
 val swaggerVersion = "2.7.0"
 val sentryVersion = "8.12.0"
-val retryVersion = "1.3.4"
 
 dependencies {
 
@@ -45,8 +44,6 @@ dependencies {
 	implementation("io.sentry:sentry-spring-boot-starter-jakarta:$sentryVersion")
 	implementation("org.springframework.boot:spring-boot-starter-aop")
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
-	implementation("org.springframework.boot:spring-boot-starter-webflux")
-	implementation("org.springframework.retry:spring-retry")
 
 	implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")

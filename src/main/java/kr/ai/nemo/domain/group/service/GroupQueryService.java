@@ -1,6 +1,8 @@
 package kr.ai.nemo.domain.group.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.core.util.Json;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +24,6 @@ import kr.ai.nemo.domain.group.repository.GroupRepository;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.groupparticipants.validator.GroupParticipantValidator;
-import kr.ai.nemo.global.redis.CacheConstants;
 import kr.ai.nemo.global.redis.CacheKeyUtil;
 import kr.ai.nemo.global.redis.RedisCacheService;
 import lombok.RequiredArgsConstructor;
@@ -76,9 +77,8 @@ public class GroupQueryService {
   @Transactional(readOnly = true)
   public GroupChatbotSessionResponse getChatbotSession(Long userId, String sessionId) {
     // redis에 저장되어 있는 key로 변환
-    String redisKey = CacheKeyUtil.key(CacheConstants.REDIS_CHATBOT_PREFIX, userId, sessionId);
+    String redisKey = CacheKeyUtil.key("chatbot", userId, sessionId);
 
-    log.info("getChatbotSession redisKey: {}", redisKey);
     Optional<JsonNode> sessionJson = redisCacheService.get(redisKey, JsonNode.class);
     if (sessionJson.isEmpty()) {
       return new GroupChatbotSessionResponse(null);
@@ -89,19 +89,20 @@ public class GroupQueryService {
       JsonNode root = sessionJson.get();
 
       // root에서 answers로 저장된 값 꺼내기
-      JsonNode data = root.get(CacheConstants.REDIS_CHATBOT_MESSAGES_FIELD);
-      if (data == null || !data.isArray()) {
+      JsonNode answers = root.get("answers");
+
+      if (answers == null || !answers.isArray()) {
         return new GroupChatbotSessionResponse(null);
       }
 
       List<GroupChatbotSessionResponse.Message> messages = new ArrayList<>();
 
-      for (JsonNode dataNode : data) {
-        String role = dataNode.get("role").asText();
-        String text = dataNode.get("text").asText();
+      for (JsonNode answerNode : answers) {
+        String role = answerNode.get("role").asText();
+        String text = answerNode.get("text").asText();
         List<String> options = new ArrayList<>();
 
-        JsonNode optionNode = dataNode.get("options");
+        JsonNode optionNode = answerNode.get("option");
         if (optionNode != null && optionNode.isArray()) {
           for (JsonNode opt : optionNode) {
             options.add(opt.asText());
@@ -124,10 +125,9 @@ public class GroupQueryService {
 
   @TimeTrace
   @Transactional(readOnly = true)
-  public GroupRecommendResponse recommendGroup(GroupChatbotSessionResponse session,
-      String sessionId) {
+  public GroupRecommendResponse recommendGroup(GroupChatbotSessionResponse session, String sessionId) {
 
-    List<GroupChatbotSessionResponse.Message> messages = session.messages();
+    List<GroupChatbotSessionResponse.Message> messages = session.message();
 
     if (messages.isEmpty()) {
       throw new GroupException(GroupErrorCode.CHAT_SESSION_NOT_FOUND);

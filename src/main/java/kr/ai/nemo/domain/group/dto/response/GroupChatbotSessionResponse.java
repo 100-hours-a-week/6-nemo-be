@@ -3,7 +3,7 @@ package kr.ai.nemo.domain.group.dto.response;
 import java.util.List;
 
 public record GroupChatbotSessionResponse(
-    List<Message> messages
+    List<Message> message
 ) {
 
   public record Message(

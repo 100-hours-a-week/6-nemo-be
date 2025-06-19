@@ -23,6 +23,7 @@ spring:
       timeout: 2s
       password: ${REDIS_PASSWORD}
 
+
   jpa:
     hibernate:
       ddl-auto: none
@@ -36,18 +37,15 @@ spring:
     basename: validation
     encoding: UTF-8
 
-
 oauth:
   kakao:
     rest-api-key: ${KAKAO_REST_API_KEY}
     redirect-uri: ${KAKAO_REDIRECT_URI}
 
-
 jwt:
   secret: ${JWT_SECRET}
   access-token-validity: ${ACCESS_TOKEN_EXPIRATION}
   refresh-token-validity: ${REFRESH_TOKEN_EXPIRATION}
-
 
 management:
   endpoints:
@@ -58,10 +56,8 @@ management:
     health:
       show-details: never
 
-
 server:
   forward-headers-strategy: framework
-
 
 cloud:
   aws:
@@ -73,12 +69,11 @@ cloud:
     region:
       static: ${AWS_REGION}
 
-
 ai:
   service:
     url: ${AI_SERVICE_URL}
     endpoints:
-      group-generate: /ai/v1/groups/information
+      group-generate: /ai/v1/group/information
       group-chatbot:
         group-recommend-freeform: /ai/v2/groups/recommendations/freeform
         group-recommend-questions: /ai/v2/groups/recommendations/questions
@@ -88,6 +83,8 @@ ai:
         group-delete: /ai/v2/groups/delete
         group-join: /ai/v2/groups/participants
         group-leave: /ai/v2/groups/participants/delete
+
+
 
 
 sentry:

@@ -81,7 +81,7 @@ public class GroupController {
     return ResponseEntity.ok(BaseApiResponse.success(
         groupCommandService.recommendGroupFreeform(request, userDetails.getUserId())));
   }
-  
+
   @Operation(summary = "선택지 기반 모임 추천 - session 정보 가져오가", description = "기존에 대화 세션이 있었는지 확인합니다.")
   @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.")
   @TimeTrace
@@ -120,12 +120,10 @@ public class GroupController {
   public ResponseEntity<BaseApiResponse<GroupChatbotQuestionResponse>> recommendGroupQuestions(
       @RequestBody GroupChatbotQuestionRequest request,
       @AuthenticationPrincipal CustomUserDetails userDetails,
-      @CookieValue(name = "chatbot_session_id") String sessionId
+      @CookieValue(name = "sessionId") String sessionId
       ) {
-
-       GroupChatbotQuestionResponse response =
-           groupCommandService.recommendGroupQuestion(request, userDetails.getUserId(), sessionId);
-    return ResponseEntity.ok(BaseApiResponse.success(response));
+    return ResponseEntity.ok(BaseApiResponse.success(
+        groupCommandService.recommendGroupQuestion(request, userDetails.getUserId(), sessionId)));
   }
 
   @Operation(summary = "선택지 기반 모임 추천 - 모임 추천 요청", description = "모든 선택지에 응답 후 모임 추천을 요청합니다.")
@@ -134,7 +132,7 @@ public class GroupController {
   @GetMapping("/recommendations")
   public ResponseEntity<BaseApiResponse<GroupRecommendResponse>> recommendGroupRecommendation(
       @AuthenticationPrincipal CustomUserDetails userDetails,
-      @CookieValue(name = "chatbot_session_id") String sessionId
+      @CookieValue(name = "sessionId") String sessionId
   ) {
     GroupChatbotSessionResponse chatbotSession = groupQueryService.getChatbotSession(
         userDetails.getUserId(), sessionId);
