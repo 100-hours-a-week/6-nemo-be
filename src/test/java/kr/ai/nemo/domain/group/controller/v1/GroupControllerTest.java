@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -22,6 +23,7 @@ import kr.ai.nemo.domain.group.dto.response.GroupDetailResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupDto;
 import kr.ai.nemo.domain.group.dto.response.GroupGenerateResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupListResponse;
+import kr.ai.nemo.domain.group.service.AiGroupService;
 import kr.ai.nemo.domain.group.service.GroupCommandService;
 import kr.ai.nemo.domain.group.service.GroupQueryService;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
@@ -63,6 +65,9 @@ class GroupControllerTest {
 
   @MockitoBean
   private ScheduleQueryService scheduleQueryService;
+
+  @MockitoBean
+  private AiGroupService aiGroupService;
 
   @MockitoBean
   private CustomUserDetailsService customUserDetailsService;
@@ -211,6 +216,7 @@ class GroupControllerTest {
 
     given(groupCommandService.createGroup(any(GroupCreateRequest.class), any(CustomUserDetails.class)))
         .willReturn(mockResponse);
+    doNothing().when(aiGroupService).notifyGroupCreated(mockResponse);
 
     // when & then
     mockMvc.perform(post("/api/v1/groups")

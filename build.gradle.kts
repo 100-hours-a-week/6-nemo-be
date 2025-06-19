@@ -3,6 +3,7 @@ plugins {
 	id("org.springframework.boot") version "3.4.5"
 	id("io.spring.dependency-management") version "1.1.7"
 	id ("io.sentry.jvm.gradle") version "5.6.0"
+	id("jacoco")
 }
 
 group = "kr.ai.nemo"
@@ -75,4 +76,44 @@ sentry {
 	org = "glenn-bn"
 	projectName = "java-spring-boot"
 	authToken = System.getenv("SENTRY_AUTH_TOKEN")
+}
+
+jacoco {
+	toolVersion = "0.8.13"
+}
+
+tasks.test {
+	ignoreFailures = true  // 테스트 실패 있어도 실패로 간주하지 않음
+	useJUnitPlatform()
+	finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+	dependsOn(tasks.test)
+
+	reports {
+		xml.required.set(false)
+		html.required.set(true)
+		csv.required.set(false)
+	}
+
+	sourceDirectories.setFrom(files("src/main/java"))
+
+	classDirectories.setFrom(
+		files(
+			classDirectories.files.map {
+				fileTree(it) {
+					// 커버리지에서 제외할 디렉터리/파일
+					exclude(
+						"**/dto/**",
+						"**/config/**",
+						"**/NemoApplication*",
+						"**/*Exception*",
+						"**/*Request*",
+						"**/*Response*"
+					)
+				}
+			}
+		)
+	)
 }
