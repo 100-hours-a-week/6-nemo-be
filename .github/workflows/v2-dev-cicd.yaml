@@ -2,7 +2,7 @@ name: Backend CI/CD for v2-dev
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ develop, fix/clean-build ]
 
 jobs:
   build-and-deploy:
@@ -45,7 +45,9 @@ jobs:
     - name: Gradle Build
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      run: ./gradlew build -x test --no-daemon
+      run: |
+        ./gradlew clean build -x test --no-daemon
+        cp "$(ls -t build/libs/*.jar | head -n 1)" build/libs/app.jar
 
     - name: Build and Push Docker Image
       run: |
