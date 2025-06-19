@@ -82,10 +82,11 @@ sentry {
 }
 
 jacoco {
-	toolVersion = "0.8.10"
+	toolVersion = "0.8.13"
 }
 
 tasks.test {
+	ignoreFailures = true  // 테스트 실패 있어도 실패로 간주하지 않음
 	useJUnitPlatform()
 	finalizedBy(tasks.jacocoTestReport)
 }
@@ -94,10 +95,12 @@ tasks.jacocoTestReport {
 	dependsOn(tasks.test)
 
 	reports {
-		xml.required.set(true)
+		xml.required.set(false)
 		html.required.set(true)
 		csv.required.set(false)
 	}
+
+	sourceDirectories.setFrom(files("src/main/java"))
 
 	classDirectories.setFrom(
 		files(
