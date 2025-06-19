@@ -120,7 +120,7 @@ public class GroupCommandService {
     GroupAiRecommendRequest aiRequest = new GroupAiRecommendRequest(userId, request.requestText());
     GroupAiRecommendResponse aiResponse = aiClient.recommendGroupFreeform(aiRequest);
     GroupDto groupDto = GroupDto.from(aiResponse.group());
-    return new GroupRecommendResponse(groupDto, aiResponse.responseText());
+    return new GroupRecommendResponse(groupDto, aiResponse.reason());
   }
 
   @TimeTrace

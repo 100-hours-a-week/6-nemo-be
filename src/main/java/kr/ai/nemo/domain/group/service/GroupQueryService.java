@@ -142,6 +142,6 @@ public class GroupQueryService {
     GroupAiRecommendResponse aiResponse = aiGroupService.recommendGroup(aiRequest, sessionId);
     Group group = groupValidator.findByIdOrThrow(aiResponse.groupId());
 
-    return new GroupRecommendResponse(GroupDto.from(group), aiResponse.responseText());
+    return new GroupRecommendResponse(GroupDto.from(group), aiResponse.reason());
   }
 }
