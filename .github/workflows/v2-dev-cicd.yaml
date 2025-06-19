@@ -45,7 +45,7 @@ jobs:
     - name: Gradle Build
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      run: ./gradlew build -x test --no-daemon
+      run: ./gradlew clean build -x test --no-daemon
 
     - name: Build and Push Docker Image
       run: |
