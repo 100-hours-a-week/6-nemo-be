@@ -48,6 +48,9 @@ jobs:
       run: |
         ./gradlew clean build -x test --no-daemon
 
+    - name: Check built JAR file(s)
+      run: ls -lh build/libs/
+
     - name: Build and Push Docker Image
       run: |
         echo Checking pushed image: ${IMAGE_URI}:${TIME_TAG}"
