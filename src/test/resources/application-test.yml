@@ -50,4 +50,15 @@ cloud:
 
 ai:
   service:
-    url: http://localhost:8081/test
+    url: http://localhost:8081
+    endpoints:
+      group-generate: /ai/v1/groups/information
+      group-chatbot:
+        group-recommend-freeform: /ai/v2/groups/recommendations/freeform
+        group-recommend-questions: /ai/v2/groups/recommendations/questions
+        group-recommend: /ai/v2/groups/recommendations
+      group-data:
+        group-create: /ai/v2/groups
+        group-delete: /ai/v2/groups/delete
+        group-join: /ai/v2/groups/participants
+        group-leave: /ai/v2/groups/participants/delete

@@ -110,7 +110,7 @@ class ScheduleCommandServiceTest {
     Group group = mock(Group.class);
     User user = mock(User.class);
 
-    Schedule schedule = ScheduleFixture.createDefaultSchedule(group, user, ScheduleStatus.RECRUITING);
+    Schedule schedule = ScheduleFixture.createDefaultSchedule(user, group);
 
     when(scheduleValidator.findByIdOrThrow(scheduleId)).thenReturn(schedule);
     doNothing().when(scheduleValidator).validateSchedule(schedule);
@@ -123,5 +123,34 @@ class ScheduleCommandServiceTest {
     verify(scheduleValidator).validateSchedule(schedule);
     assertThat(schedule.getStatus()).isEqualTo(ScheduleStatus.CANCELED);
     assertThat(schedule.getDeletedAt()).isNotNull();
+  }
+
+  @Test
+  @DisplayName("[성공] 스케줄 생성 시 그룹 업데이트 시간 변경")
+  void createSchedule_UpdatesGroupTime_Success() {
+    // given
+    Group group = mock(Group.class);
+    User user = mock(User.class);
+    CustomUserDetails userDetails = new CustomUserDetails(user);
+    
+    LocalDateTime beforeCreation = LocalDateTime.now();
+    ScheduleCreateRequest request = new ScheduleCreateRequest(
+        1L,
+        "시간 테스트 스케줄",
+        "설명",
+        "주소",
+        "상세주소",
+        LocalDateTime.now().plusDays(1)
+    );
+
+    given(groupValidator.findByIdOrThrow(1L)).willReturn(group);
+    // scheduleRepository.save()는 반환값을 사용하지 않으므로 설정 불필요
+
+    // when
+    scheduleCommandService.createSchedule(userDetails, request);
+
+    // then
+    verify(group).setUpdatedAt(any(LocalDateTime.class));
+    verify(scheduleParticipantsService).addAllParticipantsForNewSchedule(any(Schedule.class));
   }
 }

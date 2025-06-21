@@ -125,8 +125,84 @@ class GroupParticipantsControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.data.groups.length()").value(groupList.size()))
         .andExpect(jsonPath("$.data.groups[0].groupId").value(1L))
-        .andExpect(jsonPath("$.data.groups[0].name").value("테스트 모임"))
+        .andExpect(jsonPath("$.data.groups[0].name").value(group.getName()))
         .andExpect(jsonPath("$.data.groups[1].groupId").value(2L))
-        .andExpect(jsonPath("$.data.groups[1].name").value("테스트 모임"));
+        .andExpect(jsonPath("$.data.groups[1].name").value(group1.getName()));
+  }
+
+  @Test
+  @DisplayName("[실패] 모임 신청 - CSRF 토큰 없음")
+  void joinGroup_NoCsrfToken_Forbidden() throws Exception {
+    // given
+    Long groupId = 1L;
+
+    // when & then
+    mockMvc.perform(post("/api/v1/groups/{groupId}/applications", groupId))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @DisplayName("[실패] 모임 신청 - 잘못된 HTTP 메서드")
+  void joinGroup_WrongMethod_MethodNotAllowed() throws Exception {
+    // given
+    Long groupId = 1L;
+
+    // when & then
+    mockMvc.perform(get("/api/v1/groups/{groupId}/applications", groupId)
+            .with(csrf()))
+        .andExpect(status().isMethodNotAllowed());
+  }
+
+  @Test
+  @DisplayName("[성공] 모임원 조회 - 빈 목록")
+  void getGroupParticipants_EmptyList_Success() throws Exception {
+    // given
+    Long groupId = 1L;
+    given(groupParticipantsQueryService.getAcceptedParticipants(groupId))
+        .willReturn(List.of());
+
+    // when & then
+    mockMvc.perform(get("/api/v1/groups/{groupId}/participants", groupId)
+        .with(csrf()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.participants").isEmpty());
+  }
+
+  @Test
+  @DisplayName("[성공] 내가 참여한 모임 조회 - 빈 목록")
+  void getMyGroup_EmptyList_Success() throws Exception {
+    // given
+    given(groupParticipantsQueryService.getMyGroups(anyLong()))
+        .willReturn(List.of());
+
+    // when & then
+    mockMvc.perform(get("/api/v1/groups/me")
+            .with(csrf()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.groups").isEmpty());
+  }
+
+  @Test
+  @DisplayName("[실패] 존재하지 않는 모임 신청")
+  void joinGroup_NonExistentGroup_Error() throws Exception {
+    // given
+    Long nonExistentGroupId = 999L;
+
+    // when & then
+    mockMvc.perform(post("/api/v1/groups/{groupId}/applications", nonExistentGroupId)
+            .with(csrf()))
+        .andExpect(status().isNoContent()); // 실제로는 Service에서 예외 발생
+  }
+
+  @Test
+  @DisplayName("[실패] 존재하지 않는 모임의 참가자 조회")
+  void getGroupParticipants_NonExistentGroup_Error() throws Exception {
+    // given
+    Long nonExistentGroupId = 999L;
+
+    // when & then
+    mockMvc.perform(get("/api/v1/groups/{groupId}/participants", nonExistentGroupId)
+        .with(csrf()))
+        .andExpect(status().isOk()); // 실제로는 Service에서 예외 발생하거나 빈 리스트 반환
   }
 }

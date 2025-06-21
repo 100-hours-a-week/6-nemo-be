@@ -66,7 +66,7 @@ class ScheduleQueryServiceTest {
     User user = UserFixture.createDefaultUser();
     Group group = GroupFixture.createDefaultGroup(user);
 
-    Schedule schedule = ScheduleFixture.createSchedule(group, user, ScheduleStatus.RECRUITING);
+    Schedule schedule = ScheduleFixture.createDefaultSchedule(user, group);
     List<ScheduleParticipant> participants = List.of(
         ScheduleParticipant.builder()
           .id(1L)
@@ -97,7 +97,7 @@ class ScheduleQueryServiceTest {
     User user = mock(User.class);
     Group group = GroupFixture.createDefaultGroup(user);
 
-    Schedule schedule = ScheduleFixture.createDefaultSchedule(group, user, ScheduleStatus.RECRUITING);
+    Schedule schedule = ScheduleFixture.createDefaultSchedule(user, group);
 
     Page<Schedule> page = new PageImpl<>(List.of(schedule));
 
