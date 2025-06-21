@@ -27,6 +27,7 @@ import kr.ai.nemo.global.redis.CacheKeyUtil;
 import kr.ai.nemo.global.redis.RedisCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -45,6 +46,12 @@ public class GroupQueryService {
   private final RedisCacheService redisCacheService;
   private final AiGroupService aiGroupService;
 
+  @Cacheable(
+      value = "group-list",
+      key = "'category:' + (#request.category == null ? 'null' : #request.category) + " +
+          "':page:' + #pageable.pageNumber + ':size:' + #pageable.pageSize",
+      condition = "#pageable.pageNumber == 0 and (#request.keyword == null or #request.keyword.isEmpty())"
+  )
   @Transactional(readOnly = true)
   public GroupListResponse getGroups(GroupSearchRequest request, Pageable pageable) {
     Page<Group> groups;
@@ -63,6 +70,7 @@ public class GroupQueryService {
     return GroupListResponse.from(groupDtoPage);
   }
 
+  @Cacheable(value = "group-detail", key = "#groupId")
   @TimeTrace
   @Transactional(readOnly = true)
   public GroupDetailResponse detailGroup(Long groupId, CustomUserDetails customUserDetails) {
