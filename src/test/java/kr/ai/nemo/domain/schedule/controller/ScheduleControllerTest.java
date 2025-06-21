@@ -11,19 +11,15 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
 import kr.ai.nemo.aop.role.annotation.RequireScheduleOwner;
 import kr.ai.nemo.domain.auth.security.JwtProvider;
 import kr.ai.nemo.domain.auth.service.CustomUserDetailsService;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.schedule.domain.Schedule;
-import kr.ai.nemo.domain.schedule.domain.enums.ScheduleStatus;
 import kr.ai.nemo.domain.schedule.dto.request.ScheduleCreateRequest;
 import kr.ai.nemo.domain.schedule.dto.response.MySchedulesResponse;
 import kr.ai.nemo.domain.schedule.dto.response.ScheduleCreateResponse;
