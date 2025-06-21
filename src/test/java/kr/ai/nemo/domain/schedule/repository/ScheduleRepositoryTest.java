@@ -40,16 +40,22 @@ class ScheduleRepositoryTest {
   private GroupRepository groupRepository;
 
   ScheduleStatus recruitingStatus = ScheduleStatus.RECRUITING;
+  ScheduleStatus closedStatus = ScheduleStatus.CLOSED;
   ScheduleStatus canceledStatus = ScheduleStatus.CANCELED;
   User savedUser;
   Group savedGroup;
   //취소된 일정
   Schedule schedule1;
   Schedule schedule2;
-  //진행중인 일정
+
+  // 종료된 일정
   Schedule schedule3;
   Schedule schedule4;
+
+  //진행중인 일정
   Schedule schedule5;
+  Schedule schedule6;
+  Schedule schedule7;
 
   @BeforeEach
   void setUp() {
@@ -65,27 +71,26 @@ class ScheduleRepositoryTest {
     savedGroup = groupRepository.save(group);
 
     // 상태가 CANCELED인 일정 2개
-    schedule1 = ScheduleFixture.createDefaultSchedule(savedGroup, savedUser,
-        ScheduleStatus.CANCELED);
-    schedule2 = ScheduleFixture.createDefaultSchedule(savedGroup, savedUser,
-        ScheduleStatus.CANCELED);
+    schedule1 = ScheduleFixture.createCanceledSchedule(savedUser, savedGroup);
+    schedule2 = ScheduleFixture.createCanceledSchedule(savedUser, savedGroup);
+
+    // 상태가 CLOSED인 일정 2개
+    schedule3 = ScheduleFixture.createClosedSchedule(savedUser, savedGroup);
+    schedule4 = ScheduleFixture.createClosedSchedule(savedUser, savedGroup);
 
     // 상태가 RECRUITING인 일정 3개
-    schedule3 = ScheduleFixture.createDefaultSchedule(savedGroup, savedUser,
-        ScheduleStatus.RECRUITING);
-    schedule4 = ScheduleFixture.createDefaultSchedule(savedGroup, savedUser,
-        ScheduleStatus.RECRUITING);
-    schedule5 = ScheduleFixture.createDefaultSchedule(savedGroup, savedUser,
-        ScheduleStatus.RECRUITING);
+    schedule5 = ScheduleFixture.createDefaultSchedule(savedUser, savedGroup);
+    schedule6 = ScheduleFixture.createDefaultSchedule(savedUser, savedGroup);
+    schedule7 = ScheduleFixture.createDefaultSchedule(savedUser, savedGroup);
 
-    scheduleRepository.saveAll(List.of(schedule1, schedule2, schedule3, schedule4, schedule5));
+    scheduleRepository.saveAll(List.of(schedule1, schedule2, schedule3, schedule4, schedule5, schedule6, schedule7));
   }
 
   @Test
   @DisplayName("[성공] 일정 저장 테스트")
   void save_Success() {
     // then
-    assertThat(scheduleRepository.count()).isEqualTo(5);
+    assertThat(scheduleRepository.count()).isEqualTo(7);
     assertThat(schedule1.getId()).isNotNull();
     assertThat(schedule1.getStatus()).isEqualTo(canceledStatus);
   }
@@ -101,12 +106,12 @@ class ScheduleRepositoryTest {
     // then
     List<Schedule> schedules = page.getContent();
 
-    assertThat(schedules).hasSize(3);
+    assertThat(schedules).hasSize(5);
     assertThat(schedules.get(0)).isEqualTo(schedule3);
     assertThat(schedules.get(1)).isEqualTo(schedule4);
     assertThat(schedules.get(2)).isEqualTo(schedule5);
-    assertThat(schedules.getFirst().getStatus()).isEqualTo(ScheduleStatus.RECRUITING);
-    assertThat(page.getTotalElements()).isEqualTo(3);
+    assertThat(schedules.getFirst().getStatus()).isEqualTo(ScheduleStatus.CLOSED);
+    assertThat(page.getTotalElements()).isEqualTo(5);
   }
 
   @Test
@@ -119,7 +124,7 @@ class ScheduleRepositoryTest {
     // then
     assertThat(result).hasSize(3);
     assertThat(result.getFirst().getStatus()).isEqualTo(recruitingStatus);
-    assertThat(result.getFirst().getId()).isEqualTo(schedule3.getId());
+    assertThat(result.getFirst().getId()).isEqualTo(schedule5.getId());
     assertThat(result.getLast().getStatus()).isEqualTo(recruitingStatus);
   }
 
@@ -128,13 +133,13 @@ class ScheduleRepositoryTest {
   void findByStartAtBeforeAndStatus() {
     // when
     List<Schedule> result = scheduleRepository.findByStartAtBeforeAndStatus(LocalDateTime.now(),
-        recruitingStatus);
+        closedStatus);
 
     // then
-    assertThat(result).hasSize(3);
-    assertThat(result.getFirst().getStatus()).isEqualTo(recruitingStatus);
+    assertThat(result).hasSize(2);
+    assertThat(result.getFirst().getStatus()).isEqualTo(closedStatus);
     assertThat(result.getFirst().getId()).isEqualTo(schedule3.getId());
-    assertThat(result.getLast().getStatus()).isEqualTo(recruitingStatus);
+    assertThat(result.getLast().getStatus()).isEqualTo(closedStatus);
   }
 
   @Test

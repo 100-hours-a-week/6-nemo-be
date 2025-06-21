@@ -31,7 +31,6 @@ public class GroupTagService {
           .tag(tag)
           .build();
 
-      group.getGroupTags().add(groupTag);
       groupTagRepository.save(groupTag);
     }
   }
