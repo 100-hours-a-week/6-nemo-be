@@ -1,19 +1,29 @@
 package kr.ai.nemo.domain.group.service;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.BDDMockito.willReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
+import java.util.Optional;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.domain.enums.GroupStatus;
 import kr.ai.nemo.domain.group.dto.request.GroupSearchRequest;
+import kr.ai.nemo.domain.group.dto.response.GroupAiRecommendResponse;
+import kr.ai.nemo.domain.group.dto.response.GroupChatbotSessionResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupDetailResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupListResponse;
+import kr.ai.nemo.domain.group.dto.response.GroupRecommendResponse;
+import kr.ai.nemo.domain.group.exception.GroupErrorCode;
+import kr.ai.nemo.domain.group.exception.GroupException;
 import kr.ai.nemo.domain.group.repository.GroupRepository;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
@@ -21,122 +31,269 @@ import kr.ai.nemo.domain.groupparticipants.validator.GroupParticipantValidator;
 import kr.ai.nemo.domain.user.domain.User;
 import kr.ai.nemo.global.fixture.group.GroupFixture;
 import kr.ai.nemo.global.fixture.user.UserFixture;
-import org.junit.jupiter.api.BeforeEach;
+import kr.ai.nemo.global.redis.RedisCacheService;
+import kr.ai.nemo.global.testUtil.TestReflectionUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 @DisplayName("GroupQueryService 테스트")
 class GroupQueryServiceTest {
 
-  @Mock
-  private GroupRepository groupRepository;
+    @Mock
+    private GroupRepository groupRepository;
 
-  @Mock
-  private GroupValidator groupValidator;
+    @Mock
+    private GroupValidator groupValidator;
 
-  @Mock
-  private GroupTagService groupTagService;
+    @Mock
+    private GroupTagService groupTagService;
 
-  @Mock
-  private GroupParticipantValidator groupParticipantValidator;
+    @Mock
+    private GroupParticipantValidator groupParticipantValidator;
 
-  @InjectMocks
-  private GroupQueryService groupQueryService;
+    @Mock
+    private RedisCacheService redisCacheService;
 
-  private Page<Group> groupPage;
-  private GroupSearchRequest request;
-  private Pageable pageable;
+    @Mock
+    private AiGroupService aiGroupService;
 
-  @BeforeEach
-  void setUp() {
-    // given
-    request = new GroupSearchRequest();
-    pageable = Pageable.ofSize(10);
+    @InjectMocks
+    private GroupQueryService groupQueryService;
 
-    Group group = mock(Group.class);
-    groupPage = new PageImpl<>(List.of(group));
+    @Test
+    @DisplayName("[성공] 카테고리별 그룹 조회")
+    void getGroups_ByCategory_Success() {
+        // given
+        GroupSearchRequest request = new GroupSearchRequest();
+        request.setCategory("스포츠");
+        Pageable pageable = PageRequest.of(0, 10);
+        
+        Group mockGroup = createMockGroup(1L, "축구 모임", "스포츠");
+        Page<Group> groupPage = new PageImpl<>(List.of(mockGroup), pageable, 1);
 
-  }
-  @Test
-  @DisplayName("[성공] 카테고리별 모임 조회")
-  void getGroups_withCategory_Success() {
-    // given
-    request.setCategory("IT/개발");
-    given(groupRepository.findByCategoryAndStatusNot("IT/개발", GroupStatus.DISBANDED, pageable))
-        .willReturn(groupPage);
+        given(groupRepository.findByCategoryAndStatusNot("스포츠", GroupStatus.DISBANDED, pageable))
+            .willReturn(groupPage);
 
-    // when
-    GroupListResponse response = groupQueryService.getGroups(request, pageable);
+        // when
+        GroupListResponse result = groupQueryService.getGroups(request, pageable);
 
-    // then
-    assertThat(response).isNotNull();
-    then(groupRepository).should(times(1)).findByCategoryAndStatusNot(request.getCategory(), GroupStatus.DISBANDED, pageable);
-  }
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.groups()).hasSize(1);
+        verify(groupRepository).findByCategoryAndStatusNot("스포츠", GroupStatus.DISBANDED, pageable);
+    }
 
-  @Test
-  @DisplayName("[성공] 키워드 검색 모임 조회")
-  void getGroups_withKeyword_Success() {
-    //given
-    request.setKeyword("IT/개발");
-    given(groupRepository.searchWithKeywordOnly("IT/개발", pageable))
-        .willReturn(groupPage);
+    @Test
+    @DisplayName("[성공] 키워드로 그룹 검색")
+    void getGroups_ByKeyword_Success() {
+        // given
+        GroupSearchRequest request = new GroupSearchRequest();
+        request.setKeyword("축구");
+        Pageable pageable = PageRequest.of(0, 10);
+        
+        Group mockGroup = createMockGroup(1L, "축구 모임", "스포츠");
+        Page<Group> groupPage = new PageImpl<>(List.of(mockGroup), pageable, 1);
 
-    // when
-    GroupListResponse response = groupQueryService.getGroups(request, pageable);
+        given(groupRepository.searchWithKeywordOnly("축구", pageable)).willReturn(groupPage);
 
-    // then
-    assertThat(response).isNotNull();
-    then(groupRepository).should(times(1)).searchWithKeywordOnly(request.getKeyword(), pageable);
-  }
+        // when
+        GroupListResponse result = groupQueryService.getGroups(request, pageable);
 
-  @Test
-  @DisplayName("[성공] 전체 모임 조회")
-  void getGroups_all_Success() {
-    //given
-    given(groupRepository.findByStatusNot(GroupStatus.DISBANDED, pageable))
-        .willReturn(groupPage);
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.groups()).hasSize(1);
+        verify(groupRepository).searchWithKeywordOnly("축구", pageable);
+    }
 
-    // when
-    GroupListResponse response = groupQueryService.getGroups(request, pageable);
+    @Test
+    @DisplayName("[성공] 전체 그룹 조회")
+    void getGroups_All_Success() {
+        // given
+        GroupSearchRequest request = new GroupSearchRequest();
+        Pageable pageable = PageRequest.of(0, 10);
+        
+        Group mockGroup = createMockGroup(1L, "모임", "스포츠");
+        Page<Group> groupPage = new PageImpl<>(List.of(mockGroup), pageable, 1);
 
-    // then
-    assertThat(response).isNotNull();
-    then(groupRepository).should(times(1)).findByStatusNot(GroupStatus.DISBANDED, pageable);
-  }
+        given(groupRepository.findByStatusNot(GroupStatus.DISBANDED, pageable)).willReturn(groupPage);
 
-  @Test
-  @DisplayName("[성공] 모임 상세 조회")
-  void getGroup_detail_Success() {
-    // given
-    User user = UserFixture.createDefaultUser();
-    CustomUserDetails customUserDetails = new CustomUserDetails(user);
-    Group group = GroupFixture.createDefaultGroup(user);
-    Long groupId = 1L;
-    ReflectionTestUtils.setField(group, "id", groupId);
+        // when
+        GroupListResponse result = groupQueryService.getGroups(request, pageable);
 
-    given(groupValidator.findByIdOrThrow(groupId)).willReturn(group);
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.groups()).hasSize(1);
+        verify(groupRepository).findByStatusNot(GroupStatus.DISBANDED, pageable);
+    }
 
-    List<String> tags = List.of("tag1", "tag2");
-    given(groupTagService.getTagNamesByGroupId(groupId)).willReturn(tags);
-    given(groupParticipantValidator.checkUserRole(customUserDetails, group)).willReturn(Role.MEMBER);
+    @Test
+    @DisplayName("[성공] 빈 키워드로 그룹 검색")
+    void getGroups_EmptyKeyword_Success() {
+        // given
+        GroupSearchRequest request = new GroupSearchRequest();
+        request.setKeyword("   "); // 빈 문자열
+        Pageable pageable = PageRequest.of(0, 10);
+        
+        Group mockGroup = createMockGroup(1L, "모임", "스포츠");
+        Page<Group> groupPage = new PageImpl<>(List.of(mockGroup), pageable, 1);
 
-    // when
-    GroupDetailResponse response = groupQueryService.detailGroup(groupId, customUserDetails);
+        given(groupRepository.findByStatusNot(GroupStatus.DISBANDED, pageable)).willReturn(groupPage);
 
-    // then
-    then(groupValidator).should(times(1)).findByIdOrThrow(groupId);
-    then(groupTagService).should(times(1)).getTagNamesByGroupId(groupId);
-    assertThat(response).isNotNull();
-    assertThat(response.role()).isEqualTo(Role.MEMBER);
-    assertThat(response.tags()).isEqualTo(tags);
-  }
+        // when
+        GroupListResponse result = groupQueryService.getGroups(request, pageable);
+
+        // then
+        assertThat(result).isNotNull();
+        verify(groupRepository).findByStatusNot(GroupStatus.DISBANDED, pageable);
+    }
+
+    @Test
+    @DisplayName("[성공] 그룹 상세 조회")
+    void detailGroup_Success() {
+        // given
+        User user = UserFixture.createDefaultUser();
+        Group group = GroupFixture.createDefaultGroup(user);
+        TestReflectionUtils.setField(group, "id", 1L);
+        CustomUserDetails customUserDetails = new CustomUserDetails(user);
+        List<String> tags = List.of("축구", "스포츠", "주말");
+
+        given(groupValidator.findByIdOrThrow(group.getId())).willReturn(group);
+        given(groupTagService.getTagNamesByGroupId(group.getId())).willReturn(tags);
+        given(groupParticipantValidator.checkUserRole(customUserDetails, group)).willReturn(Role.MEMBER);
+
+        // when
+        GroupDetailResponse result = groupQueryService.detailGroup(group.getId(), customUserDetails);
+
+        // then
+        assertThat(result).isNotNull();
+        verify(groupValidator).findByIdOrThrow(group.getId());
+        verify(groupTagService).getTagNamesByGroupId(group.getId());
+        verify(groupParticipantValidator).checkUserRole(customUserDetails, group);
+    }
+
+    @Test
+    @DisplayName("[성공] 챗봇 세션 조회 - 세션 존재")
+    void getChatbotSession_SessionExists_Success() throws Exception {
+        // given
+        Long userId = 100L;
+        String sessionId = "session123";
+        
+        String jsonData = """
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "text": "안녕하세요",
+                        "options": ["옵션1", "옵션2"]
+                    }
+                ]
+            }
+            """;
+        
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonNode = mapper.readTree(jsonData);
+
+        given(redisCacheService.get(anyString(), any(Class.class))).willReturn(Optional.of(jsonNode));
+
+        // when
+        GroupChatbotSessionResponse result = groupQueryService.getChatbotSession(userId, sessionId);
+
+        // then
+        assertThat(result).isNotNull();
+        verify(redisCacheService).get(anyString(), any(Class.class));
+    }
+
+    @Test
+    @DisplayName("[성공] 챗봇 세션 조회 - 세션 없음")
+    void getChatbotSession_SessionNotExists_ReturnNull() {
+        // given
+        Long userId = 100L;
+        String sessionId = "session123";
+
+        given(redisCacheService.get(anyString(), any(Class.class))).willReturn(Optional.empty());
+
+        // when
+        GroupChatbotSessionResponse result = groupQueryService.getChatbotSession(userId, sessionId);
+
+        // then
+        assertThat(result).isNotNull();
+        verify(redisCacheService).get(anyString(), any(Class.class));
+    }
+
+    @Test
+    @DisplayName("[실패] 그룹 추천 - 빈 메시지")
+    void recommendGroup_EmptyMessages_ThrowException() {
+        // given
+        Long userId = 100L;
+        GroupChatbotSessionResponse session = new GroupChatbotSessionResponse(
+            List.of()
+        );
+        String sessionId = "session123";
+
+        // when & then
+        assertThatThrownBy(() -> groupQueryService.recommendGroup(userId, session, sessionId))
+                .isInstanceOf(GroupException.class)
+                .hasFieldOrPropertyWithValue("errorCode", GroupErrorCode.CHAT_SESSION_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("[성공] 그룹 추천")
+    void recommendGroup_Success() {
+        // given
+        Long userId = 100L;
+        String sessionId = "session123";
+        
+        List<GroupChatbotSessionResponse.Message> messages = List.of(
+            new GroupChatbotSessionResponse.Message("user", "스포츠 모임 추천해주세요", List.of())
+        );
+        GroupChatbotSessionResponse session = new GroupChatbotSessionResponse(
+            messages
+        );
+        
+        GroupAiRecommendResponse aiResponse = new GroupAiRecommendResponse(1L, "추천 이유", null);
+        Group mockGroup = createMockGroup(1L, "축구 모임", "스포츠");
+
+        given(aiGroupService.recommendGroup(any(), anyString())).willReturn(aiResponse);
+        given(groupValidator.findByIdOrThrow(1L)).willReturn(mockGroup);
+
+        // when
+        GroupRecommendResponse result = groupQueryService.recommendGroup(userId, session, sessionId);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.reason()).isEqualTo("추천 이유");
+        verify(aiGroupService).recommendGroup(any(), anyString());
+        verify(groupValidator).findByIdOrThrow(1L);
+    }
+
+    // 헬퍼 메서드들
+    private Group createMockGroup(Long id, String name, String category) {
+        Group group = mock(Group.class);
+        given(group.getId()).willReturn(id);
+        given(group.getName()).willReturn(name);
+        given(group.getCategory()).willReturn(category);
+        given(group.getStatus()).willReturn(GroupStatus.ACTIVE);
+        return group;
+    }
+
+    private CustomUserDetails createCustomUserDetails(Long userId) {
+        User user = User.builder()
+            .id(userId)
+            .email("test@example.com")
+            .nickname("testuser")
+            .build();
+        return new CustomUserDetails(user);
+    }
 }

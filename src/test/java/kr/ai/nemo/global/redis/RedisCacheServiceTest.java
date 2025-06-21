@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -167,6 +168,7 @@ class RedisCacheServiceTest {
 
         // then
         verify(objectMapper).writeValueAsString(value);
+        // 에러 로그가 기록되고 저장되지 않음
     }
 
     // 테스트용 객체
@@ -195,6 +197,45 @@ class RedisCacheServiceTest {
 
         public void setValue(int value) {
             this.value = value;
+        }
+    }
+
+    // 복잡한 테스트용 객체
+    private static class ComplexTestObject {
+        private String name;
+        private int value;
+        private List<String> tags;
+
+        public ComplexTestObject() {}
+
+        public ComplexTestObject(String name, int value, List<String> tags) {
+            this.name = name;
+            this.value = value;
+            this.tags = tags;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public void setValue(int value) {
+            this.value = value;
+        }
+
+        public List<String> getTags() {
+            return tags;
+        }
+
+        public void setTags(List<String> tags) {
+            this.tags = tags;
         }
     }
 }

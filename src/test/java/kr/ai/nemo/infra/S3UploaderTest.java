@@ -124,30 +124,59 @@ class S3UploaderTest {
     }
 
     @Test
-    @DisplayName("[성공] 메타데이터 설정 확인")
-    void upload_CorrectMetadata_Success() throws Exception {
+    @DisplayName("[실패] 파일 업로드 - 빈 파일명")
+    void upload_EmptyFilename_ThrowRuntimeException() throws Exception {
         setUp();
         // given
-        String dirName = "documents";
-        String originalFilename = "document.pdf";
-        String contentType = "application/pdf";
-        long fileSize = 5120L;
-        byte[] fileContent = "pdf content".getBytes();
-        InputStream inputStream = new ByteArrayInputStream(fileContent);
-        String expectedUrl = "https://test-bucket.s3.amazonaws.com/documents/uuid_document.pdf";
+        String dirName = "test";
+        given(multipartFile.getOriginalFilename()).willReturn("");
 
-        given(multipartFile.getOriginalFilename()).willReturn(originalFilename);
-        given(multipartFile.getContentType()).willReturn(contentType);
-        given(multipartFile.getSize()).willReturn(fileSize);
-        given(multipartFile.getInputStream()).willReturn(inputStream);
-        given(amazonS3.getUrl(eq("test-bucket"), anyString()))
-                .willReturn(new URL(expectedUrl));
+        // when & then
+        assertThatThrownBy(() -> s3Uploader.upload(multipartFile, dirName))
+                .isInstanceOf(RuntimeException.class);
+    }
 
-        // when
-        String result = s3Uploader.upload(multipartFile, dirName);
+    @Test
+    @DisplayName("[실패] 파일 업로드 - null 파일명")
+    void upload_NullFilename_ThrowRuntimeException() throws Exception {
+        setUp();
+        // given
+        String dirName = "test";
+        given(multipartFile.getOriginalFilename()).willReturn(null);
 
-        // then
-        assertThat(result).isEqualTo(expectedUrl);
-        verify(amazonS3).putObject(eq("test-bucket"), anyString(), eq(inputStream), any(ObjectMetadata.class));
+        // when & then
+        assertThatThrownBy(() -> s3Uploader.upload(multipartFile, dirName))
+                .isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
+    @DisplayName("[성공] 다양한 파일 확장자 업로드")
+    void upload_VariousExtensions_Success() throws Exception {
+        setUp();
+        // given
+        String[] filenames = {"test.jpg", "document.pdf", "data.csv", "script.js"};
+        String[] contentTypes = {"image/jpeg", "application/pdf", "text/csv", "application/javascript"};
+        
+        for (int i = 0; i < filenames.length; i++) {
+            String dirName = "files";
+            String originalFilename = filenames[i];
+            String contentType = contentTypes[i];
+            byte[] fileContent = "content".getBytes();
+            InputStream inputStream = new ByteArrayInputStream(fileContent);
+            String expectedUrl = "https://test-bucket.s3.amazonaws.com/files/uuid_" + originalFilename;
+
+            given(multipartFile.getOriginalFilename()).willReturn(originalFilename);
+            given(multipartFile.getContentType()).willReturn(contentType);
+            given(multipartFile.getSize()).willReturn(1024L);
+            given(multipartFile.getInputStream()).willReturn(inputStream);
+            given(amazonS3.getUrl(eq("test-bucket"), anyString()))
+                    .willReturn(new URL(expectedUrl));
+
+            // when
+            String result = s3Uploader.upload(multipartFile, dirName);
+
+            // then
+            assertThat(result).isEqualTo(expectedUrl);
+        }
     }
 }

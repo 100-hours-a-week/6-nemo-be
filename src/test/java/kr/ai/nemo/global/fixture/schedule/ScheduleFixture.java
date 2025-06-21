@@ -46,4 +46,28 @@ public class ScheduleFixture {
         TestReflectionUtils.setField(schedule, "id", id);
         return schedule;
     }
+
+    public static Schedule createDefaultSchedule(User owner) {
+        return Schedule.builder()
+                .owner(owner)
+                .title("테스트 스케줄")
+                .description("테스트 스케줄 설명")
+                .address("서울시 강남구 테헤란로 123")
+                .currentUserCount(1)
+                .status(ScheduleStatus.RECRUITING)
+                .startAt(LocalDateTime.now().plusDays(1))
+                .build();
+    }
+
+    public static Schedule createScheduleWithStatus(User owner, ScheduleStatus status) {
+        return Schedule.builder()
+                .owner(owner)
+                .title("테스트 스케줄")
+                .description("테스트 스케줄 설명")
+                .address("서울시 강남구 테헤란로 123")
+                .currentUserCount(1)
+                .status(status)
+                .startAt(LocalDateTime.now().plusDays(1))
+                .build();
+    }
 }

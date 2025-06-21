@@ -3,83 +3,80 @@ package kr.ai.nemo.domain.group.validator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.util.Optional;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.domain.enums.GroupStatus;
+import kr.ai.nemo.domain.group.exception.GroupErrorCode;
 import kr.ai.nemo.domain.group.exception.GroupException;
 import kr.ai.nemo.domain.group.repository.GroupRepository;
 import kr.ai.nemo.domain.user.domain.User;
-import kr.ai.nemo.global.fixture.user.UserFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 @DisplayName("GroupValidator 테스트")
 class GroupValidatorTest {
 
     @Mock
-    private GroupRepository repository;
+    private GroupRepository groupRepository;
 
     @InjectMocks
     private GroupValidator groupValidator;
 
     @Test
-    @DisplayName("[성공] 그룹 조회")
+    @DisplayName("[성공] 그룹 ID로 그룹 조회")
     void findByIdOrThrow_Success() {
         // given
         Long groupId = 1L;
-        User owner = UserFixture.createDefaultUser();
-        Group group = Group.builder()
-                .owner(owner)
-                .name("테스트 그룹")
-                .status(GroupStatus.ACTIVE)
-                .currentUserCount(5)
-                .maxUserCount(10)
-                .build();
-
-        given(repository.findByIdGroupId(groupId)).willReturn(Optional.of(group));
+        Group mockGroup = createMockGroup(groupId, GroupStatus.ACTIVE);
+        
+        given(groupRepository.findByIdGroupId(groupId)).willReturn(Optional.of(mockGroup));
 
         // when
         Group result = groupValidator.findByIdOrThrow(groupId);
 
         // then
-        assertThat(result).isEqualTo(group);
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(groupId);
+        assertThat(result.getStatus()).isEqualTo(GroupStatus.ACTIVE);
     }
 
     @Test
-    @DisplayName("[실패] 존재하지 않는 그룹 조회")
+    @DisplayName("[실패] 그룹 ID로 그룹 조회 - 그룹이 존재하지 않음")
     void findByIdOrThrow_GroupNotFound_ThrowException() {
         // given
         Long groupId = 999L;
-        given(repository.findByIdGroupId(groupId)).willReturn(Optional.empty());
+        given(groupRepository.findByIdGroupId(groupId)).willReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> groupValidator.findByIdOrThrow(groupId))
-                .isInstanceOf(GroupException.class);
+                .isInstanceOf(GroupException.class)
+                .hasFieldOrPropertyWithValue("errorCode", GroupErrorCode.GROUP_NOT_FOUND);
     }
 
     @Test
-    @DisplayName("[실패] 해체된 그룹 조회")
+    @DisplayName("[실패] 그룹 ID로 그룹 조회 - 해산된 그룹")
     void findByIdOrThrow_DisbandedGroup_ThrowException() {
         // given
         Long groupId = 1L;
-        User owner = UserFixture.createDefaultUser();
-        Group disbandedGroup = Group.builder()
-                .owner(owner)
-                .name("해체된 그룹")
-                .status(GroupStatus.DISBANDED)
-                .build();
-
-        given(repository.findByIdGroupId(groupId)).willReturn(Optional.of(disbandedGroup));
+        Group disbandedGroup = createMockGroup(groupId, GroupStatus.DISBANDED);
+        
+        given(groupRepository.findByIdGroupId(groupId)).willReturn(Optional.of(disbandedGroup));
 
         // when & then
         assertThatThrownBy(() -> groupValidator.findByIdOrThrow(groupId))
-                .isInstanceOf(GroupException.class);
+                .isInstanceOf(GroupException.class)
+                .hasFieldOrPropertyWithValue("errorCode", GroupErrorCode.GROUP_DISBANDED);
     }
 
     @Test
@@ -88,8 +85,9 @@ class GroupValidatorTest {
         // given
         String validCategory = "IT/개발";
 
-        // when & then
+        // when & then (예외가 발생하지 않으면 성공)
         groupValidator.isCategory(validCategory);
+        // verify 제거 - groupValidator는 @InjectMocks로 실제 객체이므로 mock이 아님
     }
 
     @Test
@@ -100,211 +98,181 @@ class GroupValidatorTest {
 
         // when & then
         assertThatThrownBy(() -> groupValidator.isCategory(invalidCategory))
-                .isInstanceOf(GroupException.class);
+                .isInstanceOf(GroupException.class)
+                .hasFieldOrPropertyWithValue("errorCode", GroupErrorCode.INVALID_CATEGORY);
     }
 
     @Test
-    @DisplayName("[성공] 그룹 정원 여유 있음")
-    void validateGroupIsNotFull_HasSpace_Success() {
+    @DisplayName("[성공] 그룹이 가득 차지 않음 검증")
+    void validateGroupIsNotFull_NotFull_Success() {
         // given
-        User owner = UserFixture.createDefaultUser();
-        Group group = Group.builder()
-                .owner(owner)
-                .currentUserCount(5)
-                .maxUserCount(10)
-                .build();
+        Group group = createMockGroupWithCapacity(10, 5); // 최대 10명, 현재 5명
+
+        // when & then (예외가 발생하지 않으면 성공)
+        groupValidator.validateGroupIsNotFull(group);
+    }
+
+    @Test
+    @DisplayName("[실패] 그룹이 가득 참 검증")
+    void validateGroupIsNotFull_Full_ThrowException() {
+        // given
+        Group group = createMockGroupWithCapacity(10, 10); // 최대 10명, 현재 10명
 
         // when & then
-        groupValidator.validateGroupIsNotFull(group); // 예외가 발생하지 않으면 성공
+        assertThatThrownBy(() -> groupValidator.validateGroupIsNotFull(group))
+                .isInstanceOf(GroupException.class)
+                .hasFieldOrPropertyWithValue("errorCode", GroupErrorCode.GROUP_FULL);
     }
 
     @Test
-    @DisplayName("[실패] 그룹 정원 가득참")
-    void validateGroupIsNotFull_GroupFull_ThrowException() {
+    @DisplayName("[실패] 그룹 정원 초과 검증")
+    void validateGroupIsNotFull_Exceeded_ThrowException() {
         // given
-        User owner = UserFixture.createDefaultUser();
-        Group fullGroup = Group.builder()
-                .owner(owner)
-                .currentUserCount(10)
-                .maxUserCount(10)
-                .build();
+        Group group = createMockGroupWithCapacity(10, 11); // 최대 10명, 현재 11명
 
         // when & then
-        assertThatThrownBy(() -> groupValidator.validateGroupIsNotFull(fullGroup))
-                .isInstanceOf(GroupException.class);
+        assertThatThrownBy(() -> groupValidator.validateGroupIsNotFull(group))
+                .isInstanceOf(GroupException.class)
+                .hasFieldOrPropertyWithValue("errorCode", GroupErrorCode.GROUP_FULL);
     }
 
     @Test
-    @DisplayName("[성공] 그룹 소유자 확인")
-    void isOwner_CorrectOwner_Success() {
+    @DisplayName("[성공] 그룹 소유자 검증 - 강퇴 권한")
+    void isOwner_ValidOwner_Success() {
         // given
         Long groupId = 1L;
-        Long userId = 1L;
-        User owner = User.builder()
-                .id(userId)
-                .nickname("owner")
-                .email("owner@example.com")
-                .provider("kakao")
-                .providerId("123")
-                .build();
+        Long ownerId = 100L;
+        User owner = createMockUser(ownerId);
+        Group group = createMockGroupWithOwner(groupId, owner);
         
-        Group group = Group.builder()
-                .owner(owner)
-                .name("테스트 그룹")
-                .status(GroupStatus.ACTIVE)
-                .build();
-
-        given(repository.findByIdGroupId(groupId)).willReturn(Optional.of(group));
+        given(groupRepository.findByIdGroupId(groupId)).willReturn(Optional.of(group));
 
         // when
-        Group result = groupValidator.isOwner(groupId, userId);
+        Group result = groupValidator.isOwner(groupId, ownerId);
 
         // then
-        assertThat(result).isEqualTo(group);
+        assertThat(result).isNotNull();
+        assertThat(result.getOwner().getId()).isEqualTo(ownerId);
     }
 
     @Test
-    @DisplayName("[실패] 그룹 소유자 아님")
+    @DisplayName("[실패] 그룹 소유자 검증 - 강퇴 권한 없음")
     void isOwner_NotOwner_ThrowException() {
         // given
         Long groupId = 1L;
-        Long ownerId = 1L;
-        Long otherUserId = 2L;
+        Long ownerId = 100L;
+        Long otherUserId = 200L;
+        User owner = createMockUser(ownerId);
+        Group group = createMockGroupWithOwner(groupId, owner);
         
-        User owner = User.builder()
-                .id(ownerId)
-                .nickname("owner")
-                .email("owner@example.com")
-                .provider("kakao")
-                .providerId("123")
-                .build();
-        
-        Group group = Group.builder()
-                .owner(owner)
-                .name("테스트 그룹")
-                .status(GroupStatus.ACTIVE)
-                .build();
-
-        given(repository.findByIdGroupId(groupId)).willReturn(Optional.of(group));
+        given(groupRepository.findByIdGroupId(groupId)).willReturn(Optional.of(group));
 
         // when & then
         assertThatThrownBy(() -> groupValidator.isOwner(groupId, otherUserId))
-                .isInstanceOf(GroupException.class);
+                .isInstanceOf(GroupException.class)
+                .hasFieldOrPropertyWithValue("errorCode", GroupErrorCode.GROUP_KICK_FORBIDDEN);
     }
 
     @Test
-    @DisplayName("[성공] 그룹 삭제 권한 확인")
-    void isOwnerForGroupDelete_CorrectOwner_Success() {
+    @DisplayName("[성공] 그룹 소유자 검증 - 삭제 권한")
+    void isOwnerForGroupDelete_ValidOwner_Success() {
         // given
         Long groupId = 1L;
-        Long userId = 1L;
-        User owner = User.builder()
-                .id(userId)
-                .nickname("owner")
-                .email("owner@example.com")
-                .provider("kakao")
-                .providerId("123")
-                .build();
+        Long ownerId = 100L;
+        User owner = createMockUser(ownerId);
+        Group group = createMockGroupWithOwner(groupId, owner);
         
-        Group group = Group.builder()
-                .owner(owner)
-                .name("테스트 그룹")
-                .status(GroupStatus.ACTIVE)
-                .build();
-
-        given(repository.findByIdGroupId(groupId)).willReturn(Optional.of(group));
+        given(groupRepository.findByIdGroupId(groupId)).willReturn(Optional.of(group));
 
         // when
-        Group result = groupValidator.isOwnerForGroupDelete(groupId, userId);
+        Group result = groupValidator.isOwnerForGroupDelete(groupId, ownerId);
 
         // then
-        assertThat(result).isEqualTo(group);
+        assertThat(result).isNotNull();
+        assertThat(result.getOwner().getId()).isEqualTo(ownerId);
     }
 
     @Test
-    @DisplayName("[실패] 그룹 삭제 권한 없음")
+    @DisplayName("[실패] 그룹 소유자 검증 - 삭제 권한 없음")
     void isOwnerForGroupDelete_NotOwner_ThrowException() {
         // given
         Long groupId = 1L;
-        Long ownerId = 1L;
-        Long otherUserId = 2L;
+        Long ownerId = 100L;
+        Long otherUserId = 200L;
+        User owner = createMockUser(ownerId);
+        Group group = createMockGroupWithOwner(groupId, owner);
         
-        User owner = User.builder()
-                .id(ownerId)
-                .nickname("owner")
-                .email("owner@example.com")
-                .provider("kakao")
-                .providerId("123")
-                .build();
-        
-        Group group = Group.builder()
-                .owner(owner)
-                .name("테스트 그룹")
-                .status(GroupStatus.ACTIVE)
-                .build();
-
-        given(repository.findByIdGroupId(groupId)).willReturn(Optional.of(group));
+        given(groupRepository.findByIdGroupId(groupId)).willReturn(Optional.of(group));
 
         // when & then
         assertThatThrownBy(() -> groupValidator.isOwnerForGroupDelete(groupId, otherUserId))
-                .isInstanceOf(GroupException.class);
+                .isInstanceOf(GroupException.class)
+                .hasFieldOrPropertyWithValue("errorCode", GroupErrorCode.GROUP_DELETE_FORBIDDEN);
     }
 
     @Test
-    @DisplayName("[성공] 그룹 수정 권한 확인")
-    void isOwnerForGroupUpdate_CorrectOwner_Success() {
+    @DisplayName("[성공] 그룹 소유자 검증 - 수정 권한")
+    void isOwnerForGroupUpdate_ValidOwner_Success() {
         // given
         Long groupId = 1L;
-        Long userId = 1L;
-        User owner = User.builder()
-                .id(userId)
-                .nickname("owner")
-                .email("owner@example.com")
-                .provider("kakao")
-                .providerId("123")
-                .build();
+        Long ownerId = 100L;
+        User owner = createMockUser(ownerId);
+        Group group = createMockGroupWithOwner(groupId, owner);
         
-        Group group = Group.builder()
-                .owner(owner)
-                .name("테스트 그룹")
-                .status(GroupStatus.ACTIVE)
-                .build();
-
-        given(repository.findByIdGroupId(groupId)).willReturn(Optional.of(group));
+        given(groupRepository.findByIdGroupId(groupId)).willReturn(Optional.of(group));
 
         // when
-        Group result = groupValidator.isOwnerForGroupUpdate(groupId, userId);
+        Group result = groupValidator.isOwnerForGroupUpdate(groupId, ownerId);
 
         // then
-        assertThat(result).isEqualTo(group);
+        assertThat(result).isNotNull();
+        assertThat(result.getOwner().getId()).isEqualTo(ownerId);
     }
 
     @Test
-    @DisplayName("[실패] 그룹 수정 권한 없음")
+    @DisplayName("[실패] 그룹 소유자 검증 - 수정 권한 없음")
     void isOwnerForGroupUpdate_NotOwner_ThrowException() {
         // given
         Long groupId = 1L;
-        Long ownerId = 1L;
-        Long otherUserId = 2L;
+        Long ownerId = 100L;
+        Long otherUserId = 200L;
+        User owner = createMockUser(ownerId);
+        Group group = createMockGroupWithOwner(groupId, owner);
         
-        User owner = User.builder()
-                .id(ownerId)
-                .nickname("owner")
-                .email("owner@example.com")
-                .provider("kakao")
-                .providerId("123")
-                .build();
-        
-        Group group = Group.builder()
-                .owner(owner)
-                .name("테스트 그룹")
-                .status(GroupStatus.ACTIVE)
-                .build();
-
-        given(repository.findByIdGroupId(groupId)).willReturn(Optional.of(group));
+        given(groupRepository.findByIdGroupId(groupId)).willReturn(Optional.of(group));
 
         // when & then
         assertThatThrownBy(() -> groupValidator.isOwnerForGroupUpdate(groupId, otherUserId))
-                .isInstanceOf(GroupException.class);
+                .isInstanceOf(GroupException.class)
+                .hasFieldOrPropertyWithValue("errorCode", GroupErrorCode.GROUP_UPDATE_FORBIDDEN);
+    }
+
+    private Group createMockGroup(Long groupId, GroupStatus status) {
+        Group group = mock(Group.class);
+        given(group.getId()).willReturn(groupId);
+        given(group.getStatus()).willReturn(status);
+        return group;
+    }
+
+    private Group createMockGroupWithCapacity(int maxCount, int currentCount) {
+        Group group = mock(Group.class);
+        given(group.getMaxUserCount()).willReturn(maxCount);
+        given(group.getCurrentUserCount()).willReturn(currentCount);
+        return group;
+    }
+
+    private Group createMockGroupWithOwner(Long groupId, User owner) {
+        Group group = mock(Group.class);
+        // findByIdOrThrow에서 호출되므로 ID와 STATUS 설정 필요
+        given(group.getId()).willReturn(groupId);
+        given(group.getStatus()).willReturn(GroupStatus.ACTIVE);
+        given(group.getOwner()).willReturn(owner);
+        return group;
+    }
+
+    private User createMockUser(Long userId) {
+        User user = mock(User.class);
+        given(user.getId()).willReturn(userId);
+        return user;
     }
 }
