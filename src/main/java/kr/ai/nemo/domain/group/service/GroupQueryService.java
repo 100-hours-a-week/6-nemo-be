@@ -72,7 +72,7 @@ public class GroupQueryService {
     return GroupListResponse.from(groupDtoPage);
   }
 
-
+  @Cacheable(value = "group-detail", key = "#groupId")
   @TimeTrace
   @Transactional(readOnly = true)
   public GroupDetailResponse detailGroup(Long groupId, CustomUserDetails customUserDetails) {
