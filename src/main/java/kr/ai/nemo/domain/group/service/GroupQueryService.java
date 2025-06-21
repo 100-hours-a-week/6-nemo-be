@@ -124,7 +124,7 @@ public class GroupQueryService {
 
   @TimeTrace
   @Transactional(readOnly = true)
-  public GroupRecommendResponse recommendGroup(GroupChatbotSessionResponse session,
+  public GroupRecommendResponse recommendGroup(Long userId, GroupChatbotSessionResponse session,
       String sessionId) {
 
     List<GroupChatbotSessionResponse.Message> messages = session.messages();
@@ -137,11 +137,11 @@ public class GroupQueryService {
         .map(m -> new GroupAiQuestionRecommendRequest.ContextLog(m.role(), m.text()))
         .toList();
 
-    GroupAiQuestionRecommendRequest aiRequest = new GroupAiQuestionRecommendRequest(contextLogs);
+    GroupAiQuestionRecommendRequest aiRequest = new GroupAiQuestionRecommendRequest(userId, contextLogs);
 
     GroupAiRecommendResponse aiResponse = aiGroupService.recommendGroup(aiRequest, sessionId);
     Group group = groupValidator.findByIdOrThrow(aiResponse.groupId());
 
-    return new GroupRecommendResponse(GroupDto.from(group), aiResponse.responseText());
+    return new GroupRecommendResponse(GroupDto.from(group), aiResponse.reason());
   }
 }

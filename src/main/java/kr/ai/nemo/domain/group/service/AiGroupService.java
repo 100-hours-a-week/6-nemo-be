@@ -63,7 +63,7 @@ public class AiGroupService {
         new ParameterizedTypeReference<>() {}
     );
     Group group = groupValidator.findByIdOrThrow(response.groupId());
-    return new GroupAiRecommendResponse(response.groupId(), response.responseText(), group);
+    return new GroupAiRecommendResponse(response.groupId(), response.reason(), group);
   }
 
   @TimeTrace
