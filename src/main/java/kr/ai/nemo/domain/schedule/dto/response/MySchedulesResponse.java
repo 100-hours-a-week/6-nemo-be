@@ -2,8 +2,6 @@ package kr.ai.nemo.domain.schedule.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import kr.ai.nemo.domain.schedule.domain.enums.ScheduleStatus;
-
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Schema(name = "나의 일정 리스트 조회 응답", description = "내 일정 응답 DTO")
