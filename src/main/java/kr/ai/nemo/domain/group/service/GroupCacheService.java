@@ -18,14 +18,14 @@ public class GroupCacheService {
     private final GroupValidator groupValidator;
     private final GroupTagService groupTagService;
 
-    @Cacheable(value = "group-detail-static", key = "#groupId")
+    @Cacheable(value = "group-detail", key = "#groupId")
     public GroupDetailStaticInfo getGroupDetailStatic(Long groupId) {
         Group group = groupValidator.findByIdOrThrow(groupId);
         List<String> tags = groupTagService.getTagNamesByGroupId(group.getId());
         return GroupDetailStaticInfo.from(group, tags);
     }
 
-    @CacheEvict(value = "group-detail-static", key = "#groupId")
+    @CacheEvict(value = "group-detail", key = "#groupId")
     public void evictGroupDetailStatic(Long groupId) {
         // 캐시 무효화 전용 메서드
     }

@@ -40,6 +40,7 @@ import kr.ai.nemo.infra.ImageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -101,7 +102,10 @@ public class GroupCommandService {
     return GroupCreateResponse.from(savedGroup, tags);
   }
 
-  @CacheEvict(value = "group-list", allEntries = true)
+  @Caching(evict = {
+      @CacheEvict(value = "group-list", allEntries = true),
+      @CacheEvict(value = "group-detail", key = "#groupId")
+  })
   @TimeTrace
   @Transactional
   public void deleteGroup(Long groupId, Long userId) {
@@ -109,6 +113,7 @@ public class GroupCommandService {
     group.deleteGroup();
   }
 
+  @CacheEvict(value = "group-detail", key = "#groupId")
   @TimeTrace
   @Transactional
   public void updateGroupImage(Long groupId, Long userId, UpdateGroupImageRequest request) {
