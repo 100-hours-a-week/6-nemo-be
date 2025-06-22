@@ -12,6 +12,7 @@ import kr.ai.nemo.domain.user.domain.User;
 import kr.ai.nemo.domain.user.domain.enums.UserStatus;
 import kr.ai.nemo.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,6 +67,9 @@ public class OauthUserService {
 
       profileImageUrl = imageService.uploadKakaoProfileImage(profile.profileImageUrl(), tempUser.getId());
       tempUser.setProfileImageUrl(profileImageUrl);
+      
+      // 프로필 이미지 변경 시 캐시 무효화
+      evictUserProfileCache(tempUser.getId());
 
       return userRepository.save(tempUser);
     } else if (profile != null) {
@@ -87,5 +91,10 @@ public class OauthUserService {
         .build();
 
     return userRepository.save(user);
+  }
+  
+  @CacheEvict(value = "user-profile", key = "#userId")
+  public void evictUserProfileCache(Long userId) {
+    // 캐시 무효화 전용 메서드
   }
 }

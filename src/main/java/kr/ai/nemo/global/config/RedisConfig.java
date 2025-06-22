@@ -47,6 +47,8 @@ public class RedisConfig {
 
     Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
     cacheConfigurations.put("group-list", config.entryTtl(Duration.ofMinutes(3)));
+    cacheConfigurations.put("user-profile", config.entryTtl(Duration.ofMinutes(30)));
+    cacheConfigurations.put("group-detail-static", config.entryTtl(Duration.ofHours(1)));
 
     return RedisCacheManager.builder(factory)
         .cacheDefaults(config)

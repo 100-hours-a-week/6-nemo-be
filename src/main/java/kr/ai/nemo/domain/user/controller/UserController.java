@@ -42,25 +42,26 @@ public class UserController {
   }
 
   @Operation(summary = "닉네임 변경", description = "사용자의 닉네임을 변경합니다.")
-  @ApiResponse(responseCode = "200", description = "성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupListResponse.class)))
+  @ApiResponse(responseCode = "200", description = "성공적으로 처리되었습니다.")
   @TimeTrace
   @PatchMapping("/me/nickname")
-  public ResponseEntity<BaseApiResponse<NicknameUpdateResponse>> myPage(
+  public ResponseEntity<BaseApiResponse<MyPageResponse>> updateNickname(
       @Valid @RequestBody NicknameUpdateRequest request,
       @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
-    return ResponseEntity.ok(BaseApiResponse.success(userService.updateMyNickname(userDetails.getUserId(), request)));
+    MyPageResponse response = userService.updateMyNickname(userDetails.getUserId(), request);
+    return ResponseEntity.ok(BaseApiResponse.success(response));
   }
 
   @Operation(summary = "프로필 사진 변경", description = "사용자 프로필 사진을 변경합니다.")
-  @ApiResponse(responseCode = "200", description = "성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
+  @ApiResponse(responseCode = "200", description = "성공적으로 처리되었습니다.")
   @TimeTrace
   @PatchMapping("/me/profile-image")
-  public ResponseEntity<BaseApiResponse<Object>> updateProfileImage(
+  public ResponseEntity<BaseApiResponse<MyPageResponse>> updateProfileImage(
       @RequestBody UpdateUserImageRequest request,
       @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
-    userService.updateUserImage(userDetails.getUserId(), request);
-    return ResponseEntity.noContent().build();
+    MyPageResponse response = userService.updateUserImage(userDetails.getUserId(), request);
+    return ResponseEntity.ok(BaseApiResponse.success(response));
   }
 }

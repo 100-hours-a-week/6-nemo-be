@@ -12,6 +12,7 @@ import kr.ai.nemo.domain.group.dto.request.GroupAiQuestionRecommendRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupAiRecommendResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupChatbotSessionResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupDetailResponse;
+import kr.ai.nemo.domain.group.dto.response.GroupDetailStaticInfo;
 import kr.ai.nemo.domain.group.dto.response.GroupDto;
 import kr.ai.nemo.domain.group.dto.response.GroupListResponse;
 import kr.ai.nemo.domain.group.dto.request.GroupSearchRequest;
@@ -46,6 +47,7 @@ public class GroupQueryService {
   private final GroupParticipantValidator groupParticipantValidator;
   private final RedisCacheService redisCacheService;
   private final AiGroupService aiGroupService;
+  private final GroupCacheService groupCacheService;  // 새로 추가
 
   @Cacheable(
       value = "group-list",
@@ -77,14 +79,26 @@ public class GroupQueryService {
     return GroupListResponse.from(new PageImpl<>(dtos, pageable, groupIdPage.getTotalElements()));
   }
 
-  @Cacheable(value = "group-detail", key = "#groupId")
   @TimeTrace
   @Transactional(readOnly = true)
   public GroupDetailResponse detailGroup(Long groupId, CustomUserDetails customUserDetails) {
+    GroupDetailStaticInfo staticInfo = groupCacheService.getGroupDetailStatic(groupId);
     Group group = groupValidator.findByIdOrThrow(groupId);
-    List<String> tags = groupTagService.getTagNamesByGroupId(group.getId());
     Role role = groupParticipantValidator.checkUserRole(customUserDetails, group);
-    return GroupDetailResponse.from(group, tags, role);
+    return new GroupDetailResponse(
+        staticInfo.name(),
+        staticInfo.category(),
+        staticInfo.summary(),
+        staticInfo.description(),
+        staticInfo.plan(),
+        staticInfo.location(),
+        group.getCurrentUserCount(),
+        staticInfo.maxUserCount(),
+        staticInfo.imageUrl(),
+        staticInfo.tags(),
+        staticInfo.ownerName(),
+        role
+    );
   }
 
   @TimeTrace
