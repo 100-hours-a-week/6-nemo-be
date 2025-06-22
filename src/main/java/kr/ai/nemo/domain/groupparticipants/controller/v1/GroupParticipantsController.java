@@ -51,7 +51,7 @@ public class GroupParticipantsController {
       @Parameter(hidden = true)
       @AuthenticationPrincipal CustomUserDetails userDetails){
     groupParticipantsCommandService.applyToGroup(groupId, userDetails, Role.MEMBER, Status.JOINED);
-    aiGroupService.notifyGroupJoined(userDetails.getUserId(), groupId);
+    // aiGroupService.notifyGroupJoined(userDetails.getUserId(), groupId);
 
     return ResponseEntity.noContent().build();
   }

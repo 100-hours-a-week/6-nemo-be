@@ -5,6 +5,8 @@ import java.util.Optional;
 import kr.ai.nemo.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
+import kr.ai.nemo.domain.group.exception.GroupErrorCode;
+import kr.ai.nemo.domain.group.exception.GroupException;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
 import kr.ai.nemo.domain.groupparticipants.domain.GroupParticipants;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
@@ -13,7 +15,9 @@ import kr.ai.nemo.domain.groupparticipants.repository.GroupParticipantsRepositor
 import kr.ai.nemo.domain.groupparticipants.validator.GroupParticipantValidator;
 import kr.ai.nemo.domain.scheduleparticipants.service.ScheduleParticipantsService;
 import kr.ai.nemo.domain.user.domain.User;
+import kr.ai.nemo.global.redis.CacheKeyUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,13 +29,29 @@ public class GroupParticipantsCommandService {
   private final ScheduleParticipantsService scheduleParticipantsService;
   private final GroupValidator groupValidator;
   private final GroupParticipantValidator groupParticipantValidator;
+  private final RedisTemplate<String, String> redisTemplate;
 
   @TimeTrace
   @Transactional
   public void applyToGroup(Long groupId, CustomUserDetails userDetails, Role role, Status status) {
     User user = userDetails.getUser();
     Group group = groupValidator.findByIdOrThrow(groupId);
-    groupValidator.validateGroupIsNotFull(group);
+
+    String capacityKey = CacheKeyUtil.key("group", "capacity", groupId);
+    int maxCapacity = group.getMaxUserCount();
+
+    Long currentCount = redisTemplate.opsForValue().increment(capacityKey, 0);
+
+    if (currentCount == null) {
+      currentCount = (long) group.getCurrentUserCount();
+      redisTemplate.opsForValue().set(capacityKey, currentCount.toString());
+    }
+
+    if (currentCount > maxCapacity) {
+      throw new GroupException(GroupErrorCode.GROUP_FULL);
+    }
+
+    // groupValidator.validateGroupIsNotFull(group);
 
     Optional<GroupParticipants> participant = groupParticipantsRepository.findByGroupIdAndUserId(groupId, user.getId());
 
