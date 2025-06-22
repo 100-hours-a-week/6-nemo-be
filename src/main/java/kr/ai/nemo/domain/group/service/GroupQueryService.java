@@ -78,7 +78,6 @@ public class GroupQueryService {
     return GroupListResponse.from(new PageImpl<>(dtos, pageable, groupIdPage.getTotalElements()));
   }
 
-
   @Cacheable(value = "group-detail", key = "#groupId")
   @TimeTrace
   @Transactional(readOnly = true)
