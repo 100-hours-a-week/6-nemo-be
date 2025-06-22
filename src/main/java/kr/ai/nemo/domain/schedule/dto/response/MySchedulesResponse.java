@@ -1,27 +1,29 @@
 package kr.ai.nemo.domain.schedule.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import kr.ai.nemo.domain.schedule.domain.enums.ScheduleStatus;
+
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import kr.ai.nemo.domain.schedule.domain.Schedule;
-import kr.ai.nemo.domain.schedule.domain.enums.ScheduleStatus;
-import kr.ai.nemo.domain.scheduleparticipants.domain.ScheduleParticipant;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(name = "나의 일정 리스트 조회 응답", description = "내 일정 응답 DTO")
 public record MySchedulesResponse(
     @Schema(description = "진행전 미응답 목록")
     List<ScheduleParticipation> notResponded,
+
     @Schema(description = "진행전 응답 목록")
-    List<ScheduleParticipation> respondedOngoing
+    List<ScheduleParticipation> respondedOngoing,
+
+    @Schema(description = "진행전 거절 목록")
+    List<ScheduleParticipation> respondedRejected
 ) {
 
   @Schema(description = "일정 참여 정보")
   public record ScheduleParticipation(
-      @Schema(description = "일정 정보")
-      ScheduleInfo schedule
+      @Schema(description = "일정 정보") ScheduleInfo schedule
   ) {
-    public static ScheduleParticipation from(ScheduleParticipant participant) {
-      return new ScheduleParticipation(ScheduleInfo.from(participant));
+    public static ScheduleParticipation fromProjection(ScheduleInfoProjection projection) {
+      return new ScheduleParticipation(ScheduleInfo.fromProjection(projection));
     }
   }
 
@@ -57,19 +59,18 @@ public record MySchedulesResponse(
       @Schema(description = "일정 시작 시각 (yyyy-MM-dd HH:mm)", example = "2025-12-25 07:00")
       String startAt
   ) {
-    public static ScheduleInfo from(ScheduleParticipant participant) {
-      Schedule schedule = participant.getSchedule();
+    public static ScheduleInfo fromProjection(ScheduleInfoProjection p) {
       return new ScheduleInfo(
-          schedule.getId(),
-          schedule.getTitle(),
-          schedule.getDescription(),
-          schedule.getAddress(),
-          schedule.getStatus(),
-          schedule.getCurrentUserCount(),
-          schedule.getGroup().getId(),
-          schedule.getGroup().getName(),
-          schedule.getOwner().getNickname(),
-          schedule.getStartAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+          p.getScheduleId(),
+          p.getTitle(),
+          p.getDescription(),
+          p.getAddress(),
+          p.getStatus(),
+          p.getCurrentUserCount(),
+          p.getGroupId(),
+          p.getGroupName(),
+          p.getOwnerName(),
+          p.getStartAt()
       );
     }
   }
