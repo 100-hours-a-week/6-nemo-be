@@ -47,12 +47,12 @@ public class GroupQueryService {
   private final RedisCacheService redisCacheService;
   private final AiGroupService aiGroupService;
 
-//  @Cacheable(
-//      value = "group-list",
-//      key = "'category:' + (#request.category == null ? 'null' : #request.category) + " +
-//          "':page:' + #pageable.pageNumber + ':size:' + #pageable.pageSize",
-//      condition = "#pageable.pageNumber == 0 and (#request.keyword == null or #request.keyword.isEmpty())"
-//  )
+  @Cacheable(
+      value = "group-list",
+      key = "'category:' + (#request.category == null ? 'null' : #request.category) + " +
+          "':page:' + #pageable.pageNumber + ':size:' + #pageable.pageSize",
+      condition = "#pageable.pageNumber == 0 and (#request.keyword == null or #request.keyword.isEmpty())"
+  )
   @TimeTrace
   @Transactional(readOnly = true)
   public GroupListResponse getGroups(GroupSearchRequest request, Pageable pageable) {
@@ -76,7 +76,6 @@ public class GroupQueryService {
 
     return GroupListResponse.from(new PageImpl<>(dtos, pageable, groupIdPage.getTotalElements()));
   }
-
 
   @Cacheable(value = "group-detail", key = "#groupId")
   @TimeTrace

@@ -11,6 +11,7 @@ import kr.ai.nemo.domain.user.repository.UserRepository;
 import kr.ai.nemo.domain.user.validator.UserValidator;
 import kr.ai.nemo.infra.ImageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,9 +23,18 @@ public class UserService {
   private final UserValidator userValidator;
   private final ImageService imageService;
 
+  @Cacheable(value = "user-detail", key = "#userId")
   @Transactional(readOnly = true)
   public MyPageResponse getMyPage(Long userId) {
-    return userRepository.findDtoById(userId);
+    User user = userRepository.findUserById(userId)
+        .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+    
+    return new MyPageResponse(
+        user.getNickname(),
+        user.getEmail(), 
+        user.getProfileImageUrl(),
+        user.getCreatedAt()
+    );
   }
 
   @Transactional

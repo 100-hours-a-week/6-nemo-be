@@ -48,6 +48,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.retry:spring-retry")
+    
+    // Jackson JSR310 모듈 명시적 추가
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
     implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
