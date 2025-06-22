@@ -29,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,29 +47,36 @@ public class GroupQueryService {
   private final RedisCacheService redisCacheService;
   private final AiGroupService aiGroupService;
 
-  @Cacheable(
-      value = "group-list",
-      key = "'category:' + (#request.category == null ? 'null' : #request.category) + " +
-          "':page:' + #pageable.pageNumber + ':size:' + #pageable.pageSize",
-      condition = "#pageable.pageNumber == 0 and (#request.keyword == null or #request.keyword.isEmpty())"
-  )
+//  @Cacheable(
+//      value = "group-list",
+//      key = "'category:' + (#request.category == null ? 'null' : #request.category) + " +
+//          "':page:' + #pageable.pageNumber + ':size:' + #pageable.pageSize",
+//      condition = "#pageable.pageNumber == 0 and (#request.keyword == null or #request.keyword.isEmpty())"
+//  )
+  @TimeTrace
   @Transactional(readOnly = true)
   public GroupListResponse getGroups(GroupSearchRequest request, Pageable pageable) {
-    Page<Group> groups;
+    Page<Long> groupIdPage;
 
     if (request.getCategory() != null) {
-      groups = groupRepository.findByCategoryAndStatusNot(request.getCategory(),
-          GroupStatus.DISBANDED, pageable);
+      groupIdPage = groupRepository.findGroupIdsByCategoryAndStatusNot(
+          request.getCategory(), GroupStatus.DISBANDED, pageable);
     } else if (request.getKeyword() != null && !request.getKeyword().isBlank()) {
-      groups = groupRepository.searchWithKeywordOnly(request.getKeyword(), pageable);
+      groupIdPage = groupRepository.searchGroupIdsWithKeywordOnly(
+          request.getKeyword(), pageable);
     } else {
-      groups = groupRepository.findByStatusNot(GroupStatus.DISBANDED, pageable);
+      groupIdPage = groupRepository.findGroupIdsByStatusNot(pageable);
     }
 
-    Page<GroupDto> groupDtoPage = groups.map(GroupDto::from);
+    List<Group> groups = groupRepository.findGroupsWithTagsByIds(groupIdPage.getContent());
 
-    return GroupListResponse.from(groupDtoPage);
+    List<GroupDto> dtos = groups.stream()
+        .map(GroupDto::from)
+        .toList();
+
+    return GroupListResponse.from(new PageImpl<>(dtos, pageable, groupIdPage.getTotalElements()));
   }
+
 
   @Cacheable(value = "group-detail", key = "#groupId")
   @TimeTrace

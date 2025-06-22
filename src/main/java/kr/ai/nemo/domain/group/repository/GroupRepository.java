@@ -1,5 +1,6 @@
 package kr.ai.nemo.domain.group.repository;
 
+import java.util.List;
 import java.util.Optional;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.domain.enums.GroupStatus;
@@ -39,6 +40,22 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
 """)
   Page<Group> findByCategoryAndStatusNot(String category, GroupStatus status, Pageable pageable);
 
+  @Query("""
+  SELECT g.id FROM Group g
+  WHERE g.category = :category AND g.status <> 'DISBANDED'
+  ORDER BY g.updatedAt DESC
+""")
+  Page<Long> findGroupIdsByCategoryAndStatusNot(@Param("category") String category,
+      @Param("status") GroupStatus status,
+      Pageable pageable);
+
+  @Query("""
+  SELECT g.id FROM Group g
+  WHERE g.status <> 'DISBANDED'
+    AND (g.name LIKE %:keyword% OR g.summary LIKE %:keyword% OR g.description LIKE %:keyword%)
+  ORDER BY g.updatedAt DESC
+""")
+  Page<Long> searchGroupIdsWithKeywordOnly(@Param("keyword") String keyword, Pageable pageable);
 
   @EntityGraph(attributePaths = {"groupTags", "groupTags.tag"})
   @Query("""
@@ -49,6 +66,21 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
     ORDER BY g.updatedAt DESC
 """)
   Page<Group> findByStatusNot(GroupStatus status, Pageable pageable);
+
+  @Query("""
+  SELECT g.id FROM Group g
+  WHERE g.status <> 'DISBANDED'
+  ORDER BY g.updatedAt DESC
+""")
+  Page<Long> findGroupIdsByStatusNot(Pageable pageable);
+
+  @Query("""
+  SELECT DISTINCT g FROM Group g
+  LEFT JOIN FETCH g.groupTags gt
+  LEFT JOIN FETCH gt.tag
+  WHERE g.id IN :ids
+""")
+  List<Group> findGroupsWithTagsByIds(@Param("ids") List<Long> ids);
 
   boolean existsByIdAndOwnerId(Long groupId, Long userId);
 
