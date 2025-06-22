@@ -49,6 +49,7 @@ public class RedisConfig {
     cacheConfigurations.put("group-list", config.entryTtl(Duration.ofMinutes(3)));
     cacheConfigurations.put("user-profile", config.entryTtl(Duration.ofMinutes(30)));
     cacheConfigurations.put("group-detail-static", config.entryTtl(Duration.ofHours(1)));
+    cacheConfigurations.put("schedule-detail", config.entryTtl(Duration.ofHours(6)));
 
     return RedisCacheManager.builder(factory)
         .cacheDefaults(config)

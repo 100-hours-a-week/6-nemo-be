@@ -17,6 +17,7 @@ import kr.ai.nemo.domain.scheduleparticipants.domain.enums.ScheduleParticipantSt
 import kr.ai.nemo.domain.scheduleparticipants.repository.ScheduleParticipantRepository;
 import kr.ai.nemo.domain.schedule.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,10 @@ public class ScheduleQueryService {
   private final GroupValidator groupValidator;
   private final ScheduleValidator scheduleValidator;
 
+  @Cacheable(
+      value = "schedule-detail",
+      key = "#scheduleId",
+      unless = "#result.status() != 'CLOSED'")
   @TimeTrace
   @Transactional(readOnly = true)
   public ScheduleDetailResponse getScheduleDetail(Long scheduleId) {
