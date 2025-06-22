@@ -111,7 +111,6 @@ public class GroupQueryService {
     return result;
   }
 
-  @Cacheable(value = "group-detail", key = "#groupId")
   @TimeTrace
   @Transactional(readOnly = true)
   public GroupDetailResponse detailGroup(Long groupId, CustomUserDetails customUserDetails) {

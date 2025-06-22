@@ -1,6 +1,5 @@
 package kr.ai.nemo.domain.user.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
