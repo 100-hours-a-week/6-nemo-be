@@ -78,8 +78,11 @@ class UserControllerTest {
         "nickname"
     );
 
-    NicknameUpdateResponse response = new NicknameUpdateResponse(
-        "nickname"
+    MyPageResponse response = new MyPageResponse(
+        "nickname",
+        "email",
+        "image.jpg",
+        "2025-01-02 13:00:00"
     );
 
     given(userService.updateMyNickname(any(), any()))

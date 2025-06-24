@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import kr.ai.nemo.aop.logging.TimeTrace;
+import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.domain.enums.ChatbotRole;
@@ -39,6 +39,8 @@ import kr.ai.nemo.global.redis.RedisCacheService;
 import kr.ai.nemo.infra.ImageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,6 +65,7 @@ public class GroupCommandService {
     return GroupGenerateResponse.from(request, aiResponse);
   }
 
+  @CacheEvict(value = "group-list", allEntries = true)
   @TimeTrace
   @Transactional
   public GroupCreateResponse createGroup(@Valid GroupCreateRequest request,
@@ -99,6 +102,10 @@ public class GroupCommandService {
     return GroupCreateResponse.from(savedGroup, tags);
   }
 
+  @Caching(evict = {
+      @CacheEvict(value = "group-list", allEntries = true),
+      @CacheEvict(value = "group-detail", key = "#groupId")
+  })
   @TimeTrace
   @Transactional
   public void deleteGroup(Long groupId, Long userId) {
@@ -106,6 +113,7 @@ public class GroupCommandService {
     group.deleteGroup();
   }
 
+  @CacheEvict(value = "group-detail", key = "#groupId")
   @TimeTrace
   @Transactional
   public void updateGroupImage(Long groupId, Long userId, UpdateGroupImageRequest request) {

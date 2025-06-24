@@ -3,7 +3,7 @@ package kr.ai.nemo.domain.auth.service;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
-import kr.ai.nemo.aop.logging.TimeTrace;
+import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.domain.UserToken;
 import kr.ai.nemo.domain.auth.dto.TokenRefreshResponse;
 import kr.ai.nemo.domain.auth.security.JwtProvider;

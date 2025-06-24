@@ -1,4 +1,4 @@
-package kr.ai.nemo.aop.role.annotation;
+package kr.ai.nemo.global.aop.role.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

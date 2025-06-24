@@ -1,7 +1,7 @@
 package kr.ai.nemo.domain.schedule.service;
 
 import java.time.LocalDateTime;
-import kr.ai.nemo.aop.logging.TimeTrace;
+import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
@@ -13,6 +13,7 @@ import kr.ai.nemo.domain.schedule.validator.ScheduleValidator;
 import kr.ai.nemo.domain.scheduleparticipants.service.ScheduleParticipantsService;
 import kr.ai.nemo.domain.schedule.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ public class ScheduleCommandService {
   private final GroupValidator groupValidator;
   private final ScheduleValidator scheduleValidator;
 
+  @CacheEvict(value = "group-list", allEntries = true)
   @TimeTrace
   @Transactional
   public ScheduleCreateResponse createSchedule(CustomUserDetails userDetails, ScheduleCreateRequest request){

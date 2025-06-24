@@ -1,7 +1,7 @@
 package kr.ai.nemo.domain.group.service;
 
 import java.io.IOException;
-import kr.ai.nemo.aop.logging.TimeTrace;
+import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.dto.request.GroupAiDeleteRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupAiQuestionRecommendRequest;

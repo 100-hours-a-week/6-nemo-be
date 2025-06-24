@@ -3,7 +3,7 @@ package kr.ai.nemo.domain.auth.controller;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
-import kr.ai.nemo.aop.logging.TimeTrace;
+import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.dto.TokenRefreshResponse;
 import kr.ai.nemo.domain.auth.service.OauthService;
 import kr.ai.nemo.domain.auth.service.TokenManager;

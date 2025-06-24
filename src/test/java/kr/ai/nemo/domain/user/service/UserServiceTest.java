@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import java.time.LocalDateTime;
@@ -51,15 +52,15 @@ class UserServiceTest {
 
     // given
     // userRepository.findDtoById 호출 시 원하는 결과 반환하도록 mocking
-    MyPageResponse mockResponse = new MyPageResponse("test", "test@example.com", "test.jpg", LocalDateTime.now());
-    given(userRepository.findDtoById(userId)).willReturn(mockResponse);
+    User user = UserFixture.createDefaultUser();
+    given(userRepository.findUserById(userId).orElseThrow()).willReturn(user);
 
     // when
     MyPageResponse response = userService.getMyPage(userId);
 
     // then
-    verify(userRepository).findDtoById(userId);
-    assertThat(response.nickname()).isEqualTo("test");
+    verify(userRepository).findUserById(userId);
+    assertThat(response.nickname()).isEqualTo(user.getNickname());
   }
 
   @Test
@@ -75,7 +76,7 @@ class UserServiceTest {
     doNothing().when(userValidator).isValidByNickname(newNickname);
 
     // when
-    NicknameUpdateResponse response = userService.updateMyNickname(userId, request);
+    MyPageResponse response = userService.updateMyNickname(userId, request);
 
     // then
     assertThat(response.nickname()).isEqualTo(newNickname);

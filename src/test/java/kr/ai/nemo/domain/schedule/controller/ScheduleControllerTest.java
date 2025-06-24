@@ -15,7 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
-import kr.ai.nemo.aop.role.annotation.RequireScheduleOwner;
+import kr.ai.nemo.global.aop.role.annotation.RequireScheduleOwner;
 import kr.ai.nemo.domain.auth.security.JwtProvider;
 import kr.ai.nemo.domain.auth.service.CustomUserDetailsService;
 import kr.ai.nemo.domain.group.domain.Group;

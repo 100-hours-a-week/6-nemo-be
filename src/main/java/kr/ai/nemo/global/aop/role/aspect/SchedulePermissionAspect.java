@@ -1,6 +1,6 @@
-package kr.ai.nemo.aop.role.aspect;
+package kr.ai.nemo.global.aop.role.aspect;
 
-import kr.ai.nemo.aop.role.annotation.RequireScheduleOwner;
+import kr.ai.nemo.global.aop.role.annotation.RequireScheduleOwner;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.schedule.exception.ScheduleErrorCode;
 import kr.ai.nemo.domain.schedule.exception.ScheduleException;
