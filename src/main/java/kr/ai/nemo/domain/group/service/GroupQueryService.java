@@ -1,7 +1,6 @@
 package kr.ai.nemo.domain.group.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
