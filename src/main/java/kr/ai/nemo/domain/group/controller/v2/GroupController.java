@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import java.time.Duration;
 import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.dto.request.GroupChatbotQuestionRequest;
@@ -22,6 +23,8 @@ import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.global.common.constants.CookieConstants;
 import kr.ai.nemo.global.swagger.groupparticipant.SwaggerGroupParticipantsListResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -103,12 +106,15 @@ public class GroupController {
       @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
     String sessionId = groupCommandService.createNewChatbotSession(userDetails);
-    Cookie sessionCookie = new Cookie(CookieConstants.CHATBOT_SESSION_ID, sessionId);
-    sessionCookie.setHttpOnly(true);
-    sessionCookie.setSecure(true);
-    sessionCookie.setPath("/api/v2/groups/recommendations");
-    sessionCookie.setMaxAge(CookieConstants.CHATBOT_SESSION_TTL);
-    response.addCookie(sessionCookie);
+    ResponseCookie cookie = ResponseCookie.from(CookieConstants.CHATBOT_SESSION_ID, sessionId)
+        .httpOnly(true)
+        .secure(true)
+        .path("/api/v2/groups/recommendations")
+        .maxAge(Duration.ofSeconds(CookieConstants.CHATBOT_SESSION_TTL))
+        .sameSite("None")
+        .build();
+
+    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
     return ResponseEntity.ok(BaseApiResponse.noContent());
   }
