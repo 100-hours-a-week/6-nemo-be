@@ -32,7 +32,7 @@ jobs:
       MIG_NAME: backend-instance-group
       ROLLING_MINIMAL_ACTION: restart
       ROLLING_MAX_SURGE: 2
-      ROLLING_MAX_UNAVAILABLE: 1
+      ROLLING_MAX_UNAVAILABLE: 0
       RESIZE_SIZE_BEFORE: 2
       RESIZE_SIZE_AFTER: 1
 
