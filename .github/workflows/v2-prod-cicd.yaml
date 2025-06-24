@@ -6,8 +6,6 @@ on:
       version:
         description: '릴리즈 버전 태그 (예: v1.3.0)'
         required: true
-  push:
-    branches: [ infra/v2-final-cicd ]
 
 jobs:
   build-and-deploy:
