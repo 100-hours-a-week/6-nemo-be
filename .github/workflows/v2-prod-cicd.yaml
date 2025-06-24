@@ -31,8 +31,8 @@ jobs:
       SHUTDOWN_SCRIPT_PATH: /home/ubuntu/nemo/cloud/v2/scripts/shutdown.sh
       MIG_NAME: backend-instance-group
       ROLLING_MINIMAL_ACTION: restart
-      ROLLING_MAX_SURGE: 1
-      ROLLING_MAX_UNAVAILABLE: 1
+      ROLLING_MAX_SURGE: 2
+      ROLLING_MAX_UNAVAILABLE: 0
 
     steps:
 
@@ -102,9 +102,13 @@ jobs:
           --scopes="cloud-platform" \
           --metadata=startup-script="$STARTUP_SCRIPT",shutdown-script="$SHUTDOWN_SCRIPT"
 
+        gcloud compute instance-groups managed resize be-instance-group --region=asia-northeast3 --size=2
+
         gcloud compute instance-groups managed rolling-action start-update "${{ env.MIG_NAME }}" \
           --region="${{ env.REGION }}" \
           --version=template="$TEMPLATE_NAME" \
           --minimal-action="${{ env.ROLLING_MINIMAL_ACTION }}" \
           --max-surge="${{ env.ROLLING_MAX_SURGE }}" \
           --max-unavailable="${{ env.ROLLING_MAX_UNAVAILABLE }}"
+
+        gcloud compute instance-groups managed resize be-instance-group --region=asia-northeast3 --size=1
