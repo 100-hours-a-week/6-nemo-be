@@ -33,6 +33,8 @@ jobs:
       ROLLING_MINIMAL_ACTION: restart
       ROLLING_MAX_SURGE: 2
       ROLLING_MAX_UNAVAILABLE: 0
+      RESIZE_SIZE_BEFORE: 2
+      RESIZE_SIZE_AFTER: 1
 
     steps:
 
@@ -102,7 +104,9 @@ jobs:
           --scopes="cloud-platform" \
           --metadata=startup-script="$STARTUP_SCRIPT",shutdown-script="$SHUTDOWN_SCRIPT"
 
-        gcloud compute instance-groups managed resize be-instance-group --region=asia-northeast3 --size=2
+        gcloud compute instance-groups managed resize "${{ env.MIG_NAME }}" \
+          --region="${{ env.REGION }}" \
+          --size=${{ env.RESIZE_SIZE_BEFORE }}
 
         gcloud compute instance-groups managed rolling-action start-update "${{ env.MIG_NAME }}" \
           --region="${{ env.REGION }}" \
@@ -111,4 +115,6 @@ jobs:
           --max-surge="${{ env.ROLLING_MAX_SURGE }}" \
           --max-unavailable="${{ env.ROLLING_MAX_UNAVAILABLE }}"
 
-        gcloud compute instance-groups managed resize be-instance-group --region=asia-northeast3 --size=1
+        gcloud compute instance-groups managed resize "${{ env.MIG_NAME }}" \
+          --region="${{ env.REGION }}" \
+          --size=${{ env.RESIZE_SIZE_AFTER }}
