@@ -25,8 +25,6 @@ import kr.ai.nemo.domain.group.validator.GroupValidator;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.groupparticipants.validator.GroupParticipantValidator;
 import kr.ai.nemo.global.aop.role.annotation.DistributedLock;
-import kr.ai.nemo.global.error.code.CommonErrorCode;
-import kr.ai.nemo.global.error.exception.CustomException;
 import kr.ai.nemo.global.redis.CacheConstants;
 import kr.ai.nemo.global.redis.CacheKeyUtil;
 import kr.ai.nemo.global.redis.RedisCacheService;
@@ -81,7 +79,8 @@ public class GroupQueryService {
         Thread.currentThread().interrupt();
       }
 
-      throw new CustomException(CommonErrorCode.INTERNAL_SERVER_ERROR);
+      // 예외 클래스는 프로젝트 구조에 맞게 수정하세요
+      throw new RuntimeException("Unable to get group list", e);
     }
   }
 
