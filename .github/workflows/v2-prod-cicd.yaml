@@ -29,7 +29,7 @@ jobs:
       NETWORK_TAG: backend-prod
       STARTUP_SCRIPT_PATH: /home/ubuntu/nemo/cloud/v2/scripts/startup.sh
       SHUTDOWN_SCRIPT_PATH: /home/ubuntu/nemo/cloud/v2/scripts/shutdown.sh
-      MIG_NAME: be-instance-group
+      MIG_NAME: backend-instance-group
       ROLLING_MINIMAL_ACTION: restart
       ROLLING_MAX_SURGE: 1
       ROLLING_MAX_UNAVAILABLE: 1
