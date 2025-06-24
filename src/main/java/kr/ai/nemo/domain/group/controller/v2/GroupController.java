@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
-import kr.ai.nemo.aop.logging.TimeTrace;
+import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.dto.request.GroupChatbotQuestionRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupRecommendRequest;
@@ -82,7 +82,7 @@ public class GroupController {
         groupCommandService.recommendGroupFreeform(request, userDetails.getUserId())));
   }
   
-  @Operation(summary = "선택지 기반 모임 추천 - session 정보 가져오가", description = "기존에 대화 세션이 있었는지 확인합니다.")
+  @Operation(summary = "선택지 기반 모임 추천 - session 정보 가져오기", description = "기존에 대화 세션이 있었는지 확인합니다.")
   @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.")
   @TimeTrace
   @GetMapping("/recommendations/session")

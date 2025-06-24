@@ -31,6 +31,7 @@ val awsSdkVersion = "1.12.700"
 val swaggerVersion = "2.7.0"
 val sentryVersion = "8.12.0"
 val retryVersion = "1.3.4"
+val redissonVersion = "3.27.2"
 
 dependencies {
 
@@ -48,6 +49,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.retry:spring-retry")
+    implementation("org.redisson:redisson-spring-boot-starter:$redissonVersion")
     
     // Jackson JSR310 모듈 명시적 추가
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")

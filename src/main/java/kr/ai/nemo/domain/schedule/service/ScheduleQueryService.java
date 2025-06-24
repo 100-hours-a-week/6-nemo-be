@@ -2,7 +2,7 @@ package kr.ai.nemo.domain.schedule.service;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import kr.ai.nemo.aop.logging.TimeTrace;
+import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
 import kr.ai.nemo.domain.schedule.domain.Schedule;
 import kr.ai.nemo.domain.schedule.domain.enums.ScheduleStatus;
