@@ -1,0 +1,105 @@
+name: Backend CI for v2-prod
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '릴리즈 버전 태그 (예: v1.3.0)'
+        required: true
+  push:
+    branches: [ infra/v2-final-cicd ]
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy to MIG
+    runs-on: ubuntu-latest
+    environment: prod
+
+    env:
+      REGION: asia-northeast3
+      REPOSITORY: registry
+      SERVICE: backend
+      ENVIRONMENT: prod
+      MACHINE_TYPE: e2-standard-2
+      IMAGE_NAME: be-deploy-server-image
+      BOOT_DISK_SIZE: 80GB
+      BOOT_DISK_TYPE: pd-balanced
+      NETWORK: v2-nemo-prod
+      SUBNET: prod-backend
+      NETWORK_TAG: backend-prod
+      STARTUP_SCRIPT_PATH: /home/ubuntu/nemo/cloud/v2/scripts/startup.sh
+      SHUTDOWN_SCRIPT_PATH: /home/ubuntu/nemo/cloud/v2/scripts/shutdown.sh
+      MIG_NAME: be-instance-group
+      ROLLING_MINIMAL_ACTION: restart
+      ROLLING_MAX_SURGE: 1
+      ROLLING_MAX_UNAVAILABLE: 1
+
+    steps:
+
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set GCP Project
+      run: gcloud config set project ${{ secrets.GCP_PROJECT_ID_PROD }}
+
+    - name: Set image tags and URI
+      run: |
+        TIME_TAG="${{ env.ENVIRONMENT }}-$(TZ=Asia/Seoul date +'%Y%m%d-%H%M')"
+        echo "TIME_TAG=$TIME_TAG" >> $GITHUB_ENV
+
+        VERSION_TAG="prod-${{ github.event.inputs.version }}"
+        echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
+
+        IMAGE_URI="${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID_PROD }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}"
+        echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Configure Docker for Artifact Registry
+      run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+    - name: Gradle Build
+      env:
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      run: |
+        ./gradlew clean build -x test --no-daemon
+
+    - name: Build and Push Docker Image
+      run: |
+        docker buildx build \
+          --no-cache \
+          --platform linux/amd64 \
+          -t "${IMAGE_URI}:${TIME_TAG}" \
+          -t "${IMAGE_URI}:${{ env.ENVIRONMENT }}-latest" \
+          -t "${IMAGE_URI}:${VERSION_TAG}" \
+          --push .
+
+    - name: Create Instance Template & Start MIG Rolling Update
+      run: |
+        TEMPLATE_NAME="${{ env.SERVICE }}-${{ env.ENVIRONMENT }}-template-${{ env.TIME_TAG }}"
+        echo "🔧 템플릿 이름: $TEMPLATE_NAME"
+
+        STARTUP_SCRIPT="bash ${{ env.STARTUP_SCRIPT_PATH }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}"
+        SHUTDOWN_SCRIPT="bash ${{ env.SHUTDOWN_SCRIPT_PATH }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}"
+
+        gcloud compute instance-templates create "$TEMPLATE_NAME" \
+          --region="${{ env.REGION }}" \
+          --machine-type="${{ env.MACHINE_TYPE }}" \
+          --image="${{ env.IMAGE_NAME }}" \
+          --image-project="${{ secrets.GCP_PROJECT_ID_PROD }}" \
+          --boot-disk-size="${{ env.BOOT_DISK_SIZE }}" \
+          --boot-disk-type="${{ env.BOOT_DISK_TYPE }}" \
+          --network="${{ env.NETWORK }}" \
+          --subnet="${{ env.SUBNET }}" \
+          --tags="${{ env.NETWORK_TAG }}" \
+          --no-address \
+          --scopes="cloud-platform" \
+          --metadata=startup-script="$STARTUP_SCRIPT",shutdown-script="$SHUTDOWN_SCRIPT"
+
+        gcloud compute instance-groups managed rolling-action start-update "${{ env.MIG_NAME }}" \
+          --region="${{ env.REGION }}" \
+          --version=template="$TEMPLATE_NAME" \
+          --minimal-action="${{ env.ROLLING_MINIMAL_ACTION }}" \
+          --max-surge="${{ env.ROLLING_MAX_SURGE }}" \
+          --max-unavailable="${{ env.ROLLING_MAX_UNAVAILABLE }}"

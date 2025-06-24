@@ -2,7 +2,7 @@ name: Backend CI/CD for v2-dev
 
 on:
   push:
-    branches: [ develop, infra/v2-cicd-temp ]
+    branches: [ develop ]
 
 jobs:
   build-and-deploy:
