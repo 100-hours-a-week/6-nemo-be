@@ -59,7 +59,6 @@ public class GroupCommandService {
   private final GroupValidator groupValidator;
   private final GroupParticipantValidator groupParticipantValidator;
   private final RedisCacheService redisCacheService;
-  private final GroupParticipantValidator groupParticipantValidator;
 
   @TimeTrace
   @Transactional
