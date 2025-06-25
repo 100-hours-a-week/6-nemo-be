@@ -30,6 +30,13 @@ public class GroupParticipantValidator {
         groupId, userId, Status.JOINED);
   }
 
+  public void validateIsJoined(Long groupId, Long userId) {
+    if(!repository.existsByGroupIdAndUserIdAndStatus(
+        groupId, userId, Status.JOINED)) {
+      throw new GroupParticipantException(GroupParticipantErrorCode.NOT_GROUP_MEMBER);
+    }
+  }
+
   public Role checkUserRole(CustomUserDetails userDetails, Group group) {
     if (userDetails == null) {
       return Role.GUEST;
