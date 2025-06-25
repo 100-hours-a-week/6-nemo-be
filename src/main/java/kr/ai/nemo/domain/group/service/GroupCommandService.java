@@ -2,6 +2,7 @@ package kr.ai.nemo.domain.group.service;
 
 import jakarta.validation.Valid;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -119,6 +120,7 @@ public class GroupCommandService {
   public void updateGroupImage(Long groupId, Long userId, UpdateGroupImageRequest request) {
     Group group = groupValidator.isOwnerForGroupUpdate(groupId, userId);
     group.setImageUrl(imageService.updateImage(group.getImageUrl(), request.imageUrl()));
+    group.setUpdatedAt(LocalDateTime.now());
   }
 
   @TimeTrace
