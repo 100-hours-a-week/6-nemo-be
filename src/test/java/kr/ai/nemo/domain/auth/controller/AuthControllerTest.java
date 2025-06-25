@@ -15,7 +15,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import jakarta.servlet.http.Cookie;
 import java.net.URI;
-import kr.ai.nemo.domain.auth.dto.TokenRefreshResponse;
 import kr.ai.nemo.domain.auth.security.JwtProvider;
 import kr.ai.nemo.domain.auth.service.CustomUserDetailsService;
 import kr.ai.nemo.domain.auth.service.OauthService;
@@ -89,7 +88,7 @@ class AuthControllerTest {
         
         given(oauthService.loginWithKakao(eq(code), isNull(), any()))  // 모두 matcher 사용
                 .willReturn(accessToken);
-        given(uriGenerator.login(state, accessToken))
+        given(uriGenerator.login(state))
                 .willReturn(URI.create(expectedRedirectUri));
 
         // when & then
@@ -110,7 +109,7 @@ class AuthControllerTest {
         
         given(oauthService.loginWithKakao(eq(code), isNull(), any()))  // 모두 matcher 사용
                 .willReturn(accessToken);
-        given(uriGenerator.login(null, accessToken))
+        given(uriGenerator.login(null))
                 .willReturn(URI.create(expectedRedirectUri));
 
         // when & then
@@ -150,9 +149,8 @@ class AuthControllerTest {
         String newAccessToken = "new_access_token";
         long expiresIn = 3600000L;
 
-        TokenRefreshResponse response = new TokenRefreshResponse(newAccessToken, expiresIn);
         given(oauthService.reissueAccessToken(refreshToken))
-                .willReturn(response);
+                .willReturn(newAccessToken);
 
         Cookie cookie = new Cookie("refresh_token", refreshToken);
 

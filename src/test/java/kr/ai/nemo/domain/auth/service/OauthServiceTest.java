@@ -10,7 +10,6 @@ import static org.mockito.Mockito.verify;
 import jakarta.servlet.http.HttpServletResponse;
 import kr.ai.nemo.domain.auth.dto.KakaoTokenResponse;
 import kr.ai.nemo.domain.auth.dto.KakaoUserResponse;
-import kr.ai.nemo.domain.auth.dto.TokenRefreshResponse;
 import kr.ai.nemo.domain.auth.exception.AuthException;
 import kr.ai.nemo.domain.user.domain.User;
 import kr.ai.nemo.domain.user.repository.UserRepository;
@@ -154,15 +153,15 @@ class OauthServiceTest {
     void reissueAccessToken_Success() {
         // given
         String refreshToken = "valid-refresh-token";
-        TokenRefreshResponse expectedResponse = new TokenRefreshResponse("new-access-token", 3600000L);
+        String newAccessToken = "new_access_token";
 
-        given(tokenManager.reissueAccessToken(refreshToken)).willReturn(expectedResponse);
+        given(tokenManager.reissueAccessToken(refreshToken)).willReturn(newAccessToken);
 
         // when
-        TokenRefreshResponse result = oauthService.reissueAccessToken(refreshToken);
+        String result = oauthService.reissueAccessToken(refreshToken);
 
         // then
-        assertThat(result).isEqualTo(expectedResponse);
+        assertThat(result).isEqualTo(newAccessToken);
         verify(tokenManager).reissueAccessToken(refreshToken);
     }
 
