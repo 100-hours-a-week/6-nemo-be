@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
@@ -23,13 +24,14 @@ import kr.ai.nemo.domain.group.repository.GroupRepository;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.groupparticipants.validator.GroupParticipantValidator;
+import kr.ai.nemo.global.aop.role.annotation.DistributedLock;
 import kr.ai.nemo.global.redis.CacheConstants;
 import kr.ai.nemo.global.redis.CacheKeyUtil;
 import kr.ai.nemo.global.redis.RedisCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,29 +49,65 @@ public class GroupQueryService {
   private final AiGroupService aiGroupService;
   private final GroupCacheService groupCacheService;
 
-  @Cacheable(
-      value = "group-list",
-      key = "'category:' + (#request.category == null ? 'null' : #request.category) + " +
-          "':page:' + #pageable.pageNumber + ':size:' + #pageable.pageSize",
-      condition = "#pageable.pageNumber == 0 and (#request.keyword == null or #request.keyword.isEmpty())"
-  )
   @TimeTrace
   @Transactional(readOnly = true)
   public GroupListResponse getGroups(GroupSearchRequest request, Pageable pageable) {
-    Page<Group> groups;
+    String cacheKey = CacheKeyUtil.key(
+        "group-list",
+        "category", request.getCategory(),
+        "page", pageable.getPageNumber(),
+        "size", pageable.getPageSize()
+    );
 
-    if (request.getCategory() != null) {
-      groups = groupRepository.findByCategoryAndStatusNot(request.getCategory(),
-          GroupStatus.DISBANDED, pageable);
-    } else if (request.getKeyword() != null && !request.getKeyword().isBlank()) {
-      groups = groupRepository.searchWithKeywordOnly(request.getKeyword(), pageable);
-    } else {
-      groups = groupRepository.findByStatusNot(GroupStatus.DISBANDED, pageable);
+    Optional<GroupListResponse> cached = redisCacheService.get(cacheKey, GroupListResponse.class);
+    return cached.orElseGet(() -> loadWithLock(request, pageable, cacheKey));
+
+    // 캐시 미스 → 락 획득 후 처리
+  }
+
+  @DistributedLock(
+      key = "'category:' + (#request.category == null ? 'null' : #request.category) + " +
+          "':page:' + #pageable.pageNumber + ':size:' + #pageable.pageSize",
+      waitTime = 2,
+      leaseTime = 10,
+      timeUnit = TimeUnit.SECONDS
+  )
+  @TimeTrace
+  private GroupListResponse loadWithLock(GroupSearchRequest request, Pageable pageable, String cacheKey) {
+    // 들어오기 전에 다른 스레드가 캐시 채웠을 수도 있으니 재조회
+    Optional<GroupListResponse> cached = redisCacheService.get(cacheKey, GroupListResponse.class);
+    if (cached.isPresent()) {
+      return cached.get();
     }
 
-    Page<GroupDto> groupDtoPage = groups.map(GroupDto::from);
+    // DB 조회
+    Page<Long> groupIdPage;
 
-    return GroupListResponse.from(groupDtoPage);
+    if (request.getCategory() != null) {
+      log.info("캐시 미스로 인한 카테고리별 DB 조회");
+      groupIdPage = groupRepository.findGroupIdsByCategoryAndStatusNot(
+          request.getCategory(), GroupStatus.DISBANDED, pageable);
+    } else if (request.getKeyword() != null && !request.getKeyword().isBlank()) {
+      groupIdPage = groupRepository.searchGroupIdsWithKeywordOnly(
+          request.getKeyword(), pageable);
+    } else {
+      log.info("캐시 미스로 인한 전체 모임 DB 조회");
+      groupIdPage = groupRepository.findGroupIdsByStatusNot(pageable);
+    }
+
+    List<Group> groups = groupRepository.findGroupsWithTagsByIds(groupIdPage.getContent());
+
+    List<GroupDto> dtos = groups.stream()
+        .map(GroupDto::from)
+        .toList();
+
+    GroupListResponse result = GroupListResponse.from(
+        new PageImpl<>(dtos, pageable, groupIdPage.getTotalElements()));
+
+    // 캐시에 저장
+    redisCacheService.set(cacheKey, result, java.time.Duration.ofMinutes(5));
+
+    return result;
   }
 
 
