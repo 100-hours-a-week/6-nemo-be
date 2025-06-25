@@ -2,14 +2,15 @@ package kr.ai.nemo.domain.auth.service;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.domain.UserToken;
-import kr.ai.nemo.domain.auth.dto.TokenRefreshResponse;
 import kr.ai.nemo.domain.auth.security.JwtProvider;
 import kr.ai.nemo.global.util.AuthConstants;
 import kr.ai.nemo.domain.user.domain.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -40,14 +41,11 @@ public class TokenManager {
     response.addCookie(cookie);
   }
   @TimeTrace
-  public TokenRefreshResponse reissueAccessToken(String refreshToken) {
+  public String reissueAccessToken(String refreshToken) {
     UserToken userToken = userTokenService.findValidToken(refreshToken);
     User user = userToken.getUser();
 
-    String newAccessToken = jwtProvider.createAccessToken(user.getId());
-    long expiresIn = jwtProvider.getAccessTokenValidity();
-
-    return new TokenRefreshResponse(newAccessToken, expiresIn);
+    return jwtProvider.createAccessToken(user.getId());
   }
 
   public void clearRefreshTokenCookie(HttpServletResponse response) {

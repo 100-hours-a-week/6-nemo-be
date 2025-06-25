@@ -2,8 +2,6 @@ package kr.ai.nemo.domain.auth.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -12,7 +10,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import kr.ai.nemo.domain.auth.domain.UserToken;
-import kr.ai.nemo.domain.auth.dto.TokenRefreshResponse;
 import kr.ai.nemo.domain.auth.security.JwtProvider;
 import kr.ai.nemo.domain.user.domain.User;
 import kr.ai.nemo.global.fixture.user.UserFixture;
@@ -131,11 +128,10 @@ class TokenManagerTest {
         given(jwtProvider.getAccessTokenValidity()).willReturn(validity);
 
         // when
-        TokenRefreshResponse result = tokenManager.reissueAccessToken(refreshToken);
+        String result = tokenManager.reissueAccessToken(refreshToken);
 
         // then
-        assertThat(result.getAccessToken()).isEqualTo(newAccessToken);
-        assertThat(result.getAccessTokenExpiresIn()).isEqualTo(validity);
+        assertThat(result).isEqualTo(newAccessToken);
         verify(userTokenService).findValidToken(refreshToken);
         verify(jwtProvider).createAccessToken(user.getId());
         verify(jwtProvider).getAccessTokenValidity();
@@ -157,7 +153,7 @@ class TokenManagerTest {
         Cookie cookie = cookieCaptor.getValue();
         assertThat(cookie.getName()).isEqualTo("refresh_token");
         assertThat(cookie.getValue()).isNull();
-        assertThat(cookie.getMaxAge()).isEqualTo(0);
+        assertThat(cookie.getMaxAge()).isZero();
         assertThat(cookie.isHttpOnly()).isTrue();
         assertThat(cookie.getSecure()).isTrue();
         assertThat(cookie.getPath()).isEqualTo("/");
