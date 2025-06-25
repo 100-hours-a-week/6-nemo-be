@@ -30,6 +30,7 @@ import kr.ai.nemo.global.redis.CacheKeyUtil;
 import kr.ai.nemo.global.redis.RedisCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -109,7 +110,6 @@ public class GroupQueryService {
 
     return result;
   }
-
 
   @TimeTrace
   @Transactional(readOnly = true)
