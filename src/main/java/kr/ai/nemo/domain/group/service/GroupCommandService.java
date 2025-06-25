@@ -2,11 +2,13 @@ package kr.ai.nemo.domain.group.service;
 
 import jakarta.validation.Valid;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import kr.ai.nemo.domain.groupparticipants.validator.GroupParticipantValidator;
 import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
@@ -55,6 +57,7 @@ public class GroupCommandService {
   private final AiGroupService aiClient;
   private final ImageService imageService;
   private final GroupValidator groupValidator;
+  private final GroupParticipantValidator groupParticipantValidator;
   private final RedisCacheService redisCacheService;
 
   @TimeTrace
@@ -117,8 +120,10 @@ public class GroupCommandService {
   @TimeTrace
   @Transactional
   public void updateGroupImage(Long groupId, Long userId, UpdateGroupImageRequest request) {
-    Group group = groupValidator.isOwnerForGroupUpdate(groupId, userId);
+    Group group = groupValidator.findByIdOrThrow(groupId);
+    groupParticipantValidator.validateIsJoined(groupId, userId);
     group.setImageUrl(imageService.updateImage(group.getImageUrl(), request.imageUrl()));
+    group.setUpdatedAt(LocalDateTime.now());
   }
 
   @TimeTrace
