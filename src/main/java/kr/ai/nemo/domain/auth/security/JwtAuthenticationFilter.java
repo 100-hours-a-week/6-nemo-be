@@ -4,6 +4,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import kr.ai.nemo.domain.auth.exception.AuthErrorCode;
@@ -23,8 +24,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-  private static final String AUTHORIZATION_HEADER = "Authorization";
-  private static final String BEARER_PREFIX = "Bearer ";
+  private static final String ACCESS_TOKEN = "access_token";
   private static final String ERROR_RESPONSE_TEMPLATE = "{\"code\": %d, \"message\": \"%s\", \"data\": null}";
   private static final String APPLICATION_JSON_UTF8 = "application/json;charset=UTF-8";
 
@@ -38,10 +38,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       @NonNull FilterChain filterChain
   ) throws ServletException, IOException {
 
-    String authHeader = request.getHeader(AUTHORIZATION_HEADER);
+    String token = null;
 
-    if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
-      String token = authHeader.substring(BEARER_PREFIX.length());
+    if (request.getCookies() != null) {
+      for (Cookie cookie : request.getCookies()) {
+        if (ACCESS_TOKEN.equals(cookie.getName())) {
+          token = cookie.getValue();
+          break;
+        }
+      }
+    }
+
+    if (token != null) {
       try {
         jwtProvider.validateToken(token);
         Long userId = jwtProvider.getUserIdFromToken(token);
