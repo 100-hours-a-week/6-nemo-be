@@ -73,7 +73,7 @@ public class GroupQueryService {
   }
 
 
-    @TimeTrace
+  @TimeTrace
   @Transactional(readOnly = true)
   public GroupDetailResponse detailGroup(Long groupId, CustomUserDetails customUserDetails) {
     GroupDetailStaticInfo staticInfo = groupCacheService.getGroupDetailStatic(groupId);
@@ -160,83 +160,12 @@ public class GroupQueryService {
         .map(m -> new GroupAiQuestionRecommendRequest.ContextLog(m.role(), m.text()))
         .toList();
 
-    GroupAiQuestionRecommendRequest aiRequest = new GroupAiQuestionRecommendRequest(userId, contextLogs);
+    GroupAiQuestionRecommendRequest aiRequest = new GroupAiQuestionRecommendRequest(userId,
+        contextLogs);
 
     GroupAiRecommendResponse aiResponse = aiGroupService.recommendGroup(aiRequest, sessionId);
     Group group = groupValidator.findByIdOrThrow(aiResponse.groupId());
 
     return new GroupRecommendResponse(GroupDto.from(group), aiResponse.reason());
-  }
-
-  @TimeTrace
-  @Transactional(readOnly = true)
-  public GroupChatbotSessionResponse getChatbotSession(Long userId, String sessionId) {
-    // redis에 저장되어 있는 key로 변환
-    String redisKey = CacheKeyUtil.key("chatbot", userId, sessionId);
-
-    Optional<JsonNode> sessionJson = redisCacheService.get(redisKey, JsonNode.class);
-    if (sessionJson.isEmpty()) {
-      return new GroupChatbotSessionResponse(null);
-    }
-
-    try {
-      // 트리 형태로 저장
-      JsonNode root = sessionJson.get();
-
-      // root에서 answers로 저장된 값 꺼내기
-      JsonNode answers = root.get("answers");
-
-      if (answers == null || !answers.isArray()) {
-        return new GroupChatbotSessionResponse(null);
-      }
-
-      List<GroupChatbotSessionResponse.Message> messages = new ArrayList<>();
-
-      for (JsonNode answerNode : answers) {
-        String role = answerNode.get("role").asText();
-        String text = answerNode.get("text").asText();
-        List<String> options = new ArrayList<>();
-
-        JsonNode optionNode = answerNode.get("option");
-        if (optionNode != null && optionNode.isArray()) {
-          for (JsonNode opt : optionNode) {
-            options.add(opt.asText());
-          }
-        }
-
-        messages.add(new GroupChatbotSessionResponse.Message(role, text, options));
-      }
-      if (messages.isEmpty()) {
-        return new GroupChatbotSessionResponse(null);
-      }
-
-      return new GroupChatbotSessionResponse(messages);
-
-    } catch (Exception e) {
-      log.error("Redis 세션 데이터 파싱 실패: {}", e.getMessage());
-      return new GroupChatbotSessionResponse(null);
-    }
-  }
-
-  @TimeTrace
-  @Transactional(readOnly = true)
-  public GroupRecommendResponse recommendGroup(GroupChatbotSessionResponse session, String sessionId) {
-
-    List<GroupChatbotSessionResponse.Message> messages = session.message();
-
-    if (messages.isEmpty()) {
-      throw new GroupException(GroupErrorCode.CHAT_SESSION_NOT_FOUND);
-    }
-
-    List<GroupAiQuestionRecommendRequest.ContextLog> contextLogs = messages.stream()
-        .map(m -> new GroupAiQuestionRecommendRequest.ContextLog(m.role(), m.text()))
-        .toList();
-
-    GroupAiQuestionRecommendRequest aiRequest = new GroupAiQuestionRecommendRequest(contextLogs);
-
-    GroupAiRecommendResponse aiResponse = aiGroupService.recommendGroup(aiRequest, sessionId);
-    Group group = groupValidator.findByIdOrThrow(aiResponse.groupId());
-
-    return new GroupRecommendResponse(GroupDto.from(group), aiResponse.responseText());
   }
 }
