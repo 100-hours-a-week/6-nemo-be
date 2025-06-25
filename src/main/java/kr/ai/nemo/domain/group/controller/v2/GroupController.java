@@ -7,7 +7,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
-import kr.ai.nemo.aop.logging.TimeTrace;
+import java.time.Duration;
+import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.dto.request.GroupChatbotQuestionRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupRecommendRequest;
@@ -22,6 +23,8 @@ import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.global.common.constants.CookieConstants;
 import kr.ai.nemo.global.swagger.groupparticipant.SwaggerGroupParticipantsListResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -81,8 +84,8 @@ public class GroupController {
     return ResponseEntity.ok(BaseApiResponse.success(
         groupCommandService.recommendGroupFreeform(request, userDetails.getUserId())));
   }
-
-  @Operation(summary = "선택지 기반 모임 추천 - session 정보 가져오가", description = "기존에 대화 세션이 있었는지 확인합니다.")
+  
+  @Operation(summary = "선택지 기반 모임 추천 - session 정보 가져오기", description = "기존에 대화 세션이 있었는지 확인합니다.")
   @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.")
   @TimeTrace
   @GetMapping("/recommendations/session")
@@ -103,12 +106,15 @@ public class GroupController {
       @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
     String sessionId = groupCommandService.createNewChatbotSession(userDetails);
-    Cookie sessionCookie = new Cookie(CookieConstants.CHATBOT_SESSION_ID, sessionId);
-    sessionCookie.setHttpOnly(true);
-    sessionCookie.setSecure(true);
-    sessionCookie.setPath("/api/v2/groups/recommendations");
-    sessionCookie.setMaxAge(CookieConstants.CHATBOT_SESSION_TTL);
-    response.addCookie(sessionCookie);
+    ResponseCookie cookie = ResponseCookie.from(CookieConstants.CHATBOT_SESSION_ID, sessionId)
+        .httpOnly(true)
+        .secure(true)
+        .path("/api/v2/groups/recommendations")
+        .maxAge(Duration.ofSeconds(CookieConstants.CHATBOT_SESSION_TTL))
+        .sameSite("None")
+        .build();
+
+    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
     return ResponseEntity.ok(BaseApiResponse.noContent());
   }
@@ -120,10 +126,12 @@ public class GroupController {
   public ResponseEntity<BaseApiResponse<GroupChatbotQuestionResponse>> recommendGroupQuestions(
       @RequestBody GroupChatbotQuestionRequest request,
       @AuthenticationPrincipal CustomUserDetails userDetails,
-      @CookieValue(name = "sessionId") String sessionId
+      @CookieValue(name = "chatbot_session_id") String sessionId
       ) {
-    return ResponseEntity.ok(BaseApiResponse.success(
-        groupCommandService.recommendGroupQuestion(request, userDetails.getUserId(), sessionId)));
+
+       GroupChatbotQuestionResponse response =
+           groupCommandService.recommendGroupQuestion(request, userDetails.getUserId(), sessionId);
+    return ResponseEntity.ok(BaseApiResponse.success(response));
   }
 
   @Operation(summary = "선택지 기반 모임 추천 - 모임 추천 요청", description = "모든 선택지에 응답 후 모임 추천을 요청합니다.")
@@ -132,11 +140,11 @@ public class GroupController {
   @GetMapping("/recommendations")
   public ResponseEntity<BaseApiResponse<GroupRecommendResponse>> recommendGroupRecommendation(
       @AuthenticationPrincipal CustomUserDetails userDetails,
-      @CookieValue(name = "sessionId") String sessionId
+      @CookieValue(name = "chatbot_session_id") String sessionId
   ) {
     GroupChatbotSessionResponse chatbotSession = groupQueryService.getChatbotSession(
         userDetails.getUserId(), sessionId);
     return ResponseEntity.ok(BaseApiResponse.success(
-        groupQueryService.recommendGroup(chatbotSession, sessionId)));
+        groupQueryService.recommendGroup(userDetails.getUserId(), chatbotSession, sessionId)));
   }
 }

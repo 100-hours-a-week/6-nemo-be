@@ -121,10 +121,11 @@ class GroupRepositoryTest {
   @DisplayName("[성공] 카테고리별 모임 list 조회")
   void findByCategory_Success() {
     // when
-    Page<Group> result = groupRepository.findByCategoryAndStatusNot("IT/개발", GroupStatus.DISBANDED, pageable);
+    Page<Group> result = groupRepository.findByCategoryAndStatusNot(group.getCategory(), GroupStatus.DISBANDED, pageable);
 
     // then
     assertThat(result).isNotNull();
+    assertThat(result.getContent()).isNotEmpty();
     assertThat(result.getContent().getFirst().getName()).isEqualTo(group.getName());
   }
 

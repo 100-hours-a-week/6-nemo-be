@@ -15,8 +15,13 @@ public class GroupValidator {
   private final GroupRepository repository;
 
   public Group findByIdOrThrow(Long groupId) {
-    return repository.findByIdGroupId(groupId)
+    Group group = repository.findByIdGroupId(groupId)
         .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
+    if (group.getStatus().equals(GroupStatus.DISBANDED)) {
+      throw new GroupException(GroupErrorCode.GROUP_DISBANDED);
+    }
+
+    return group;
   }
 
   public void isCategory(String category){

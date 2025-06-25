@@ -7,10 +7,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import kr.ai.nemo.aop.logging.TimeTrace;
+import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
+import kr.ai.nemo.domain.group.domain.enums.ChatbotRole;
 import kr.ai.nemo.domain.group.domain.enums.GroupStatus;
+import kr.ai.nemo.domain.group.dto.request.ChatMessage;
 import kr.ai.nemo.domain.group.dto.request.GroupAiGenerateRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupAiQuestionRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupAiRecommendRequest;
@@ -31,11 +33,14 @@ import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Status;
 import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsCommandService;
 import kr.ai.nemo.domain.group.repository.GroupRepository;
+import kr.ai.nemo.global.redis.CacheConstants;
 import kr.ai.nemo.global.redis.CacheKeyUtil;
 import kr.ai.nemo.global.redis.RedisCacheService;
 import kr.ai.nemo.infra.ImageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,6 +65,7 @@ public class GroupCommandService {
     return GroupGenerateResponse.from(request, aiResponse);
   }
 
+  @CacheEvict(value = "group-list", allEntries = true)
   @TimeTrace
   @Transactional
   public GroupCreateResponse createGroup(@Valid GroupCreateRequest request,
@@ -96,6 +102,10 @@ public class GroupCommandService {
     return GroupCreateResponse.from(savedGroup, tags);
   }
 
+  @Caching(evict = {
+      @CacheEvict(value = "group-list", allEntries = true),
+      @CacheEvict(value = "group-detail", key = "#groupId")
+  })
   @TimeTrace
   @Transactional
   public void deleteGroup(Long groupId, Long userId) {
@@ -103,6 +113,7 @@ public class GroupCommandService {
     group.deleteGroup();
   }
 
+  @CacheEvict(value = "group-detail", key = "#groupId")
   @TimeTrace
   @Transactional
   public void updateGroupImage(Long groupId, Long userId, UpdateGroupImageRequest request) {
@@ -116,9 +127,8 @@ public class GroupCommandService {
       Long userId) {
     GroupAiRecommendRequest aiRequest = new GroupAiRecommendRequest(userId, request.requestText());
     GroupAiRecommendResponse aiResponse = aiClient.recommendGroupFreeform(aiRequest);
-    Group group = groupValidator.findByIdOrThrow(aiResponse.groupId());
-    GroupDto groupDto = GroupDto.from(group);
-    return new GroupRecommendResponse(groupDto, aiResponse.responseText());
+    GroupDto groupDto = GroupDto.from(aiResponse.group());
+    return new GroupRecommendResponse(groupDto, aiResponse.reason());
   }
 
   @TimeTrace
@@ -126,7 +136,23 @@ public class GroupCommandService {
   public GroupChatbotQuestionResponse recommendGroupQuestion(GroupChatbotQuestionRequest request,
       Long userId, String sessionId) {
     GroupAiQuestionRequest aiRequest = new GroupAiQuestionRequest(userId, request.answer());
-    return aiClient.recommendGroupQuestion(aiRequest, sessionId);
+    String redisKey = CacheKeyUtil.key(CacheConstants.REDIS_CHATBOT_PREFIX, userId, sessionId);
+
+    // 사용자 답변이 Null이 아닌 경우 -> 1번째 질문 요청이 아닌 경우 답변을 저장
+    if (request.answer() != null) {
+      ChatMessage userMsg = new ChatMessage(ChatbotRole.USER, aiRequest.answer());
+      redisCacheService.appendToList(redisKey, CacheConstants.REDIS_CHATBOT_MESSAGES_FIELD, userMsg,
+          ChatMessage.class, CacheConstants.CHATBOT_SESSION_TTL);
+    }
+
+    GroupChatbotQuestionResponse aiResponse = aiClient.recommendGroupQuestion(aiRequest, sessionId);
+
+    // AI 응답 저장
+    ChatMessage aiMsg = new ChatMessage(ChatbotRole.AI, aiResponse.question(),
+        aiResponse.options());
+    redisCacheService.appendToList(redisKey, CacheConstants.REDIS_CHATBOT_MESSAGES_FIELD, aiMsg,
+        ChatMessage.class, CacheConstants.CHATBOT_SESSION_TTL);
+    return aiResponse;
   }
 
   @TimeTrace
@@ -135,10 +161,10 @@ public class GroupCommandService {
     String sessionId = UUID.randomUUID().toString();
 
     Map<String, Object> sessionData = new HashMap<>();
-    sessionData.put("step", 0);
-    sessionData.put("answers", new ArrayList<>());
+    sessionData.put(CacheConstants.REDIS_CHATBOT_MESSAGES_FIELD, new ArrayList<>());
 
-    String redisKey = CacheKeyUtil.key("chatbot",userDetails.getUser().getId(), sessionId);
+    String redisKey = CacheKeyUtil.key(CacheConstants.REDIS_CHATBOT_PREFIX,
+        userDetails.getUser().getId(), sessionId);
     redisCacheService.set(redisKey, sessionData, Duration.ofMinutes(30));
 
     return sessionId;

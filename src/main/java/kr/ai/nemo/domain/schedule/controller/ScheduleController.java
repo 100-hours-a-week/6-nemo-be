@@ -6,9 +6,10 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import kr.ai.nemo.aop.logging.TimeTrace;
-import kr.ai.nemo.aop.role.annotation.RequireGroupParticipant;
-import kr.ai.nemo.aop.role.annotation.RequireScheduleOwner;
+import jakarta.validation.Valid;
+import kr.ai.nemo.global.aop.logging.TimeTrace;
+import kr.ai.nemo.global.aop.role.annotation.RequireGroupParticipant;
+import kr.ai.nemo.global.aop.role.annotation.RequireScheduleOwner;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.domain.schedule.dto.response.MySchedulesResponse;
@@ -46,7 +47,7 @@ public class ScheduleController {
   @PostMapping
   @RequireGroupParticipant
   public ResponseEntity<BaseApiResponse<ScheduleCreateResponse>> createSchedule(
-      @RequestBody ScheduleCreateRequest request,
+      @RequestBody @Valid ScheduleCreateRequest request,
       @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails userDetails) {
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(BaseApiResponse.created(scheduleCommandService.createSchedule(userDetails, request)));

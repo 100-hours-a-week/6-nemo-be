@@ -1,4 +1,4 @@
-package kr.ai.nemo.aop.logging;
+package kr.ai.nemo.global.aop.logging;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

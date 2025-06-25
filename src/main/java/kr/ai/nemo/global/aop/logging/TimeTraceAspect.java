@@ -1,4 +1,4 @@
-package kr.ai.nemo.aop.logging;
+package kr.ai.nemo.global.aop.logging;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -16,7 +16,7 @@ public class TimeTraceAspect {
 
   private static final Logger log = LoggerFactory.getLogger(TimeTraceAspect.class);
 
-  @Pointcut("@annotation(kr.ai.nemo.aop.logging.TimeTrace)")
+  @Pointcut("@annotation(kr.ai.nemo.global.aop.logging.TimeTrace)")
   private void timeTraceAnnotation() {}
 
   @Pointcut("within(kr.ai.nemo.domain..controller..*) || within(kr.ai.nemo.domain..service..*)")

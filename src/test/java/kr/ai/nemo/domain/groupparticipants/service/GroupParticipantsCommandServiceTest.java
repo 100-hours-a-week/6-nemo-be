@@ -211,4 +211,59 @@ class GroupParticipantsCommandServiceTest {
     assertThat(mockParticipant.getStatus()).isEqualTo(Status.WITHDRAWN);
     assertThat(mockParticipant.getDeletedAt()).isNotNull();
   }
+
+  @Test
+  @DisplayName("[성공] 그룹 신청 - 정원 체크")
+  void applyToGroup_ValidateGroupCapacity_Success() {
+    // given
+    Long groupId = 1L;
+    User user = UserFixture.createDefaultUser();
+    Group group = GroupFixture.createDefaultGroup(user);
+    CustomUserDetails userDetails = new CustomUserDetails(user);
+
+    given(groupParticipantsRepository.findByGroupIdAndUserId(groupId, user.getId()))
+        .willReturn(Optional.empty());
+    given(groupValidator.findByIdOrThrow(groupId)).willReturn(group);
+    doNothing().when(groupValidator).validateGroupIsNotFull(group);
+    doNothing().when(scheduleParticipantsService).addParticipantToUpcomingSchedules(group, user);
+
+    // when
+    groupParticipantsCommandService.applyToGroup(groupId, userDetails, Role.MEMBER, Status.JOINED);
+
+    // then
+    verify(groupValidator).validateGroupIsNotFull(group);
+    verify(groupParticipantsRepository).save(any(GroupParticipants.class));
+  }
+
+  @Test
+  @DisplayName("[성공] 재가입 시 기존 참가자 검증")
+  void rejoinToGroup_ValidateExistingParticipant_Success() {
+    // given
+    Long groupId = 1L;
+    User user = UserFixture.createDefaultUser();
+    Group group = GroupFixture.createDefaultGroup(user);
+    CustomUserDetails userDetails = new CustomUserDetails(user);
+    
+    GroupParticipants existingParticipant = GroupParticipants.builder()
+        .group(group)
+        .user(user)
+        .role(Role.MEMBER)
+        .status(Status.WITHDRAWN)
+        .appliedAt(LocalDateTime.now().minusDays(1))
+        .build();
+
+    given(groupParticipantsRepository.findByGroupIdAndUserId(groupId, user.getId()))
+        .willReturn(Optional.of(existingParticipant));
+    given(groupValidator.findByIdOrThrow(groupId)).willReturn(group);
+    doNothing().when(groupValidator).validateGroupIsNotFull(group);
+    doNothing().when(groupParticipantValidator).validateJoinedParticipant(existingParticipant);
+    doNothing().when(scheduleParticipantsService).addParticipantToUpcomingSchedules(group, user);
+
+    // when
+    groupParticipantsCommandService.applyToGroup(groupId, userDetails, Role.MEMBER, Status.JOINED);
+
+    // then
+    verify(groupParticipantValidator).validateJoinedParticipant(existingParticipant);
+    assertThat(existingParticipant.getStatus()).isEqualTo(Status.JOINED);
+  }
 }

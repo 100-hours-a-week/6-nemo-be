@@ -2,7 +2,7 @@ package kr.ai.nemo.domain.group.service;
 
 import java.util.List;
 
-import kr.ai.nemo.aop.logging.TimeTrace;
+import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.domain.GroupTag;
 import kr.ai.nemo.domain.group.domain.Tag;
@@ -31,7 +31,6 @@ public class GroupTagService {
           .tag(tag)
           .build();
 
-      group.getGroupTags().add(groupTag);
       groupTagRepository.save(groupTag);
     }
   }
