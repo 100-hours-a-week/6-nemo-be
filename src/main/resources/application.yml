@@ -58,7 +58,7 @@ management:
       export:
         enabled: true
     tracing:
-      endpoint: http://35.216.67.116:4317
+      endpoint: http://35.216.67.116:4318
       export:
         enabled: true
   endpoints:
