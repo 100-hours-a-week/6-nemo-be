@@ -53,7 +53,7 @@ public class AuthController {
       HttpServletResponse response) {
     String accessToken = oauthService.loginWithKakao(code, error, response);
     try {
-      ResponseCookie accessTokenCookie = ResponseCookie.from(Token.ACCESS_TOKEN.name(), accessToken)
+      ResponseCookie accessTokenCookie = ResponseCookie.from(Token.ACCESS_TOKEN.getValue(), accessToken)
           .httpOnly(true)
           .secure(true)
           .path("/")
