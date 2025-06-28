@@ -37,7 +37,7 @@ public class GroupParticipantsCommandService {
 
   @DistributedLock(
       key = "'cache::group::capacity::' + #groupId",
-      waitTime = 5,
+      waitTime = 2,
       leaseTime = 3,
       timeUnit = TimeUnit.SECONDS
   )
