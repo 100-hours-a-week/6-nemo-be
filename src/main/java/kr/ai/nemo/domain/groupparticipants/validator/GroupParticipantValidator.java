@@ -25,6 +25,13 @@ public class GroupParticipantValidator {
     }
   }
 
+  public void validateIsJoined(Long groupId, Long userId) {
+    if(!repository.existsByGroupIdAndUserIdAndStatus(
+        groupId, userId, Status.JOINED)) {
+      throw new GroupParticipantException(GroupParticipantErrorCode.NOT_GROUP_MEMBER);
+    }
+  }
+
   public boolean validateIsJoinedMember(Long groupId, Long userId) {
     return repository.existsByGroupIdAndUserIdAndStatus(
         groupId, userId, Status.JOINED);

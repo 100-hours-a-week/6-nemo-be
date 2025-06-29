@@ -2,13 +2,14 @@ package kr.ai.nemo.domain.schedule.service;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import kr.ai.nemo.aop.logging.TimeTrace;
+import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
 import kr.ai.nemo.domain.schedule.domain.Schedule;
 import kr.ai.nemo.domain.schedule.domain.enums.ScheduleStatus;
 import kr.ai.nemo.domain.schedule.dto.response.MySchedulesResponse;
 import kr.ai.nemo.domain.schedule.dto.response.MySchedulesResponse.ScheduleParticipation;
 import kr.ai.nemo.domain.schedule.dto.response.ScheduleDetailResponse;
+import kr.ai.nemo.domain.schedule.dto.response.ScheduleInfoProjection;
 import kr.ai.nemo.domain.schedule.dto.response.ScheduleListResponse;
 import kr.ai.nemo.domain.schedule.validator.ScheduleValidator;
 import kr.ai.nemo.domain.scheduleparticipants.domain.ScheduleParticipant;
@@ -16,6 +17,7 @@ import kr.ai.nemo.domain.scheduleparticipants.domain.enums.ScheduleParticipantSt
 import kr.ai.nemo.domain.scheduleparticipants.repository.ScheduleParticipantRepository;
 import kr.ai.nemo.domain.schedule.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,10 @@ public class ScheduleQueryService {
   private final GroupValidator groupValidator;
   private final ScheduleValidator scheduleValidator;
 
+  @Cacheable(
+      value = "schedule-detail",
+      key = "#scheduleId",
+      unless = "#result.status() != 'CLOSED'")
   @TimeTrace
   @Transactional(readOnly = true)
   public ScheduleDetailResponse getScheduleDetail(Long scheduleId) {
@@ -70,18 +76,23 @@ public class ScheduleQueryService {
   @TimeTrace
   @Transactional(readOnly = true)
   public MySchedulesResponse getMySchedules(Long userId) {
-    List<ScheduleParticipant> participants = scheduleParticipantRepository.findRecruitingSchedulesByUserId(userId, ScheduleStatus.RECRUITING);
+    List<ScheduleInfoProjection> projections = scheduleParticipantRepository.findUserRecruitingSchedules(userId);
 
-    List<ScheduleParticipation> pending = participants.stream()
-        .filter(p -> p.getStatus() == ScheduleParticipantStatus.PENDING)
-        .map(ScheduleParticipation::from)
+    List<ScheduleParticipation> pending = projections.stream()
+        .filter(p -> p.getParticipantStatus() == ScheduleParticipantStatus.PENDING)
+        .map(ScheduleParticipation::fromProjection)
         .toList();
 
-    List<ScheduleParticipation> upcoming = participants.stream()
-        .filter(p -> p.getStatus() == ScheduleParticipantStatus.ACCEPTED)
-        .map(ScheduleParticipation::from)
+    List<ScheduleParticipation> upcoming = projections.stream()
+        .filter(p -> p.getParticipantStatus() == ScheduleParticipantStatus.ACCEPTED)
+        .map(ScheduleParticipation::fromProjection)
         .toList();
 
-    return new MySchedulesResponse(pending, upcoming);
-    }
+    List<ScheduleParticipation> reject = projections.stream()
+        .filter(p -> p.getParticipantStatus() == ScheduleParticipantStatus.REJECTED)
+        .map(ScheduleParticipation::fromProjection)
+        .toList();
+
+    return new MySchedulesResponse(pending, upcoming, reject);
+  }
 }

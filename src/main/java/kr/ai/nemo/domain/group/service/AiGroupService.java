@@ -1,7 +1,7 @@
 package kr.ai.nemo.domain.group.service;
 
 import java.io.IOException;
-import kr.ai.nemo.aop.logging.TimeTrace;
+import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.dto.request.GroupAiDeleteRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupAiQuestionRecommendRequest;
@@ -38,7 +38,6 @@ public class AiGroupService {
   private final RestClient restClient;
   private final AiApiProperties aiApiProperties;
   private final GroupValidator groupValidator;
-
 
   @TimeTrace
   public GroupAiGenerateResponse call(GroupAiGenerateRequest request) {
@@ -97,7 +96,6 @@ public class AiGroupService {
           .body(data)
           .retrieve()
           .toEntity(String.class);
-
     } catch (Exception e) {
       log.error("[AI] notifyGroupCreated 호출 중 오류", e);
     }
@@ -107,7 +105,6 @@ public class AiGroupService {
   @TimeTrace
   public void notifyGroupDeleted(Long groupId) {
     try {
-
       restClient.post()
           .uri(aiApiProperties.getGroupDeleteUrl())
           .contentType(MediaType.APPLICATION_JSON)
@@ -181,7 +178,6 @@ public class AiGroupService {
   private <T, R> R postForDataWithSession(String url, T requestBody, String sessionId,
       ParameterizedTypeReference<BaseApiResponse<R>> typeRef) {
     try {
-
       BaseApiResponse<R> response =  restClient.post()
           .uri(url)
           .contentType(MediaType.APPLICATION_JSON)

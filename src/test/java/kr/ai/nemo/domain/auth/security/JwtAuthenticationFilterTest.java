@@ -4,6 +4,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import kr.ai.nemo.domain.auth.service.CustomUserDetailsService;
@@ -56,10 +57,10 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    @DisplayName("Authorization 헤더가 없는 경우 정상 통과")
-    void doFilterInternal_NoAuthorizationHeader() throws ServletException, IOException {
+    @DisplayName("쿠키가 없는 경우 정상 통과")
+    void doFilterInternal_NoCookies() throws ServletException, IOException {
         // given
-        when(request.getHeader("Authorization")).thenReturn(null);
+        when(request.getCookies()).thenReturn(null);
 
         // when
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
@@ -70,10 +71,11 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    @DisplayName("Bearer 접두사가 없는 경우 정상 통과")
-    void doFilterInternal_NoBearerPrefix() throws ServletException, IOException {
+    @DisplayName("access_token 쿠키가 없는 경우 정상 통과")
+    void doFilterInternal_NoAccessTokenCookie() throws ServletException, IOException {
         // given
-        when(request.getHeader("Authorization")).thenReturn("Basic token");
+        Cookie[] cookies = {new Cookie("other_cookie", "value")};
+        when(request.getCookies()).thenReturn(cookies);
 
         // when
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
@@ -97,7 +99,8 @@ class JwtAuthenticationFilterTest {
                 .build();
         CustomUserDetails userDetails = new CustomUserDetails(user);
 
-        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        Cookie[] cookies = {new Cookie("access_token", token)};
+        when(request.getCookies()).thenReturn(cookies);
         when(jwtProvider.validateToken(token)).thenReturn(true);
         when(jwtProvider.getUserIdFromToken(token)).thenReturn(userId);
         when(customUserDetailsService.loadUserById(userId)).thenReturn(userDetails);
@@ -119,7 +122,8 @@ class JwtAuthenticationFilterTest {
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
 
-        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        Cookie[] cookies = {new Cookie("access_token", token)};
+        when(request.getCookies()).thenReturn(cookies);
         when(jwtProvider.validateToken(token)).thenThrow(new ExpiredJwtException(null, null, "Token expired"));
         when(response.getWriter()).thenReturn(printWriter);
 
@@ -143,7 +147,8 @@ class JwtAuthenticationFilterTest {
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
 
-        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        Cookie[] cookies = {new Cookie("access_token", token)};
+        when(request.getCookies()).thenReturn(cookies);
         when(jwtProvider.validateToken(token)).thenThrow(new JwtException("Invalid token"));
         when(response.getWriter()).thenReturn(printWriter);
 
@@ -165,7 +170,8 @@ class JwtAuthenticationFilterTest {
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
 
-        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        Cookie[] cookies = {new Cookie("access_token", token)};
+        when(request.getCookies()).thenReturn(cookies);
         when(jwtProvider.validateToken(token)).thenReturn(true);
         when(jwtProvider.getUserIdFromToken(token)).thenReturn(userId);
         when(customUserDetailsService.loadUserById(userId))
@@ -190,7 +196,8 @@ class JwtAuthenticationFilterTest {
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
 
-        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        Cookie[] cookies = {new Cookie("access_token", token)};
+        when(request.getCookies()).thenReturn(cookies);
         when(jwtProvider.validateToken(token)).thenReturn(true);
         when(jwtProvider.getUserIdFromToken(token)).thenReturn(userId);
         when(customUserDetailsService.loadUserById(userId))
@@ -204,5 +211,37 @@ class JwtAuthenticationFilterTest {
         verify(response).setStatus(404);
         verify(response).setContentType("application/json;charset=UTF-8");
         verify(filterChain, never()).doFilter(request, response);
+    }
+
+    @Test
+    @DisplayName("여러 쿠키 중 access_token 찾기")
+    void doFilterInternal_FindAccessTokenAmongMultipleCookies() throws ServletException, IOException {
+        // given
+        String token = "valid.jwt.token";
+        Long userId = 1L;
+        User user = User.builder()
+                .id(userId)
+                .email("test@example.com")
+                .nickname("testUser")
+                .status(UserStatus.ACTIVE)
+                .build();
+        CustomUserDetails userDetails = new CustomUserDetails(user);
+
+        Cookie[] cookies = {
+            new Cookie("session_id", "session123"),
+            new Cookie("access_token", token),
+            new Cookie("refresh_token", "refresh123")
+        };
+        when(request.getCookies()).thenReturn(cookies);
+        when(jwtProvider.validateToken(token)).thenReturn(true);
+        when(jwtProvider.getUserIdFromToken(token)).thenReturn(userId);
+        when(customUserDetailsService.loadUserById(userId)).thenReturn(userDetails);
+
+        // when
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+        // then
+        verify(filterChain).doFilter(request, response);
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNotNull();
     }
 }

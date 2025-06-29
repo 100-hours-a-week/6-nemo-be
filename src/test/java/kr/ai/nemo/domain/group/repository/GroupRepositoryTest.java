@@ -48,10 +48,10 @@ class GroupRepositoryTest {
   void setUp() {
     // 공통 테스트 데이터 준비
     User user = UserFixture.createDefaultUser();
-    savedUser = userRepository.save(user);
+    savedUser = userRepository.saveAndFlush(user);
 
     group = GroupFixture.createDefaultGroup(savedUser);
-    savedGroup = groupRepository.save(group);
+    savedGroup = groupRepository.saveAndFlush(group);
 
     Tag tag = TagFixture.createDefaultTag();
     savedTag = tagRepository.save(tag);

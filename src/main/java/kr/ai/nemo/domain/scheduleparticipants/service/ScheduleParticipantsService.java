@@ -2,7 +2,7 @@ package kr.ai.nemo.domain.scheduleparticipants.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import kr.ai.nemo.aop.logging.TimeTrace;
+import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.groupparticipants.domain.GroupParticipants;
 import kr.ai.nemo.domain.schedule.domain.Schedule;

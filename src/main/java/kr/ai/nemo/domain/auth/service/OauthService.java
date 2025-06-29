@@ -2,12 +2,11 @@ package kr.ai.nemo.domain.auth.service;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
-import kr.ai.nemo.aop.logging.TimeTrace;
+import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.domain.enums.LoginDevice;
 import kr.ai.nemo.domain.auth.domain.enums.OAuthProvider;
 import kr.ai.nemo.domain.auth.dto.KakaoTokenResponse;
 import kr.ai.nemo.domain.auth.dto.KakaoUserResponse;
-import kr.ai.nemo.domain.auth.dto.TokenRefreshResponse;
 import kr.ai.nemo.domain.auth.exception.KakaoOAuthErrorCode;
 import kr.ai.nemo.domain.auth.exception.AuthException;
 import kr.ai.nemo.domain.user.domain.User;
@@ -65,7 +64,7 @@ public class OauthService {
   }
 
   @TimeTrace
-  public TokenRefreshResponse reissueAccessToken(String refreshToken) {
+  public String reissueAccessToken(String refreshToken) {
     return tokenManager.reissueAccessToken(refreshToken);
   }
 

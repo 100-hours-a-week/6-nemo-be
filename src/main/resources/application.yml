@@ -50,6 +50,17 @@ jwt:
 
 
 management:
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    metrics:
+      export:
+        enabled: true
+    tracing:
+      endpoint: http://35.216.67.116:4318
+      export:
+        enabled: true
   endpoints:
     web:
       exposure:

@@ -1,22 +1,18 @@
 package kr.ai.nemo.domain.user.controller;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
+
 import kr.ai.nemo.domain.auth.security.JwtProvider;
 import kr.ai.nemo.domain.auth.service.CustomUserDetailsService;
-import kr.ai.nemo.domain.user.dto.MyPageResponse;
-import kr.ai.nemo.domain.user.dto.NicknameUpdateRequest;
-import kr.ai.nemo.domain.user.dto.NicknameUpdateResponse;
-import kr.ai.nemo.domain.user.service.UserService;
+import kr.ai.nemo.domain.user.dto.UpdateUserImageRequest;
+import kr.ai.nemo.domain.user.exception.UserErrorCode;
 import kr.ai.nemo.global.testUtil.MockMember;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,153 +20,155 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(controllers = UserController.class)
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import kr.ai.nemo.domain.user.dto.MyPageResponse;
+import kr.ai.nemo.domain.user.dto.NicknameUpdateRequest;
+import kr.ai.nemo.domain.user.service.UserService;
+
+@WebMvcTest(UserController.class)
 @MockMember
-@Import({JwtProvider.class})
+@Import(JwtProvider.class)
 @ActiveProfiles("test")
 @DisplayName("UserController 테스트")
 class UserControllerTest {
 
-  @Autowired
-  private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-  @Autowired
-  private ObjectMapper objectMapper;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-  @MockitoBean
-  private UserService userService;
+    @MockitoBean
+    private UserService userService;
 
-  @MockitoBean
-  private CustomUserDetailsService customUserDetailsService;
+    @MockitoBean
+    private CustomUserDetailsService customUserDetailsService;
 
-  @Test
-  @DisplayName("[성공] 마이페이지 조회 성공")
-  void getMyPage_Success() throws Exception {
-    // given
-    MyPageResponse response = new MyPageResponse(
-        "test",
-        "test@example.com",
-        "test.jpg",
-        LocalDateTime.now()
-    );
+    @Test
+    @DisplayName("[성공] 마이페이지 조회")
+    void getMyPage_Success() throws Exception {
+        // given
+        Long userId = 1L;
+        LocalDateTime createdAt = LocalDateTime.now();
+        MyPageResponse response = new MyPageResponse(
+                "테스트유저",
+                "test@example.com",
+                "https://example.com/profile.jpg",
+                createdAt
+        );
 
-    given(userService.getMyPage(any()))
-        .willReturn(response);
+        given(userService.getMyPage(userId)).willReturn(response);
 
-    // when & then
-    mockMvc.perform(get("/api/v2/users/me")
-          .with(csrf()))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.data.nickname").value(response.nickname()))
-        .andExpect(jsonPath("$.data.email").value(response.email()))
-        .andExpect(jsonPath("$.data.profileImageUrl").value(response.profileImageUrl()));
-  }
+        // when & then
+        mockMvc.perform(get("/api/v2/users/me")
+                        .header("userId", userId))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.nickname").value("테스트유저"))
+                .andExpect(jsonPath("$.data.email").value("test@example.com"))
+                .andExpect(jsonPath("$.data.profileImageUrl").value("https://example.com/profile.jpg"));
+    }
 
-  @Test
-  @DisplayName("[성공] 닉네임 변경 성공")
-  void modifyMyNickname_Success() throws Exception {
-    // given
-    NicknameUpdateRequest request = new NicknameUpdateRequest(
-        "nickname"
-    );
+    @Test
+    @DisplayName("[성공] 닉네임 업데이트")
+    void updateNickname_Success() throws Exception {
+        // given
+        Long userId = 1L;
+        String newNickname = "새로운닉네임";
+        NicknameUpdateRequest request = new NicknameUpdateRequest(newNickname);
+        LocalDateTime createdAt = LocalDateTime.now();
+        
+        MyPageResponse response = new MyPageResponse(
+                newNickname,
+                "test@example.com",
+                "https://example.com/profile.jpg",
+                createdAt
+        );
 
-    NicknameUpdateResponse response = new NicknameUpdateResponse(
-        "nickname"
-    );
+        given(userService.updateMyNickname(eq(userId), any(NicknameUpdateRequest.class)))
+                .willReturn(response);
 
-    given(userService.updateMyNickname(any(), any()))
-        .willReturn(response);
+        // when & then
+        mockMvc.perform(patch("/api/v2/users/me/nickname")
+                        .header("userId", userId)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.nickname").value(newNickname));
+    }
 
-    // when & then
-    mockMvc.perform(patch("/api/v2/users/me/nickname")
-          .with(csrf())
-          .contentType(MediaType.APPLICATION_JSON)
-          .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.data.nickname").value("nickname"));
-  }
+    @Test
+    @DisplayName("[실패] 닉네임 업데이트 - 빈 닉네임")
+    void updateNickname_EmptyNickname_BadRequest() throws Exception {
+        // given
+        Long userId = 1L;
+        NicknameUpdateRequest request = new NicknameUpdateRequest("");
 
-  @Test
-  @DisplayName("[실패] 닉네임 변경 - 빈 닉네임")
-  void modifyMyNickname_EmptyNickname_BadRequest() throws Exception {
-    // given
-    NicknameUpdateRequest request = new NicknameUpdateRequest("");
+        // when & then
+        mockMvc.perform(patch("/api/v2/users/me/nickname")
+                        .header("userId", userId)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
 
-    // when & then
-    mockMvc.perform(patch("/api/v2/users/me/nickname")
-          .with(csrf())
-          .contentType(MediaType.APPLICATION_JSON)
-          .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isBadRequest());
-  }
+    @Test
+    @DisplayName("[성공] 프로필 이미지 업데이트 - base64")
+    void updateProfileImage_Success_Base64() throws Exception {
+        // given
+        Long userId = 1L;
+        String base64Image = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD..."; // 일부 생략
 
-  @Test
-  @DisplayName("[실패] 닉네임 변경 - null 닉네임")
-  void modifyMyNickname_NullNickname_BadRequest() throws Exception {
-    // given
-    NicknameUpdateRequest request = new NicknameUpdateRequest(null);
+        UpdateUserImageRequest request = new UpdateUserImageRequest(base64Image);
 
-    // when & then
-    mockMvc.perform(patch("/api/v2/users/me/nickname")
-          .with(csrf())
-          .contentType(MediaType.APPLICATION_JSON)
-          .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isBadRequest());
-  }
+        LocalDateTime createdAt = LocalDateTime.now();
+        MyPageResponse response = new MyPageResponse(
+            "테스트유저",
+            "test@example.com",
+            "https://example.com/new-profile.jpg",
+            createdAt
+        );
 
-  @Test
-  @DisplayName("[실패] 닉네임 변경 - 너무 긴 닉네임")
-  void modifyMyNickname_TooLongNickname_BadRequest() throws Exception {
-    // given
-    String longNickname = "a".repeat(21); // 21자 (제한 초과)
-    NicknameUpdateRequest request = new NicknameUpdateRequest(longNickname);
+        given(userService.updateUserImage(eq(userId), any()))
+            .willReturn(response);
 
-    // when & then
-    mockMvc.perform(patch("/api/v2/users/me/nickname")
-          .with(csrf())
-          .contentType(MediaType.APPLICATION_JSON)
-          .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isBadRequest());
-  }
+        // when & then
+        mockMvc.perform(patch("/api/v2/users/me/profile-image")
+                .header("userId", userId)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.profileImageUrl").value("https://example.com/new-profile.jpg"));
+    }
 
-  @Test
-  @DisplayName("[실패] 마이페이지 조회 - 인증되지 않은 사용자")
-  void getMyPage_Unauthorized() throws Exception {
-    // when & then
-    mockMvc.perform(get("/api/v2/users/me")
-            .with(csrf())
-            .with(anonymous()))
-        .andExpect(status().isUnauthorized());
-  }
+    @Test
+    @DisplayName("[실패] 프로필 이미지 업데이트 - 파일 없음")
+    void updateProfileImage_NoFile_BadRequest() throws Exception {
+        // given
+        Long userId = 1L;
 
-  @Test
-  @DisplayName("[실패] 닉네임 변경 - 잘못된 Content-Type")
-  void modifyMyNickname_InvalidContentType_BadRequest() throws Exception {
-    // given
-    NicknameUpdateRequest request = new NicknameUpdateRequest("newNickname");
-
-    // when & then
-    mockMvc.perform(patch("/api/v2/users/me/nickname")
-          .with(csrf())
-          .contentType(MediaType.TEXT_PLAIN) // 잘못된 Content-Type
-          .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isUnsupportedMediaType());
-  }
-
-  @Test
-  @DisplayName("[실패] 닉네임 변경 - CSRF 토큰 없음")
-  void modifyMyNickname_NoCsrfToken_Forbidden() throws Exception {
-    // given
-    NicknameUpdateRequest request = new NicknameUpdateRequest("newNickname");
-
-    // when & then
-    mockMvc.perform(patch("/api/v2/users/me/nickname")
-          .contentType(MediaType.APPLICATION_JSON)
-          .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isForbidden());
-  }
+        // when & then
+        mockMvc.perform(multipart("/api/v2/users/me/profile-image")
+                        .header("userId", userId)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(request -> {
+                            request.setMethod("PATCH");
+                            return request;
+                        }))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
 }

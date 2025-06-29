@@ -3,6 +3,7 @@ package kr.ai.nemo.domain.groupparticipants.service;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.doNothing;
@@ -26,12 +27,15 @@ import kr.ai.nemo.domain.user.domain.User;
 import kr.ai.nemo.domain.user.repository.UserRepository;
 import kr.ai.nemo.global.fixture.group.GroupFixture;
 import kr.ai.nemo.global.fixture.user.UserFixture;
+import kr.ai.nemo.global.testUtil.TestReflectionUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("GroupParticipantsCommandService 테스트")
@@ -55,6 +59,12 @@ class GroupParticipantsCommandServiceTest {
   @Mock
   private GroupRepository groupRepository;
 
+  @Mock
+  private RedisTemplate<String, String> redisTemplate;
+
+  @Mock
+  private ValueOperations<String, String> valueOperations;
+
   @InjectMocks
   private GroupParticipantsCommandService groupParticipantsCommandService;
 
@@ -64,21 +74,22 @@ class GroupParticipantsCommandServiceTest {
     // given
     Long groupId = 1L;
     User mockUser = UserFixture.createDefaultUser();
-    userRepository.save(mockUser);
-
-    Group mockGroup = mock(Group.class);
-    groupRepository.save(mockGroup);
+    Group mockGroup = GroupFixture.createDefaultGroup(mockUser);
 
     CustomUserDetails userDetails = new CustomUserDetails(mockUser);
     Role mockRole = Role.MEMBER;
     Status mockStatus = Status.JOINED;
 
+    // Redis mocking
+    given(redisTemplate.opsForValue()).willReturn(valueOperations);
+    given(valueOperations.get(anyString())).willReturn(null);
+    willDoNothing().given(valueOperations).set(anyString(), anyString());
+    given(valueOperations.increment(anyString())).willReturn(1L);
+
     // 이미 참여 이력이 없음 (Optional.empty)
     given(groupParticipantsRepository.findByGroupIdAndUserId(groupId, mockUser.getId()))
         .willReturn(Optional.empty());
-
     given(groupValidator.findByIdOrThrow(groupId)).willReturn(mockGroup);
-    willDoNothing().given(groupValidator).validateGroupIsNotFull(mockGroup);
     willDoNothing().given(scheduleParticipantsService).addParticipantToUpcomingSchedules(mockGroup, mockUser);
 
     // when
@@ -86,9 +97,7 @@ class GroupParticipantsCommandServiceTest {
 
     // then
     verify(groupValidator).findByIdOrThrow(groupId);
-    verify(groupValidator).validateGroupIsNotFull(mockGroup);
     verify(groupParticipantsRepository).save(any(GroupParticipants.class));
-    verify(mockGroup).addCurrentUserCount();
     verify(scheduleParticipantsService).addParticipantToUpcomingSchedules(mockGroup, mockUser);
   }
 
@@ -98,10 +107,7 @@ class GroupParticipantsCommandServiceTest {
     // given
     Long groupId = 1L;
     User user = UserFixture.createDefaultUser();
-    userRepository.save(user);
-
     Group group = GroupFixture.createDefaultGroup(user);
-    groupRepository.save(group);
 
     CustomUserDetails userDetails = new CustomUserDetails(user);
     GroupParticipants participant = GroupParticipants.builder()
@@ -112,13 +118,14 @@ class GroupParticipantsCommandServiceTest {
         .appliedAt(LocalDateTime.now().minusDays(5))
         .build();
 
-    groupParticipantsRepository.saveAndFlush(participant);
+    // Redis mocking
+    given(redisTemplate.opsForValue()).willReturn(valueOperations);
+    given(valueOperations.get(anyString())).willReturn("1");
 
     // 이미 참여 이력이 있음
     given(groupParticipantsRepository.findByGroupIdAndUserId(groupId, user.getId()))
         .willReturn(Optional.of(participant));
     given(groupValidator.findByIdOrThrow(groupId)).willReturn(group);
-    willDoNothing().given(groupValidator).validateGroupIsNotFull(group);
     willDoNothing().given(groupParticipantValidator).validateJoinedParticipant(participant);
     willDoNothing().given(scheduleParticipantsService).addParticipantToUpcomingSchedules(group, user);
 
@@ -127,7 +134,6 @@ class GroupParticipantsCommandServiceTest {
 
     // then
     verify(groupValidator).findByIdOrThrow(groupId);
-    verify(groupValidator).validateGroupIsNotFull(group);
     verify(groupParticipantValidator).validateJoinedParticipant(participant);
     verify(scheduleParticipantsService).addParticipantToUpcomingSchedules(group, user);
     assertThat(participant.getStatus()).isEqualTo(Status.JOINED);
@@ -141,7 +147,7 @@ class GroupParticipantsCommandServiceTest {
     Long groupId = 1L;
     Long userId = 1L;
 
-    User user = mock(User.class);
+    User user = UserFixture.createDefaultUser();
     Group group = GroupFixture.createDefaultGroup(user);
     groupRepository.saveAndFlush(group);
     group.setCurrentUserCount(5);
@@ -179,8 +185,8 @@ class GroupParticipantsCommandServiceTest {
   void withdrawGroup_Success() {
     // given
     Long groupId = 1L;
-    User user = mock(User.class);
-    CustomUserDetails userDetails = new CustomUserDetails(user);
+    User user = UserFixture.createUserWithId(1L, "test");
+
     Group group = GroupFixture.createDefaultGroup(user);
     groupRepository.saveAndFlush(group);
     group.setCurrentUserCount(5);
@@ -204,7 +210,7 @@ class GroupParticipantsCommandServiceTest {
         .willReturn(mockParticipant);
 
     // when
-    groupParticipantsCommandService.withdrawGroup(groupId, userDetails.getUserId());
+    groupParticipantsCommandService.withdrawGroup(groupId, user.getId());
 
     // then
     assertThat(group.getCurrentUserCount()).isEqualTo(4);
@@ -221,17 +227,21 @@ class GroupParticipantsCommandServiceTest {
     Group group = GroupFixture.createDefaultGroup(user);
     CustomUserDetails userDetails = new CustomUserDetails(user);
 
+    // Redis mocking
+    given(redisTemplate.opsForValue()).willReturn(valueOperations);
+    given(valueOperations.get(anyString())).willReturn(null);
+    willDoNothing().given(valueOperations).set(anyString(), anyString());
+    given(valueOperations.increment(anyString())).willReturn(1L);
+
     given(groupParticipantsRepository.findByGroupIdAndUserId(groupId, user.getId()))
         .willReturn(Optional.empty());
     given(groupValidator.findByIdOrThrow(groupId)).willReturn(group);
-    doNothing().when(groupValidator).validateGroupIsNotFull(group);
     doNothing().when(scheduleParticipantsService).addParticipantToUpcomingSchedules(group, user);
 
     // when
     groupParticipantsCommandService.applyToGroup(groupId, userDetails, Role.MEMBER, Status.JOINED);
 
     // then
-    verify(groupValidator).validateGroupIsNotFull(group);
     verify(groupParticipantsRepository).save(any(GroupParticipants.class));
   }
 
@@ -252,10 +262,13 @@ class GroupParticipantsCommandServiceTest {
         .appliedAt(LocalDateTime.now().minusDays(1))
         .build();
 
+    // Redis mocking
+    given(redisTemplate.opsForValue()).willReturn(valueOperations);
+    given(valueOperations.get(anyString())).willReturn("1");
+
     given(groupParticipantsRepository.findByGroupIdAndUserId(groupId, user.getId()))
         .willReturn(Optional.of(existingParticipant));
     given(groupValidator.findByIdOrThrow(groupId)).willReturn(group);
-    doNothing().when(groupValidator).validateGroupIsNotFull(group);
     doNothing().when(groupParticipantValidator).validateJoinedParticipant(existingParticipant);
     doNothing().when(scheduleParticipantsService).addParticipantToUpcomingSchedules(group, user);
 

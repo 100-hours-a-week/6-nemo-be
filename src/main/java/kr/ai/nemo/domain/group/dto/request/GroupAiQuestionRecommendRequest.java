@@ -13,6 +13,5 @@ public record GroupAiQuestionRecommendRequest(
       String role,
       String text
   ) {
-
   }
 }

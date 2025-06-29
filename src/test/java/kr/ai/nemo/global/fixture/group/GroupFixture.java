@@ -11,6 +11,8 @@ import kr.ai.nemo.global.testUtil.TestReflectionUtils;
  */
 public class GroupFixture {
 
+    private static final LocalDateTime FIXED_TIME = LocalDateTime.of(2024, 1, 1, 0, 0, 0);
+
     public static Group createGroup(User owner, String name, String category, int maxUserCount) {
         return Group.builder()
                 .owner(owner)

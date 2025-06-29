@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -20,6 +21,7 @@ import kr.ai.nemo.domain.group.dto.request.GroupSearchRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupAiRecommendResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupChatbotSessionResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupDetailResponse;
+import kr.ai.nemo.domain.group.dto.response.GroupDetailStaticInfo;
 import kr.ai.nemo.domain.group.dto.response.GroupListResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupRecommendResponse;
 import kr.ai.nemo.domain.group.exception.GroupErrorCode;
@@ -58,9 +60,6 @@ class GroupQueryServiceTest {
     private GroupValidator groupValidator;
 
     @Mock
-    private GroupTagService groupTagService;
-
-    @Mock
     private GroupParticipantValidator groupParticipantValidator;
 
     @Mock
@@ -68,6 +67,9 @@ class GroupQueryServiceTest {
 
     @Mock
     private AiGroupService aiGroupService;
+
+    @Mock
+    private GroupCacheService groupCacheService;
 
     @InjectMocks
     private GroupQueryService groupQueryService;
@@ -81,10 +83,16 @@ class GroupQueryServiceTest {
         Pageable pageable = PageRequest.of(0, 10);
         
         Group mockGroup = createMockGroup(1L, "축구 모임", "스포츠");
-        Page<Group> groupPage = new PageImpl<>(List.of(mockGroup), pageable, 1);
-
-        given(groupRepository.findByCategoryAndStatusNot("스포츠", GroupStatus.DISBANDED, pageable))
-            .willReturn(groupPage);
+        Page<Long> groupIdPage = new PageImpl<>(List.of(1L), pageable, 1);
+        
+        // 캐시 미스 시나리오
+        given(redisCacheService.get(anyString(), eq(GroupListResponse.class)))
+            .willReturn(Optional.empty());
+        
+        given(groupRepository.findGroupIdsByCategoryAndStatusNot("스포츠", GroupStatus.DISBANDED, pageable))
+            .willReturn(groupIdPage);
+        given(groupRepository.findGroupsWithTagsByIds(List.of(1L)))
+            .willReturn(List.of(mockGroup));
 
         // when
         GroupListResponse result = groupQueryService.getGroups(request, pageable);
@@ -92,7 +100,9 @@ class GroupQueryServiceTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result.groups()).hasSize(1);
-        verify(groupRepository).findByCategoryAndStatusNot("스포츠", GroupStatus.DISBANDED, pageable);
+        verify(groupRepository).findGroupIdsByCategoryAndStatusNot("스포츠", GroupStatus.DISBANDED, pageable);
+        verify(groupRepository).findGroupsWithTagsByIds(List.of(1L));
+        verify(redisCacheService).set(anyString(), any(GroupListResponse.class), any());
     }
 
     @Test
@@ -104,9 +114,16 @@ class GroupQueryServiceTest {
         Pageable pageable = PageRequest.of(0, 10);
         
         Group mockGroup = createMockGroup(1L, "축구 모임", "스포츠");
-        Page<Group> groupPage = new PageImpl<>(List.of(mockGroup), pageable, 1);
+        Page<Long> groupIdPage = new PageImpl<>(List.of(1L), pageable, 1);
 
-        given(groupRepository.searchWithKeywordOnly("축구", pageable)).willReturn(groupPage);
+        // 캐시 미스 시나리오
+        given(redisCacheService.get(anyString(), eq(GroupListResponse.class)))
+            .willReturn(Optional.empty());
+        
+        given(groupRepository.searchGroupIdsWithKeywordOnly("축구", pageable))
+            .willReturn(groupIdPage);
+        given(groupRepository.findGroupsWithTagsByIds(List.of(1L)))
+            .willReturn(List.of(mockGroup));
 
         // when
         GroupListResponse result = groupQueryService.getGroups(request, pageable);
@@ -114,7 +131,9 @@ class GroupQueryServiceTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result.groups()).hasSize(1);
-        verify(groupRepository).searchWithKeywordOnly("축구", pageable);
+        verify(groupRepository).searchGroupIdsWithKeywordOnly("축구", pageable);
+        verify(groupRepository).findGroupsWithTagsByIds(List.of(1L));
+        verify(redisCacheService).set(anyString(), any(GroupListResponse.class), any());
     }
 
     @Test
@@ -125,9 +144,16 @@ class GroupQueryServiceTest {
         Pageable pageable = PageRequest.of(0, 10);
         
         Group mockGroup = createMockGroup(1L, "모임", "스포츠");
-        Page<Group> groupPage = new PageImpl<>(List.of(mockGroup), pageable, 1);
+        Page<Long> groupIdPage = new PageImpl<>(List.of(1L), pageable, 1);
 
-        given(groupRepository.findByStatusNot(GroupStatus.DISBANDED, pageable)).willReturn(groupPage);
+        // 캐시 미스 시나리오
+        given(redisCacheService.get(anyString(), eq(GroupListResponse.class)))
+            .willReturn(Optional.empty());
+        
+        given(groupRepository.findGroupIdsByStatusNot(pageable))
+            .willReturn(groupIdPage);
+        given(groupRepository.findGroupsWithTagsByIds(List.of(1L)))
+            .willReturn(List.of(mockGroup));
 
         // when
         GroupListResponse result = groupQueryService.getGroups(request, pageable);
@@ -135,7 +161,9 @@ class GroupQueryServiceTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result.groups()).hasSize(1);
-        verify(groupRepository).findByStatusNot(GroupStatus.DISBANDED, pageable);
+        verify(groupRepository).findGroupIdsByStatusNot(pageable);
+        verify(groupRepository).findGroupsWithTagsByIds(List.of(1L));
+        verify(redisCacheService).set(anyString(), any(GroupListResponse.class), any());
     }
 
     @Test
@@ -147,16 +175,50 @@ class GroupQueryServiceTest {
         Pageable pageable = PageRequest.of(0, 10);
         
         Group mockGroup = createMockGroup(1L, "모임", "스포츠");
-        Page<Group> groupPage = new PageImpl<>(List.of(mockGroup), pageable, 1);
+        Page<Long> groupIdPage = new PageImpl<>(List.of(1L), pageable, 1);
 
-        given(groupRepository.findByStatusNot(GroupStatus.DISBANDED, pageable)).willReturn(groupPage);
+        // 캐시 미스 시나리오
+        given(redisCacheService.get(anyString(), eq(GroupListResponse.class)))
+            .willReturn(Optional.empty());
+        
+        given(groupRepository.findGroupIdsByStatusNot(pageable))
+            .willReturn(groupIdPage);
+        given(groupRepository.findGroupsWithTagsByIds(List.of(1L)))
+            .willReturn(List.of(mockGroup));
 
         // when
         GroupListResponse result = groupQueryService.getGroups(request, pageable);
 
         // then
         assertThat(result).isNotNull();
-        verify(groupRepository).findByStatusNot(GroupStatus.DISBANDED, pageable);
+        verify(groupRepository).findGroupIdsByStatusNot(pageable);
+        verify(redisCacheService).set(anyString(), any(GroupListResponse.class), any());
+    }
+
+    @Test
+    @DisplayName("[성공] 캐시 히트 - 그룹 조회")
+    void getGroups_CacheHit_Success() {
+        // given
+        GroupSearchRequest request = new GroupSearchRequest();
+        Pageable pageable = PageRequest.of(0, 10);
+        
+        GroupListResponse cachedResponse = GroupListResponse.from(
+            new PageImpl<>(List.of(), pageable, 0)
+        );
+        
+        // 캐시 히트 시나리오
+        given(redisCacheService.get(anyString(), eq(GroupListResponse.class)))
+            .willReturn(Optional.of(cachedResponse));
+
+        // when
+        GroupListResponse result = groupQueryService.getGroups(request, pageable);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result).isEqualTo(cachedResponse);
+        verify(redisCacheService).get(anyString(), eq(GroupListResponse.class));
+        // DB 조회가 일어나지 않아야 함
+        verify(groupRepository, org.mockito.Mockito.never()).findGroupIdsByStatusNot(any());
     }
 
     @Test
@@ -167,10 +229,13 @@ class GroupQueryServiceTest {
         Group group = GroupFixture.createDefaultGroup(user);
         TestReflectionUtils.setField(group, "id", 1L);
         CustomUserDetails customUserDetails = new CustomUserDetails(user);
-        List<String> tags = List.of("축구", "스포츠", "주말");
 
+        GroupDetailStaticInfo staticInfo = new GroupDetailStaticInfo(
+            "테스트 그룹", "스포츠", "요약", "설명", "계획", "서울", 10, "image.jpg", List.of("태그1"), "소유자"
+        );
+
+        given(groupCacheService.getGroupDetailStatic(group.getId())).willReturn(staticInfo);
         given(groupValidator.findByIdOrThrow(group.getId())).willReturn(group);
-        given(groupTagService.getTagNamesByGroupId(group.getId())).willReturn(tags);
         given(groupParticipantValidator.checkUserRole(customUserDetails, group)).willReturn(Role.MEMBER);
 
         // when
@@ -178,8 +243,9 @@ class GroupQueryServiceTest {
 
         // then
         assertThat(result).isNotNull();
+        assertThat(result.name()).isEqualTo("테스트 그룹");
+        verify(groupCacheService).getGroupDetailStatic(group.getId());
         verify(groupValidator).findByIdOrThrow(group.getId());
-        verify(groupTagService).getTagNamesByGroupId(group.getId());
         verify(groupParticipantValidator).checkUserRole(customUserDetails, group);
     }
 
@@ -229,6 +295,7 @@ class GroupQueryServiceTest {
 
         // then
         assertThat(result).isNotNull();
+        assertThat(result.messages()).isNull();
         verify(redisCacheService).get(anyString(), any(Class.class));
     }
 
@@ -285,6 +352,7 @@ class GroupQueryServiceTest {
         given(group.getName()).willReturn(name);
         given(group.getCategory()).willReturn(category);
         given(group.getStatus()).willReturn(GroupStatus.ACTIVE);
+        given(group.getCurrentUserCount()).willReturn(5);
         return group;
     }
 
