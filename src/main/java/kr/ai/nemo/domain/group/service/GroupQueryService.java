@@ -134,8 +134,7 @@ public class GroupQueryService {
   @Transactional(readOnly = true)
   public GroupDetailResponse detailGroup(Long groupId, CustomUserDetails customUserDetails) {
     GroupDetailStaticInfo staticInfo = groupCacheService.getGroupDetailStatic(groupId);
-    Group group = groupValidator.findByIdOrThrow(groupId);
-    Role role = groupParticipantValidator.checkUserRole(customUserDetails, group);
+    Role role = groupParticipantValidator.checkUserRole(customUserDetails, groupId);
     return new GroupDetailResponse(
         staticInfo.name(),
         staticInfo.category(),
@@ -143,7 +142,7 @@ public class GroupQueryService {
         staticInfo.description(),
         staticInfo.plan(),
         staticInfo.location(),
-        group.getCurrentUserCount(),
+        staticInfo.currentUserCount(),
         staticInfo.maxUserCount(),
         staticInfo.imageUrl(),
         staticInfo.tags(),

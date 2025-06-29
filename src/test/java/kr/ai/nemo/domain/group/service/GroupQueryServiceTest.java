@@ -231,12 +231,12 @@ class GroupQueryServiceTest {
         CustomUserDetails customUserDetails = new CustomUserDetails(user);
 
         GroupDetailStaticInfo staticInfo = new GroupDetailStaticInfo(
-            "테스트 그룹", "스포츠", "요약", "설명", "계획", "서울", 10, "image.jpg", List.of("태그1"), "소유자"
+            "테스트 그룹", "스포츠", "요약", "설명", "계획", "서울", 5,10, "image.jpg", List.of("태그1"), "소유자"
         );
 
         given(groupCacheService.getGroupDetailStatic(group.getId())).willReturn(staticInfo);
         given(groupValidator.findByIdOrThrow(group.getId())).willReturn(group);
-        given(groupParticipantValidator.checkUserRole(customUserDetails, group)).willReturn(Role.MEMBER);
+        given(groupParticipantValidator.checkUserRole(customUserDetails, group.getId())).willReturn(Role.MEMBER);
 
         // when
         GroupDetailResponse result = groupQueryService.detailGroup(group.getId(), customUserDetails);
@@ -246,7 +246,7 @@ class GroupQueryServiceTest {
         assertThat(result.name()).isEqualTo("테스트 그룹");
         verify(groupCacheService).getGroupDetailStatic(group.getId());
         verify(groupValidator).findByIdOrThrow(group.getId());
-        verify(groupParticipantValidator).checkUserRole(customUserDetails, group);
+        verify(groupParticipantValidator).checkUserRole(customUserDetails, group.getId());
     }
 
     @Test

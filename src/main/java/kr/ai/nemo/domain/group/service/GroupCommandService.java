@@ -54,6 +54,7 @@ public class GroupCommandService {
   private final GroupRepository groupRepository;
   private final GroupTagService groupTagService;
   private final GroupParticipantsCommandService groupParticipantsCommandService;
+  private final GroupCacheService groupCacheService;
   private final AiGroupService aiClient;
   private final ImageService imageService;
   private final GroupValidator groupValidator;
@@ -105,18 +106,15 @@ public class GroupCommandService {
     return GroupCreateResponse.from(savedGroup, tags);
   }
 
-  @Caching(evict = {
-      @CacheEvict(value = "group-list", allEntries = true),
-      @CacheEvict(value = "group-detail", key = "#groupId")
-  })
+  @CacheEvict(value = "group-list", allEntries = true)
   @TimeTrace
   @Transactional
   public void deleteGroup(Long groupId, Long userId) {
     Group group = groupValidator.isOwnerForGroupDelete(groupId, userId);
     group.deleteGroup();
+    groupCacheService.evictGroupDetailStatic(groupId);
   }
 
-  @CacheEvict(value = "group-detail", key = "#groupId")
   @TimeTrace
   @Transactional
   public void updateGroupImage(Long groupId, Long userId, UpdateGroupImageRequest request) {
@@ -124,6 +122,7 @@ public class GroupCommandService {
     groupParticipantValidator.validateIsJoined(groupId, userId);
     group.setImageUrl(imageService.updateImage(group.getImageUrl(), request.imageUrl()));
     group.setUpdatedAt(LocalDateTime.now());
+    groupCacheService.evictGroupDetailStatic(groupId);
   }
 
   @TimeTrace

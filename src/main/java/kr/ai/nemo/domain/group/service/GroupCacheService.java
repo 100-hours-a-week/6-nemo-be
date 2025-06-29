@@ -105,8 +105,6 @@ public class GroupCacheService {
     public void evictGroupDetailStatic(Long groupId) {
         GroupCacheKeys keys = new GroupCacheKeys(groupId);
         redisCacheService.del(keys.groupDetail);
-        redisCacheService.del(keys.nullCache);
-        redisCacheService.del(keys.disbanded);
         log.info("Cache Evict: groupId = {}", groupId);
     }
 }
