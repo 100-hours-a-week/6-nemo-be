@@ -3,6 +3,7 @@ package kr.ai.nemo.domain.groupparticipants.service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import kr.ai.nemo.domain.group.service.GroupCacheService;
 import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
@@ -34,6 +35,7 @@ public class GroupParticipantsCommandService {
   private final GroupValidator groupValidator;
   private final GroupParticipantValidator groupParticipantValidator;
   private final RedisTemplate<String, String> redisTemplate;
+  private final GroupCacheService groupCacheService;
 
   @DistributedLock(
       key = "'cache::group::capacity::' + #groupId",
@@ -91,6 +93,7 @@ public class GroupParticipantsCommandService {
     if (isNewParticipant) {
       redisTemplate.opsForValue().increment(capacityKey);
       group.addCurrentUserCount();
+      groupCacheService.evictGroupDetailStatic(groupId);
     }
 
 // 5. 향후 일정에도 등록
