@@ -4,16 +4,15 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import kr.ai.nemo.domain.group.domain.Group;
+import kr.ai.nemo.domain.group.domain.enums.GroupStatus;
 import kr.ai.nemo.domain.group.dto.response.GroupDetailStaticInfo;
 import kr.ai.nemo.domain.group.exception.GroupErrorCode;
 import kr.ai.nemo.domain.group.exception.GroupException;
-import kr.ai.nemo.domain.group.validator.GroupValidator;
+import kr.ai.nemo.domain.group.repository.GroupRepository;
 import kr.ai.nemo.global.redis.CacheKeyUtil;
 import kr.ai.nemo.global.redis.RedisCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,52 +22,91 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class GroupCacheService {
 
-    private final GroupValidator groupValidator;
+    private final GroupRepository groupRepository;
     private final GroupTagService groupTagService;
     private final RedisCacheService redisCacheService;
 
     private static final Duration groupCacheExpire = Duration.ofMinutes(10);
-    private static final Duration nullGroupCacheExpire = Duration.ofMinutes(5);
+    private static final Duration errorCacheExpire = Duration.ofMinutes(5);
+
+    private static class GroupCacheKeys {
+        final String groupDetail;
+        final String nullCache;
+        final String disbanded;
+
+        GroupCacheKeys(Long groupId) {
+            this.groupDetail = CacheKeyUtil.key("group_detail", groupId);
+            this.nullCache = CacheKeyUtil.key("group_null", groupId);
+            this.disbanded = CacheKeyUtil.key("group_disbanded", groupId);
+        }
+    }
+
     public GroupDetailStaticInfo getGroupDetailStatic(Long groupId) {
-        String groupCacheKey = CacheKeyUtil.key("group_detail", groupId);
+        GroupCacheKeys keys = new GroupCacheKeys(groupId);
 
-        Optional<GroupDetailStaticInfo> cacheResult = redisCacheService.get(groupCacheKey, GroupDetailStaticInfo.class);
+        // DISBANDED 상태 체크
+        if (redisCacheService.get(keys.disbanded, String.class).isPresent() ||
+            redisCacheService.isNullCached(keys.disbanded)) {
+            log.info("Cache Hit (disbanded): groupId = {}", groupId);
+            throw new GroupException(GroupErrorCode.GROUP_DISBANDED);
+        }
 
+        // 정상 데이터 조회
+        Optional<GroupDetailStaticInfo> cacheResult = redisCacheService.get(keys.groupDetail, GroupDetailStaticInfo.class);
         if (cacheResult.isPresent()) {
             log.info("Cache Hit: groupId = {}", groupId);
             return cacheResult.get();
         }
 
-        if (redisCacheService.isNullCached(groupCacheKey)) {
+        // NOT_FOUND 체크
+        if (redisCacheService.isNullCached(keys.nullCache)) {
             log.info("Cache Hit (null value): groupId = {}", groupId);
             throw new GroupException(GroupErrorCode.GROUP_NOT_FOUND);
         }
 
-
         log.info("Cache Miss: groupId = {}", groupId);
-        return fetchAndCacheGroupDetail(groupId, groupCacheKey);
+        return fetchAndCacheGroupDetail(groupId, keys);
     }
 
-
-    private GroupDetailStaticInfo fetchAndCacheGroupDetail(Long groupId, String groupCacheKey) {
+    private GroupDetailStaticInfo fetchAndCacheGroupDetail(Long groupId, GroupCacheKeys keys) {
         try {
-            Group group = groupValidator.findByIdOrThrow(groupId);
+            Optional<Group> groupOpt = groupRepository.findByIdGroupId(groupId);
+
+            if (groupOpt.isEmpty()) {
+                redisCacheService.set(keys.nullCache, null, errorCacheExpire);
+                log.info("Cache Set (not found): groupId = {}", groupId);
+                throw new GroupException(GroupErrorCode.GROUP_NOT_FOUND);
+            }
+
+            Group group = groupOpt.get();
+
+            if (group.getStatus() == GroupStatus.DISBANDED) {
+                redisCacheService.set(keys.disbanded, GroupStatus.DISBANDED.toString(), errorCacheExpire);
+                log.info("Cache Set (disbanded): groupId = {}", groupId);
+                throw new GroupException(GroupErrorCode.GROUP_DISBANDED);
+            }
+
             List<String> tags = groupTagService.getTagNamesByGroupId(group.getId());
             GroupDetailStaticInfo result = GroupDetailStaticInfo.from(group, tags);
 
-            redisCacheService.set(groupCacheKey, result, groupCacheExpire);
-            log.debug("Cache Set: groupId = {}", groupId);
+            redisCacheService.set(keys.groupDetail, result, groupCacheExpire);
+            log.info("Cache Set (success): groupId = {}", groupId);
 
             return result;
-        } catch (Exception e) {
-            redisCacheService.set(groupCacheKey, null, nullGroupCacheExpire);
-            log.debug("Cache Set (null) groupId = {}", groupId);
+        } catch (GroupException e) {
             throw e;
+        } catch (Exception e) {
+            redisCacheService.set(keys.nullCache, null, errorCacheExpire);
+            log.error("Unexpected error for groupId = {}, treating as not found: {}", groupId, e.getMessage());
+            throw new GroupException(GroupErrorCode.GROUP_NOT_FOUND);
         }
     }
 
-    @CacheEvict(value = "group-detail-static", key = "#groupId")
     public void evictGroupDetailStatic(Long groupId) {
-        // 캐시 무효화 전용 메서드
+        GroupCacheKeys keys = new GroupCacheKeys(groupId);
+        redisCacheService.del(keys.groupDetail);
+        redisCacheService.del(keys.nullCache);
+        redisCacheService.del(keys.disbanded);
+        log.info("Cache Evict: groupId = {}", groupId);
     }
 }
