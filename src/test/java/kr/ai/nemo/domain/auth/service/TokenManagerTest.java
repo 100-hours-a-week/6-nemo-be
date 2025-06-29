@@ -98,7 +98,7 @@ class TokenManagerTest {
         // then
         ArgumentCaptor<Cookie> cookieCaptor = ArgumentCaptor.forClass(Cookie.class);
         verify(response).addCookie(cookieCaptor.capture());
-        
+
         Cookie cookie = cookieCaptor.getValue();
         assertThat(cookie.getName()).isEqualTo("refresh_token");
         assertThat(cookie.getValue()).isEqualTo(refreshToken);
@@ -114,18 +114,16 @@ class TokenManagerTest {
         String refreshToken = "refresh-token";
         User user = UserFixture.createDefaultUser();
         UserToken userToken = UserToken.builder()
-                .user(user)
-                .refreshToken(refreshToken)
-                .provider("kakao")
-                .expiresAt(LocalDateTime.now().plusDays(30))
-                .build();
+            .user(user)
+            .refreshToken(refreshToken)
+            .provider("kakao")
+            .expiresAt(LocalDateTime.now().plusDays(30))
+            .build();
 
         String newAccessToken = "new-access-token";
-        long validity = 3600000L; // 1시간
 
         given(userTokenService.findValidToken(refreshToken)).willReturn(userToken);
         given(jwtProvider.createAccessToken(user.getId())).willReturn(newAccessToken);
-        given(jwtProvider.getAccessTokenValidity()).willReturn(validity);
 
         // when
         String result = tokenManager.reissueAccessToken(refreshToken);
@@ -134,7 +132,6 @@ class TokenManagerTest {
         assertThat(result).isEqualTo(newAccessToken);
         verify(userTokenService).findValidToken(refreshToken);
         verify(jwtProvider).createAccessToken(user.getId());
-        verify(jwtProvider).getAccessTokenValidity();
     }
 
     @Test
