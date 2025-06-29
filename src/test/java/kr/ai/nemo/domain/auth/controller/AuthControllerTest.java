@@ -1,3 +1,4 @@
+
 package kr.ai.nemo.domain.auth.controller;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -58,15 +59,15 @@ class AuthControllerTest {
         // given
         String redirectUri = "https://nemo.ai.kr";
         String expectedKakaoUri = "https://kauth.kakao.com/oauth/authorize?client_id=test&redirect_uri=" + redirectUri;
-        
+
         given(uriGenerator.kakaoLogin(redirectUri))
-                .willReturn(URI.create(expectedKakaoUri));
+            .willReturn(URI.create(expectedKakaoUri));
 
         // when & then
         mockMvc.perform(get("/api/v1/auth/login/kakao")
                 .param("redirect_uri", redirectUri))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl(expectedKakaoUri));
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl(expectedKakaoUri));
     }
 
     @Test
@@ -74,7 +75,7 @@ class AuthControllerTest {
     void kakaoLogin_NoRedirectUri_BadRequest() throws Exception {
         // when & then
         mockMvc.perform(get("/api/v1/auth/login/kakao"))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -85,18 +86,18 @@ class AuthControllerTest {
         String state = "random_state_value";
         String accessToken = "access_token_value";
         String expectedRedirectUri = "https://nemo.ai.kr/login?token=" + accessToken + "&state=" + state;
-        
+
         given(oauthService.loginWithKakao(eq(code), isNull(), any()))  // 모두 matcher 사용
-                .willReturn(accessToken);
+            .willReturn(accessToken);
         given(uriGenerator.login(state))
-                .willReturn(URI.create(expectedRedirectUri));
+            .willReturn(URI.create(expectedRedirectUri));
 
         // when & then
         mockMvc.perform(get("/auth/kakao/callback")
                 .param("code", code)
                 .param("state", state))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl(expectedRedirectUri));
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl(expectedRedirectUri));
     }
 
     @Test
@@ -106,17 +107,17 @@ class AuthControllerTest {
         String code = "valid_auth_code";
         String accessToken = "access_token_value";
         String expectedRedirectUri = "https://nemo.ai.kr/login?token=" + accessToken;
-        
+
         given(oauthService.loginWithKakao(eq(code), isNull(), any()))  // 모두 matcher 사용
-                .willReturn(accessToken);
+            .willReturn(accessToken);
         given(uriGenerator.login(null))
-                .willReturn(URI.create(expectedRedirectUri));
+            .willReturn(URI.create(expectedRedirectUri));
 
         // when & then
         mockMvc.perform(get("/auth/kakao/callback")
                 .param("code", code))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl(expectedRedirectUri));
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl(expectedRedirectUri));
     }
 
     @Test
@@ -130,7 +131,7 @@ class AuthControllerTest {
         mockMvc.perform(get("/auth/kakao/callback")
                 .param("error", error)
                 .param("error_description", errorDescription))
-                .andExpect(status().isInternalServerError());
+            .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -138,7 +139,7 @@ class AuthControllerTest {
     void kakaoCallback_NoCode_BadRequest() throws Exception {
         // when & then
         mockMvc.perform(get("/auth/kakao/callback"))
-                .andExpect(status().isInternalServerError());
+            .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -147,10 +148,9 @@ class AuthControllerTest {
         // given
         String refreshToken = "valid_refresh_token";
         String newAccessToken = "new_access_token";
-        long expiresIn = 3600000L;
 
         given(oauthService.reissueAccessToken(refreshToken))
-                .willReturn(newAccessToken);
+            .willReturn(newAccessToken);
 
         Cookie cookie = new Cookie("refresh_token", refreshToken);
 
@@ -158,9 +158,7 @@ class AuthControllerTest {
         mockMvc.perform(post("/api/v1/auth/token/refresh")
                 .cookie(cookie)
                 .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.accessToken").value(newAccessToken))
-                .andExpect(jsonPath("$.data.accessTokenExpiresIn").value(expiresIn));  // 올바른 필드명
+            .andExpect(status().isNoContent());  // 204 No Content로 변경됨
     }
 
     @Test
@@ -169,7 +167,7 @@ class AuthControllerTest {
         // when & then
         mockMvc.perform(post("/api/v1/auth/token/refresh")
                 .with(csrf()))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -186,7 +184,7 @@ class AuthControllerTest {
         mockMvc.perform(delete("/api/v1/auth/logout/kakao")
                 .cookie(cookie)
                 .with(csrf()))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
     }
 
     @Test
@@ -198,7 +196,7 @@ class AuthControllerTest {
         // when & then
         mockMvc.perform(delete("/api/v1/auth/logout/kakao")
                 .with(csrf()))
-                .andExpect(status().isOk());
+            .andExpect(status().isOk());
     }
 
     @Test
@@ -208,6 +206,6 @@ class AuthControllerTest {
         mockMvc.perform(post("/api/v1/auth/login/kakao")
                 .param("redirect_uri", "https://nemo.ai.kr")
                 .with(csrf()))
-                .andExpect(status().isMethodNotAllowed());
+            .andExpect(status().isMethodNotAllowed());
     }
 }

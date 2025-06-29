@@ -1,33 +1,24 @@
 package kr.ai.nemo.domain.user.service;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.BDDMockito.*;
 import java.time.LocalDateTime;
 import java.util.Optional;
-import kr.ai.nemo.domain.user.domain.User;
-import kr.ai.nemo.domain.user.dto.MyPageResponse;
-import kr.ai.nemo.domain.user.dto.NicknameUpdateRequest;
-import kr.ai.nemo.domain.user.dto.NicknameUpdateResponse;
-import kr.ai.nemo.domain.user.dto.UpdateUserImageRequest;
-import kr.ai.nemo.domain.user.exception.UserException;
-import kr.ai.nemo.domain.user.repository.UserRepository;
-import kr.ai.nemo.domain.user.validator.UserValidator;
-import kr.ai.nemo.global.fixture.user.UserFixture;
-import kr.ai.nemo.infra.ImageService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import kr.ai.nemo.domain.user.domain.User;
+import kr.ai.nemo.domain.user.domain.enums.UserStatus;
+import kr.ai.nemo.domain.user.dto.MyPageResponse;
+import kr.ai.nemo.domain.user.dto.NicknameUpdateRequest;
+import kr.ai.nemo.domain.user.dto.UpdateUserImageRequest;
+import kr.ai.nemo.domain.user.exception.UserException;
+import kr.ai.nemo.domain.user.repository.UserRepository;
+import kr.ai.nemo.domain.user.validator.UserValidator;
+import kr.ai.nemo.infra.ImageService;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UserService 테스트")
@@ -48,32 +39,62 @@ class UserServiceTest {
   @Test
   @DisplayName("[성공] 마이페이지 조회")
   void getMyPage_Success() {
-    Long userId = 1L;
-
     // given
-    // userRepository.findDtoById 호출 시 원하는 결과 반환하도록 mocking
-    User user = UserFixture.createDefaultUser();
-    given(userRepository.findUserById(userId).orElseThrow()).willReturn(user);
+    Long userId = 1L;
+    LocalDateTime createdAt = LocalDateTime.now();
+    User user = User.builder()
+        .id(userId)
+        .nickname("테스트유저")
+        .email("test@example.com")
+        .profileImageUrl("https://example.com/profile.jpg")
+        .status(UserStatus.ACTIVE)
+        .createdAt(createdAt)
+        .build();
+
+    given(userRepository.findUserById(userId)).willReturn(Optional.of(user));
 
     // when
     MyPageResponse response = userService.getMyPage(userId);
 
     // then
-    verify(userRepository).findUserById(userId);
-    assertThat(response.nickname()).isEqualTo(user.getNickname());
+    assertThat(response.nickname()).isEqualTo("테스트유저");
+    assertThat(response.email()).isEqualTo("test@example.com");
+    assertThat(response.profileImageUrl()).isEqualTo("https://example.com/profile.jpg");
   }
 
   @Test
-  @DisplayName("[성공] 닉네임 변경")
-  void updateNickname_Success() {
+  @DisplayName("[실패] 마이페이지 조회 - 존재하지 않는 사용자")
+  void getMyPage_UserNotFound_ThrowException() {
+    // given
+    Long userId = 999L;
+    given(userRepository.findUserById(userId)).willReturn(Optional.empty());
+
+    // when & then
+    assertThatThrownBy(() -> userService.getMyPage(userId))
+        .isInstanceOf(UserException.class);
+  }
+
+  @Test
+  @DisplayName("[성공] 닉네임 업데이트")
+  void updateMyNickname_Success() {
     // given
     Long userId = 1L;
-    User user = UserFixture.createDefaultUser();
-    String newNickname = "newNickname";
+    String newNickname = "새로운닉네임";
+    LocalDateTime createdAt = LocalDateTime.now();
+
     NicknameUpdateRequest request = new NicknameUpdateRequest(newNickname);
 
+    User user = User.builder()
+        .id(userId)
+        .nickname("기존닉네임")
+        .email("test@example.com")
+        .profileImageUrl("https://example.com/profile.jpg")
+        .status(UserStatus.ACTIVE)
+        .createdAt(createdAt)
+        .build();
+
     given(userRepository.findById(userId)).willReturn(Optional.of(user));
-    doNothing().when(userValidator).isValidByNickname(newNickname);
+    willDoNothing().given(userValidator).isValidByNickname(newNickname);
 
     // when
     MyPageResponse response = userService.updateMyNickname(userId, request);
@@ -85,55 +106,129 @@ class UserServiceTest {
   }
 
   @Test
-  @DisplayName("[실패] 닉네임 변경 - 존재하지 않는 사용자")
-  void updateNickname_UserNotFound_ThrowException() {
+  @DisplayName("[실패] 닉네임 업데이트 - 존재하지 않는 사용자")
+  void updateMyNickname_UserNotFound_ThrowException() {
     // given
     Long userId = 999L;
-    NicknameUpdateRequest request = new NicknameUpdateRequest("newNickname");
+    NicknameUpdateRequest request = new NicknameUpdateRequest("새닉네임");
 
     given(userRepository.findById(userId)).willReturn(Optional.empty());
 
     // when & then
     assertThatThrownBy(() -> userService.updateMyNickname(userId, request))
-            .isInstanceOf(UserException.class);
+        .isInstanceOf(UserException.class);
   }
 
   @Test
-  @DisplayName("[성공] 사용자 이미지 업데이트")
+  @DisplayName("[성공] 프로필 이미지 업데이트")
   void updateUserImage_Success() {
     // given
     Long userId = 1L;
-    User user = UserFixture.createDefaultUser();
-    user.setProfileImageUrl("old-image-url");
-    
-    String newImageUrl = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAAAAAAAD//2Q==";
-    String uploadedImageUrl = "https://s3.example.com/new-image.jpg";
-    UpdateUserImageRequest request = new UpdateUserImageRequest(newImageUrl);
+    String profileImage = "base64-encoded-image-or-path";
+    String oldImageUrl = "https://example.com/old-profile.jpg";
+    String newImageUrl = "https://example.com/new-profile.jpg";
+    LocalDateTime createdAt = LocalDateTime.now();
+
+    UpdateUserImageRequest request = new UpdateUserImageRequest(profileImage);
+
+    User user = User.builder()
+        .id(userId)
+        .nickname("테스트유저")
+        .email("test@example.com")
+        .profileImageUrl(oldImageUrl)
+        .status(UserStatus.ACTIVE)
+        .createdAt(createdAt)
+        .build();
 
     given(userRepository.findById(userId)).willReturn(Optional.of(user));
-    given(imageService.updateUserImage("old-image-url", newImageUrl, userId))
-            .willReturn(uploadedImageUrl);
+    given(imageService.updateUserImage(oldImageUrl, profileImage, userId)).willReturn(newImageUrl);
 
     // when
-    userService.updateUserImage(userId, request);
+    MyPageResponse response = userService.updateUserImage(userId, request);
 
     // then
-    verify(userRepository).findById(userId);
-    verify(imageService).updateUserImage("old-image-url", newImageUrl, userId);
-    assertThat(user.getProfileImageUrl()).isEqualTo(uploadedImageUrl);
+    assertThat(response.profileImageUrl()).isEqualTo(newImageUrl);
+    assertThat(user.getProfileImageUrl()).isEqualTo(newImageUrl);
+    verify(imageService).updateUserImage(oldImageUrl, profileImage, userId);
   }
 
   @Test
-  @DisplayName("[실패] 사용자 이미지 업데이트 - 존재하지 않는 사용자")
+  @DisplayName("[실패] 프로필 이미지 업데이트 - 존재하지 않는 사용자")
   void updateUserImage_UserNotFound_ThrowException() {
     // given
     Long userId = 999L;
-    UpdateUserImageRequest request = new UpdateUserImageRequest("new-image-url");
+    String profileImage = "base64-encoded-image-or-path";
+    UpdateUserImageRequest request = new UpdateUserImageRequest(profileImage);
 
     given(userRepository.findById(userId)).willReturn(Optional.empty());
 
     // when & then
     assertThatThrownBy(() -> userService.updateUserImage(userId, request))
-            .isInstanceOf(UserException.class);
+        .isInstanceOf(UserException.class);
+  }
+
+  @Test
+  @DisplayName("[성공] 닉네임 업데이트 - 기존과 동일한 닉네임")
+  void updateMyNickname_SameNickname_Success() {
+    // given
+    Long userId = 1L;
+    String nickname = "기존닉네임";
+    LocalDateTime createdAt = LocalDateTime.now();
+
+    NicknameUpdateRequest request = new NicknameUpdateRequest(nickname);
+
+    User user = User.builder()
+        .id(userId)
+        .nickname(nickname)
+        .email("test@example.com")
+        .profileImageUrl("https://example.com/profile.jpg")
+        .status(UserStatus.ACTIVE)
+        .createdAt(createdAt)
+        .build();
+
+    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+    willDoNothing().given(userValidator).isValidByNickname(nickname);
+
+    // when
+    MyPageResponse response = userService.updateMyNickname(userId, request);
+
+    // then
+    assertThat(response.nickname()).isEqualTo(nickname);
+    verify(userValidator).isValidByNickname(nickname);
+  }
+
+  @Test
+  @DisplayName("[성공] 빈 문자열이 아닌 유효한 닉네임으로 업데이트")
+  void updateMyNickname_ValidNickname_Success() {
+    // given
+    Long userId = 1L;
+    String validNickname = "유효한닉네임123";
+    LocalDateTime createdAt = LocalDateTime.now();
+
+    NicknameUpdateRequest request = new NicknameUpdateRequest(validNickname);
+
+    User user = User.builder()
+        .nickname("기존닉네임")
+        .email("test@example.com")
+        .provider("kakao")
+        .providerId("123456")
+        .profileImageUrl("https://example.com/profile.jpg")
+        .status(UserStatus.ACTIVE)
+        .createdAt(createdAt)
+        .build();
+
+    given(userRepository.findById(userId)).willReturn(Optional.of(user));
+    willDoNothing().given(userValidator).isValidByNickname(validNickname);
+
+    // when
+    MyPageResponse response = userService.updateMyNickname(userId, request);
+
+    // then
+    assertThat(response.nickname()).isEqualTo(validNickname);
+    assertThat(response.email()).isEqualTo("test@example.com");
+    assertThat(response.profileImageUrl()).isEqualTo("https://example.com/profile.jpg");
+
+    verify(userRepository).findById(userId);
+    verify(userValidator).isValidByNickname(validNickname);
   }
 }
