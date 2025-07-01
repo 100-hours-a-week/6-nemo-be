@@ -122,7 +122,7 @@ class GroupParticipantValidatorTest {
         CustomUserDetails userDetails = new CustomUserDetails(owner);
 
         // when
-        Role result = groupParticipantValidator.checkUserRole(userDetails, group);
+        Role result = groupParticipantValidator.checkUserRole(userDetails, group.getId());
 
         // then
         assertThat(result).isEqualTo(Role.LEADER);
@@ -145,7 +145,7 @@ class GroupParticipantValidatorTest {
             .willReturn(true);
 
         // when
-        Role result = groupParticipantValidator.checkUserRole(userDetails, group);
+        Role result = groupParticipantValidator.checkUserRole(userDetails, group.getId());
 
         // then
         assertThat(result).isEqualTo(Role.MEMBER);
@@ -168,7 +168,7 @@ class GroupParticipantValidatorTest {
             .willReturn(false);
 
         // when
-        Role result = groupParticipantValidator.checkUserRole(userDetails, group);
+        Role result = groupParticipantValidator.checkUserRole(userDetails, group.getId());
 
         // then
         assertThat(result).isEqualTo(Role.NON_MEMBER);
@@ -183,7 +183,7 @@ class GroupParticipantValidatorTest {
         Group group = GroupFixture.createGroupWithId(1L, owner, "테스트 그룹");
 
         // when
-        Role result = groupParticipantValidator.checkUserRole(null, group);
+        Role result = groupParticipantValidator.checkUserRole(null, group.getId());
 
         // then
         assertThat(result).isEqualTo(Role.GUEST);
