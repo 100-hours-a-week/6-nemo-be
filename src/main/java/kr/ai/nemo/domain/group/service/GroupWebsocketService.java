@@ -6,6 +6,9 @@ import java.net.URI;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import kr.ai.nemo.domain.group.domain.enums.AiMessageType;
 import kr.ai.nemo.domain.group.dto.request.GroupAiQuestionRecommendRequest;
@@ -45,6 +48,8 @@ public class GroupWebsocketService extends TextWebSocketHandler {
   private final ConcurrentHashMap<String, StringBuilder> reasonCollectors = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<String, List<String>> optionsCollectors = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<String, Long> groupIdCollectors = new ConcurrentHashMap<>();
+  private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+  private final ConcurrentHashMap<String, ScheduledFuture<?>> timeoutTasks = new ConcurrentHashMap<>();
 
   private final ObjectMapper objectMapper;
 
@@ -95,14 +100,20 @@ public class GroupWebsocketService extends TextWebSocketHandler {
       CompletableFuture<GroupChatbotQuestionResponse> future = new CompletableFuture<>();
       pendingRequests.put(sessionId, future);
 
+      ScheduledFuture<?> timeoutTask = scheduler.schedule(() -> {
+        log.warn("Request timeout for session: {}", sessionId);
+        future.completeExceptionally(new CustomException(CommonErrorCode.INTERNAL_SERVER_ERROR));
+        cleanupSession(sessionId);
+      }, 5, TimeUnit.MINUTES);
+
+      timeoutTasks.put(sessionId, timeoutTask);
+
       GroupRecommendQuestionRequest aiRequest =
           new GroupRecommendQuestionRequest(
               AiMessageType.CREATE_QUESTION.getValue(), new Payload(sessionId, userId, request.answer()));
 
       sendAndWaitQuestionAndOptions(session, aiRequest);
-      GroupChatbotQuestionResponse response = future.get(30, TimeUnit.SECONDS);
-
-      return response;
+      return future.get(6, TimeUnit.MINUTES);
     } catch (Exception e) {
       log.error("Error sending question to AI Websocket sessionId: {}", sessionId, e);
       cleanupSession(sessionId);
@@ -144,7 +155,32 @@ public class GroupWebsocketService extends TextWebSocketHandler {
   }
 
   private void cleanupSession(String sessionId) {
+    log.info("Cleaning up session: {}", sessionId);
 
+    // WebSocket 연결 닫기
+    WebSocketSession session = aiConnctions.remove(sessionId);
+    if (session != null && session.isOpen()) {
+      try {
+        session.close();
+        log.info("Closed WebSocket session: {}", sessionId);
+      } catch (Exception e) {
+        log.warn("Error closing session: {}", sessionId, e);
+      }
+    }
+
+    // 모든 데이터 정리
+    questionCollectors.remove(sessionId);
+    reasonCollectors.remove(sessionId);
+    optionsCollectors.remove(sessionId);
+    groupIdCollectors.remove(sessionId);
+    pendingRequests.remove(sessionId);
+    pendingRecommendRequests.remove(sessionId);
+
+    // 타임아웃 태스크 정리
+    ScheduledFuture<?> timeoutTask = timeoutTasks.remove(sessionId);
+    if (timeoutTask != null) {
+      timeoutTask.cancel(false);
+    }
   }
 
   @Override
