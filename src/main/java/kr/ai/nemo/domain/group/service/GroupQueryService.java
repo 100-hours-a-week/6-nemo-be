@@ -50,6 +50,7 @@ public class GroupQueryService {
   private final RedisCacheService redisCacheService;
   private final AiGroupService aiGroupService;
   private final GroupCacheService groupCacheService;
+  private final GroupWebsocketService groupWebsocketService;
 
   @TimeTrace
   @Transactional(readOnly = true)
@@ -219,7 +220,11 @@ public class GroupQueryService {
     GroupAiQuestionRecommendRequest aiRequest = new GroupAiQuestionRecommendRequest(userId,
         contextLogs);
 
-    GroupAiRecommendResponse aiResponse = aiGroupService.recommendGroup(aiRequest, sessionId);
+    /*
+        GroupAiRecommendResponse aiResponse = aiGroupService.recommendGroup(aiRequest, sessionId);
+
+     */
+    GroupAiRecommendResponse aiResponse = groupWebsocketService.sendRecommendToAI(aiRequest, sessionId);
     Group group = groupValidator.findByIdOrThrow(aiResponse.groupId());
 
     return new GroupRecommendResponse(GroupDto.from(group), aiResponse.reason());

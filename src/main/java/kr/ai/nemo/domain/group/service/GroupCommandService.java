@@ -60,6 +60,7 @@ public class GroupCommandService {
   private final GroupValidator groupValidator;
   private final GroupParticipantValidator groupParticipantValidator;
   private final RedisCacheService redisCacheService;
+  private final GroupWebsocketService groupWebsocketService;
 
   @TimeTrace
   @Transactional
@@ -149,7 +150,16 @@ public class GroupCommandService {
           ChatMessage.class, CacheConstants.CHATBOT_SESSION_TTL);
     }
 
-    GroupChatbotQuestionResponse aiResponse = aiClient.recommendGroupQuestion(aiRequest, sessionId);
+    /*
+     기존 코드
+     GroupChatbotQuestionResponse aiResponse = aiClient.recommendGroupQuestion(aiRequest, sessionId);
+     */
+
+    GroupChatbotQuestionResponse aiResponse = groupWebsocketService.sendQuestionToAI(
+        request,
+        userId,
+        sessionId
+    );
 
     // AI 응답 저장
     ChatMessage aiMsg = new ChatMessage(ChatbotRole.AI, aiResponse.question(),
