@@ -126,7 +126,6 @@ public class GroupQueryService {
 
     // 캐시에 저장
     redisCacheService.set(cacheKey, result, java.time.Duration.ofMinutes(5));
-
     return result;
   }
 
