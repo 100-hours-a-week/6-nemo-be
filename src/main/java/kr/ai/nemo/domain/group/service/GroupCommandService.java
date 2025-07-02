@@ -101,7 +101,6 @@ public class GroupCommandService {
     return GroupCreateResponse.from(savedGroup, tags);
   }
 
-  @CacheEvict(value = "group-list", allEntries = true)
   @TimeTrace
   @Transactional
   public void deleteGroup(Long groupId, Long userId) {
