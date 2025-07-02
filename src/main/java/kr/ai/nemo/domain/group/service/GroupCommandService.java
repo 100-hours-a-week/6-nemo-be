@@ -31,8 +31,6 @@ import kr.ai.nemo.domain.group.dto.response.GroupCreateResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupDto;
 import kr.ai.nemo.domain.group.dto.response.GroupGenerateResponse;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
-import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
-import kr.ai.nemo.domain.groupparticipants.domain.enums.Status;
 import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsCommandService;
 import kr.ai.nemo.domain.group.repository.GroupRepository;
 import kr.ai.nemo.global.redis.CacheConstants;
@@ -41,8 +39,6 @@ import kr.ai.nemo.global.redis.RedisCacheService;
 import kr.ai.nemo.infra.ImageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,6 +56,7 @@ public class GroupCommandService {
   private final GroupValidator groupValidator;
   private final GroupParticipantValidator groupParticipantValidator;
   private final RedisCacheService redisCacheService;
+  private final GroupWebsocketService groupWebsocketService;
 
   @TimeTrace
   @Transactional
@@ -69,7 +66,6 @@ public class GroupCommandService {
     return GroupGenerateResponse.from(request, aiResponse);
   }
 
-  @CacheEvict(value = "group-list", allEntries = true)
   @TimeTrace
   @Transactional
   public GroupCreateResponse createGroup(@Valid GroupCreateRequest request,
@@ -92,27 +88,26 @@ public class GroupCommandService {
         .status(GroupStatus.ACTIVE)
         .build();
 
-    Group savedGroup = groupRepository.save(group);
+    Group savedGroup = groupRepository.saveAndFlush(group);
 
     if (request.tags() != null && !request.tags().isEmpty()) {
       groupTagService.assignTags(savedGroup, request.tags());
     }
 
-    groupParticipantsCommandService.applyToGroup(savedGroup.getId(), userDetails, Role.LEADER,
-        Status.JOINED);
+    groupParticipantsCommandService.createToGroupLeader(savedGroup, userDetails.getUser());
 
     List<String> tags = groupTagService.getTagNamesByGroupId(savedGroup.getId());
-
+    groupCacheService.deleteGroupListCaches();
     return GroupCreateResponse.from(savedGroup, tags);
   }
 
-  @CacheEvict(value = "group-list", allEntries = true)
   @TimeTrace
   @Transactional
   public void deleteGroup(Long groupId, Long userId) {
     Group group = groupValidator.isOwnerForGroupDelete(groupId, userId);
     group.deleteGroup();
     groupCacheService.evictGroupDetailStatic(groupId);
+    groupCacheService.deleteGroupListCaches();
   }
 
   @TimeTrace
@@ -123,6 +118,7 @@ public class GroupCommandService {
     group.setImageUrl(imageService.updateImage(group.getImageUrl(), request.imageUrl()));
     group.setUpdatedAt(LocalDateTime.now());
     groupCacheService.evictGroupDetailStatic(groupId);
+    groupCacheService.deleteGroupListCaches();
   }
 
   @TimeTrace
@@ -149,7 +145,16 @@ public class GroupCommandService {
           ChatMessage.class, CacheConstants.CHATBOT_SESSION_TTL);
     }
 
-    GroupChatbotQuestionResponse aiResponse = aiClient.recommendGroupQuestion(aiRequest, sessionId);
+    /*
+     기존 코드
+     GroupChatbotQuestionResponse aiResponse = aiClient.recommendGroupQuestion(aiRequest, sessionId);
+     */
+
+    GroupChatbotQuestionResponse aiResponse = groupWebsocketService.sendQuestionToAI(
+        request,
+        userId,
+        sessionId
+    );
 
     // AI 응답 저장
     ChatMessage aiMsg = new ChatMessage(ChatbotRole.AI, aiResponse.question(),

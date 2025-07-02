@@ -25,6 +25,7 @@ public class GroupCacheService {
     private final GroupRepository groupRepository;
     private final GroupTagService groupTagService;
     private final RedisCacheService redisCacheService;
+    private final GroupCacheKeyUtil groupCacheKeyUtil;
 
     private static final Duration groupCacheExpire = Duration.ofMinutes(10);
     private static final Duration errorCacheExpire = Duration.ofMinutes(5);
@@ -106,5 +107,16 @@ public class GroupCacheService {
         GroupCacheKeys keys = new GroupCacheKeys(groupId);
         redisCacheService.del(keys.groupDetail);
         log.info("Cache Evict: groupId = {}", groupId);
+    }
+
+    public void deleteGroupListCaches() {
+        try {
+            String keys = groupCacheKeyUtil.getGroupListKey();
+            if (keys != null && !keys.isEmpty()) {
+                redisCacheService.del(keys);
+            }
+        } catch (Exception e) {
+            log.error("Failed to delete group-list caches: {}", e.getMessage());
+        }
     }
 }

@@ -50,16 +50,13 @@ public class GroupQueryService {
   private final RedisCacheService redisCacheService;
   private final AiGroupService aiGroupService;
   private final GroupCacheService groupCacheService;
+  private final GroupWebsocketService groupWebsocketService;
+  private final GroupCacheKeyUtil groupCacheKeyUtil;
 
   @TimeTrace
   @Transactional(readOnly = true)
   public GroupListResponse getGroups(GroupSearchRequest request, Pageable pageable) {
-    String cacheKey = CacheKeyUtil.key(
-        "group-list",
-        "category", request.getCategory(),
-        "page", pageable.getPageNumber(),
-        "size", pageable.getPageSize()
-    );
+    String cacheKey = groupCacheKeyUtil.getGroupListKey();
 
     Optional<GroupListResponse> cached = redisCacheService.get(cacheKey, GroupListResponse.class);
     if (cached.isPresent()) {
@@ -86,8 +83,7 @@ public class GroupQueryService {
   }
 
   @DistributedLock(
-      key = "'category:' + (#request.category == null ? 'null' : #request.category) + " +
-          "':page:' + #pageable.pageNumber + ':size:' + #pageable.pageSize",
+      key = "T(kr.ai.nemo.domain.group.service.GroupCacheKeyUtil).getGroupListKey()",
       waitTime = 3,
       leaseTime = 5,
       timeUnit = TimeUnit.SECONDS
@@ -218,7 +214,11 @@ public class GroupQueryService {
     GroupAiQuestionRecommendRequest aiRequest = new GroupAiQuestionRecommendRequest(userId,
         contextLogs);
 
-    GroupAiRecommendResponse aiResponse = aiGroupService.recommendGroup(aiRequest, sessionId);
+    /*
+        GroupAiRecommendResponse aiResponse = aiGroupService.recommendGroup(aiRequest, sessionId);
+
+     */
+    GroupAiRecommendResponse aiResponse = groupWebsocketService.sendRecommendToAI(aiRequest, sessionId);
     Group group = groupValidator.findByIdOrThrow(aiResponse.groupId());
 
     return new GroupRecommendResponse(GroupDto.from(group), aiResponse.reason());

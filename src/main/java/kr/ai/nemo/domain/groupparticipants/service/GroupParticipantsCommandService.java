@@ -47,35 +47,53 @@ public class GroupParticipantsCommandService {
   @Transactional
   public void applyToGroup(Long groupId, CustomUserDetails userDetails, Role role, Status status) {
     User user = userDetails.getUser();
+    log.info("applyToGroup: user={} group = {}", user, groupId);
     Group group = groupValidator.findByIdOrThrow(groupId);
 
     String capacityKey = CacheKeyUtil.key("group", "capacity", groupId);
     int maxCapacity = group.getMaxUserCount();
 
-    // 1. Redis 초기화
-    String rawValue = redisTemplate.opsForValue().get(capacityKey);
-    Long cachedCount = (rawValue != null) ? Long.parseLong(rawValue) : null;
-    if (cachedCount == null) {
-      cachedCount = (long) group.getCurrentUserCount();
-      redisTemplate.opsForValue().set(capacityKey, String.valueOf(cachedCount));
-    }
+    Long currentCount = getCachedOrLoadGroupCapacity(capacityKey, group);
 
-// 2. 먼저 DB 기준으로 현재 인원 확인
-    if (cachedCount >= maxCapacity) {
+    if (currentCount >= maxCapacity) {
       log.info("모임이 가득 찼습니다. userId={}, groupId={}", user.getId(), groupId);
       throw new GroupException(GroupErrorCode.GROUP_FULL);
     }
 
-// 3. 참여자 처리
-    Optional<GroupParticipants> participant =
-        groupParticipantsRepository.findByGroupIdAndUserId(groupId, user.getId());
+    boolean isNewParticipant = saveOrRejoinParticipant(user, group, role, status);
 
-    boolean isNewParticipant = false;
+    if (isNewParticipant) {
+      incrementCapacity(capacityKey);
+      group.addCurrentUserCount();
+    }
+
+    scheduleParticipantsService.addParticipantToUpcomingSchedules(group, user);
+    groupCacheService.evictGroupDetailStatic(groupId);
+    groupCacheService.deleteGroupListCaches();
+  }
+
+  private Long getCachedOrLoadGroupCapacity(String key, Group group) {
+    String rawValue = redisTemplate.opsForValue().get(key);
+    if (rawValue != null) return Long.parseLong(rawValue);
+
+    Long count = (long) group.getCurrentUserCount();
+    redisTemplate.opsForValue().set(key, String.valueOf(count));
+    return count;
+  }
+
+  private void incrementCapacity(String key) {
+    redisTemplate.opsForValue().increment(key);
+  }
+
+  private boolean saveOrRejoinParticipant(User user, Group group, Role role, Status status) {
+    Optional<GroupParticipants> participant =
+        groupParticipantsRepository.findByGroupIdAndUserId(group.getId(), user.getId());
 
     if (participant.isPresent()) {
-      GroupParticipants groupParticipant = participant.get();
-      groupParticipantValidator.validateJoinedParticipant(groupParticipant);
-      groupParticipant.rejoin();
+      GroupParticipants existing = participant.get();
+      groupParticipantValidator.validateJoinedParticipant(existing);
+      existing.rejoin();
+      return false;
     } else {
       GroupParticipants newParticipant = GroupParticipants.builder()
           .user(user)
@@ -84,22 +102,24 @@ public class GroupParticipantsCommandService {
           .status(status)
           .appliedAt(LocalDateTime.now())
           .build();
-
       groupParticipantsRepository.save(newParticipant);
-      isNewParticipant = true;
+      return true;
     }
-
-// 4. 확정된 경우만 Redis & DB 증가
-    if (isNewParticipant) {
-      redisTemplate.opsForValue().increment(capacityKey);
-      group.addCurrentUserCount();
-      groupCacheService.evictGroupDetailStatic(groupId);
-    }
-
-// 5. 향후 일정에도 등록
-    scheduleParticipantsService.addParticipantToUpcomingSchedules(group, user);
   }
 
+  @TimeTrace
+  @Transactional
+  public void createToGroupLeader(Group group, User user) {
+    GroupParticipants newParticipant = GroupParticipants.builder()
+        .user(user)
+        .group(group)
+        .role(Role.LEADER)
+        .status(Status.JOINED)
+        .appliedAt(LocalDateTime.now())
+        .build();
+    groupParticipantsRepository.save(newParticipant);
+    group.addCurrentUserCount();
+  }
 
   @TimeTrace
   @Transactional
@@ -109,6 +129,8 @@ public class GroupParticipantsCommandService {
     groupParticipantValidator.checkOwner(participants);
     participants.setStatus(Status.KICKED);
     group.decreaseCurrentUserCount();
+    groupCacheService.evictGroupDetailStatic(groupId);
+    groupCacheService.deleteGroupListCaches();
   }
 
   @TimeTrace
@@ -119,5 +141,7 @@ public class GroupParticipantsCommandService {
     groupParticipantValidator.checkOwner(participants);
     participants.setStatus(Status.WITHDRAWN);
     group.decreaseCurrentUserCount();
+    groupCacheService.evictGroupDetailStatic(groupId);
+    groupCacheService.deleteGroupListCaches();
   }
 }
