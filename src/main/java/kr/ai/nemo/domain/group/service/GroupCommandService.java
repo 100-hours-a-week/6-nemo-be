@@ -115,6 +115,7 @@ public class GroupCommandService {
     groupCacheService.evictGroupDetailStatic(groupId);
   }
 
+  @CacheEvict(value = "group-list", allEntries = true)
   @TimeTrace
   @Transactional
   public void updateGroupImage(Long groupId, Long userId, UpdateGroupImageRequest request) {
@@ -123,6 +124,7 @@ public class GroupCommandService {
     group.setImageUrl(imageService.updateImage(group.getImageUrl(), request.imageUrl()));
     group.setUpdatedAt(LocalDateTime.now());
     groupCacheService.evictGroupDetailStatic(groupId);
+    groupCacheService.deleteGroupListCaches();
   }
 
   @TimeTrace

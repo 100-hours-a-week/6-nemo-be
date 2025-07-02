@@ -56,7 +56,7 @@ public class GroupQueryService {
   @TimeTrace
   @Transactional(readOnly = true)
   public GroupListResponse getGroups(GroupSearchRequest request, Pageable pageable) {
-    String cacheKey = groupCacheKeyUtil.getGroupListKey(request, pageable);
+    String cacheKey = groupCacheKeyUtil.getGroupListKey();
 
     Optional<GroupListResponse> cached = redisCacheService.get(cacheKey, GroupListResponse.class);
     if (cached.isPresent()) {
@@ -83,7 +83,7 @@ public class GroupQueryService {
   }
 
   @DistributedLock(
-      key = "T(kr.ai.nemo.domain.group.service.GroupCacheKeyUtil).getGroupListKey(#request.category, #pageable pageable)",
+      key = "T(kr.ai.nemo.domain.group.service.GroupCacheKeyUtil).getGroupListKey()",
       waitTime = 3,
       leaseTime = 5,
       timeUnit = TimeUnit.SECONDS

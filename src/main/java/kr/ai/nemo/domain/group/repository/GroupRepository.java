@@ -79,6 +79,8 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
   LEFT JOIN FETCH g.groupTags gt
   LEFT JOIN FETCH gt.tag
   WHERE g.id IN :ids
+  ORDER BY g.updatedAt DESC
+
 """)
   List<Group> findGroupsWithTagsByIds(@Param("ids") List<Long> ids);
 
