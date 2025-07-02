@@ -50,7 +50,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.retry:spring-retry")
     implementation("org.redisson:redisson-spring-boot-starter:$redissonVersion")
-    
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
+
     // Jackson JSR310 모듈 명시적 추가
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
