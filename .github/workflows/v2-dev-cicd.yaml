@@ -2,7 +2,7 @@ name: Backend CI/CD for v2-dev
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ feature/k6-test ]
 
 jobs:
   build-and-deploy:
