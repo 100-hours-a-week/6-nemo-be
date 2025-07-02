@@ -25,7 +25,7 @@ public class UriGenerator {
         .toUri();
   }
 
-  public URI login(String state, String accessToken) {
-    return URI.create(state + "?token=" + accessToken);
+  public URI login(String state) {
+    return URI.create(state);
   }
 }

@@ -17,10 +17,24 @@ public class RedisCacheService {
   private final RedisTemplate<String, String> redisTemplate;
   private final ObjectMapper objectMapper;
 
+  private static final String NULL_VALUE = "null";
+  private static final Duration NULL_TTL = Duration.ofMinutes(5);
+
   public <T> void set(String key, T value, Duration ttl) {
     try {
-      String json = objectMapper.writeValueAsString(value);
-      redisTemplate.opsForValue().set(key, json, ttl);
+      String json;
+      Duration actualTtl;
+
+      if (value == null) {
+        json = NULL_VALUE;
+        actualTtl = NULL_TTL;
+        log.debug("Cache Penetration 방지: null 값 캐싱 key = {}", key);
+      } else {
+        json = objectMapper.writeValueAsString(value);
+        actualTtl = ttl;
+      }
+
+      redisTemplate.opsForValue().set(key, json, actualTtl);
     } catch (JsonProcessingException e) {
       log.error("redis 저장 실패: key = {}, because {}", key, e.getMessage());
     }
@@ -30,6 +44,11 @@ public class RedisCacheService {
     try {
       String json = redisTemplate.opsForValue().get(key);
       if (json == null) {
+        return Optional.empty();
+      }
+
+      if (json.equals(NULL_VALUE)) {
+        log.debug("Cache Hit (null value): key = {}", key);
         return Optional.empty();
       }
       return Optional.of(objectMapper.readValue(json, clazz));
@@ -68,6 +87,16 @@ public class RedisCacheService {
 
     } catch (Exception e) {
       log.error("redis 리스트 필드 추가 실패: key = {}, because {}", key, e.getMessage());
+    }
+  }
+
+  public boolean isNullCached(String key) {
+    try {
+      String json = redisTemplate.opsForValue().get(key);
+      return NULL_VALUE.equals(json);
+    } catch (Exception e) {
+      log.error("null 캐시 확인 실패: key = {}, because {}", key, e.getMessage());
+      return false;
     }
   }
 

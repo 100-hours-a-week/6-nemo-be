@@ -1,5 +1,6 @@
 package kr.ai.nemo.domain.groupparticipants.validator;
 
+import java.util.Optional;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.exception.GroupErrorCode;
@@ -18,16 +19,12 @@ import org.springframework.stereotype.Component;
 public class GroupParticipantValidator {
 
   private final GroupParticipantsRepository repository;
+  private final GroupParticipantsRepository groupParticipantsRepository;
 
   public void validateJoinedParticipant(GroupParticipants groupParticipant) {
     if(groupParticipant.getStatus() == Status.JOINED) {
       throw new GroupException(GroupErrorCode.ALREADY_APPLIED_OR_JOINED);
     }
-  }
-
-  public boolean validateIsJoinedMember(Long groupId, Long userId) {
-    return repository.existsByGroupIdAndUserIdAndStatus(
-        groupId, userId, Status.JOINED);
   }
 
   public void validateIsJoined(Long groupId, Long userId) {
@@ -37,17 +34,28 @@ public class GroupParticipantValidator {
     }
   }
 
-  public Role checkUserRole(CustomUserDetails userDetails, Group group) {
+  public boolean validateIsJoinedMember(Long groupId, Long userId) {
+    return repository.existsByGroupIdAndUserIdAndStatus(
+        groupId, userId, Status.JOINED);
+  }
+
+  public Role checkUserRole(CustomUserDetails userDetails, Long groupId) {
     if (userDetails == null) {
       return Role.GUEST;
     }
 
     Long userId = userDetails.getUserId();
 
-    if (group.getOwner().getId().equals(userId)) {
-      return Role.LEADER;
-    } else if (validateIsJoinedMember(group.getId(), userId)) {
-      return Role.MEMBER;
+    Optional<GroupParticipants> participant = groupParticipantsRepository
+        .findByGroupIdAndUserId(groupId, userId);
+
+    if (participant.isPresent() && participant.get().getStatus() == Status.JOINED) {
+      GroupParticipants groupParticipant = participant.get();
+      if (groupParticipant.getRole() == Role.LEADER) {
+        return Role.LEADER;
+      } else {
+        return Role.MEMBER;
+      }
     } else {
       return Role.NON_MEMBER;
     }

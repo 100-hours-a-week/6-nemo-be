@@ -23,6 +23,9 @@ public record GroupDetailStaticInfo(
     
     @Schema(description = "모임 장소")
     String location,
+
+    @Schema(description = "현재 참여 인원")
+    int currentUserCount,
     
     @Schema(description = "최대 참여 인원")
     int maxUserCount,
@@ -44,6 +47,7 @@ public record GroupDetailStaticInfo(
             group.getDescription(),
             group.getPlan(),
             group.getLocation(),
+            group.getCurrentUserCount(),
             group.getMaxUserCount(),
             group.getImageUrl(),
             tags,

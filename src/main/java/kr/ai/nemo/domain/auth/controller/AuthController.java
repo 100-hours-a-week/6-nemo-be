@@ -3,8 +3,9 @@ package kr.ai.nemo.domain.auth.controller;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
+import java.time.Duration;
+import kr.ai.nemo.domain.auth.domain.enums.Token;
 import kr.ai.nemo.global.aop.logging.TimeTrace;
-import kr.ai.nemo.domain.auth.dto.TokenRefreshResponse;
 import kr.ai.nemo.domain.auth.service.OauthService;
 import kr.ai.nemo.domain.auth.service.TokenManager;
 import kr.ai.nemo.global.common.SuccessCode;
@@ -13,6 +14,7 @@ import kr.ai.nemo.global.util.UriGenerator;
 import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.global.error.exception.CustomException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -51,7 +53,15 @@ public class AuthController {
       HttpServletResponse response) {
     String accessToken = oauthService.loginWithKakao(code, error, response);
     try {
-      response.sendRedirect(uriGenerator.login(state, accessToken).toString());
+      ResponseCookie accessTokenCookie = ResponseCookie.from(Token.ACCESS_TOKEN.getValue(), accessToken)
+          .httpOnly(true)
+          .secure(true)
+          .path("/")
+          .maxAge(Duration.ofHours(1))
+          .sameSite("None")
+          .build();
+      response.addHeader("Set-Cookie", accessTokenCookie.toString());
+      response.sendRedirect(uriGenerator.login(state).toString());
     } catch (IOException e) {
       throw new CustomException(CommonErrorCode.REDIRECT_FAIL);
     }
@@ -59,10 +69,21 @@ public class AuthController {
 
   @TimeTrace
   @PostMapping("/api/v1/auth/token/refresh")
-  public ResponseEntity<BaseApiResponse<TokenRefreshResponse>> tokenRefresh(
-      @CookieValue(name = "refresh_token", required = true) String refreshToken
+  public ResponseEntity<BaseApiResponse<?>> tokenRefresh(
+      @CookieValue(name = "refresh_token", required = true) String refreshToken,
+      HttpServletResponse response
   ) {
-    return ResponseEntity.ok(BaseApiResponse.success(oauthService.reissueAccessToken(refreshToken)));
+    String newAccessToken = oauthService.reissueAccessToken(refreshToken);
+    ResponseCookie cookie = ResponseCookie.from(Token.ACCESS_TOKEN.getValue(), newAccessToken)
+        .httpOnly(true)
+        .secure(true)
+        .path("/")
+        .maxAge(Duration.ofMinutes(60))
+        .sameSite("None")
+        .build();
+
+    response.addHeader("Set-Cookie", cookie.toString());
+    return ResponseEntity.noContent().build();
   }
 
   @TimeTrace

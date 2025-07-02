@@ -2,6 +2,7 @@ package kr.ai.nemo.global.aop.role.aspect;
 
 import java.lang.reflect.Method;
 import kr.ai.nemo.global.aop.role.annotation.DistributedLock;
+import kr.ai.nemo.global.error.exception.LockAcquisitionFailedException;
 import kr.ai.nemo.global.util.AopForTransaction;
 import kr.ai.nemo.global.util.CustomSpringELParser;
 import lombok.RequiredArgsConstructor;
@@ -39,25 +40,30 @@ public class DistributedLockAop {
     RLock rLock = redissonClient.getLock(key);
 
     try {
-      boolean available = rLock.tryLock(distributedLock.waitTime(), distributedLock.leaseTime(),
-          distributedLock.timeUnit());
+      boolean available = rLock.tryLock(distributedLock.waitTime(),
+          distributedLock.leaseTime(), distributedLock.timeUnit());
+
       if (!available) {
-        log.warn("Lock acquisition failed for key: {}", key);
-        return false;
+        log.warn("Lock acquisition failed for key: {} after waiting {}ms",
+            key, distributedLock.waitTime());
+        throw new LockAcquisitionFailedException(
+            String.format("Failed to acquire lock for key: %s", key));
       }
 
+      log.debug("Lock acquired successfully for key: {}", key);
       // 락 획득 성공 시 실제 비즈니스 로직 실행
       return aopForTransaction.proceed(joinPoint);
 
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      throw e;
+      log.error("Lock acquisition interrupted for key: {}", key, e);
+      throw new LockAcquisitionFailedException(
+          String.format("Lock acquisition interrupted for key: %s", key), e);
     } finally {
       if (rLock.isHeldByCurrentThread()) {
         rLock.unlock();
-        log.info("Lock released for key: {}", key);
+        log.debug("Lock released for key: {}", key);
       }
     }
   }
 }
-

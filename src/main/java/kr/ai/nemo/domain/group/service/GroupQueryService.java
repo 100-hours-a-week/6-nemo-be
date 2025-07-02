@@ -25,12 +25,13 @@ import kr.ai.nemo.domain.group.validator.GroupValidator;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.groupparticipants.validator.GroupParticipantValidator;
 import kr.ai.nemo.global.aop.role.annotation.DistributedLock;
+import kr.ai.nemo.global.error.code.CommonErrorCode;
+import kr.ai.nemo.global.error.exception.CustomException;
 import kr.ai.nemo.global.redis.CacheConstants;
 import kr.ai.nemo.global.redis.CacheKeyUtil;
 import kr.ai.nemo.global.redis.RedisCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -61,16 +62,34 @@ public class GroupQueryService {
     );
 
     Optional<GroupListResponse> cached = redisCacheService.get(cacheKey, GroupListResponse.class);
-    return cached.orElseGet(() -> loadWithLock(request, pageable, cacheKey));
+    if (cached.isPresent()) {
+      return cached.get();
+    }
 
-    // 캐시 미스 → 락 획득 후 처리
+    try {
+      return loadWithLock(request, pageable, cacheKey);
+    } catch (RuntimeException e) {
+      log.warn("Lock failed, checking cache again", e);
+
+      try {
+        Thread.sleep(100);
+        cached = redisCacheService.get(cacheKey, GroupListResponse.class);
+        if (cached.isPresent()) {
+          return cached.get();
+        }
+      } catch (InterruptedException ie) {
+        Thread.currentThread().interrupt();
+      }
+
+      throw new CustomException(CommonErrorCode.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @DistributedLock(
       key = "'category:' + (#request.category == null ? 'null' : #request.category) + " +
           "':page:' + #pageable.pageNumber + ':size:' + #pageable.pageSize",
-      waitTime = 2,
-      leaseTime = 10,
+      waitTime = 3,
+      leaseTime = 5,
       timeUnit = TimeUnit.SECONDS
   )
   @TimeTrace
@@ -107,7 +126,6 @@ public class GroupQueryService {
 
     // 캐시에 저장
     redisCacheService.set(cacheKey, result, java.time.Duration.ofMinutes(5));
-
     return result;
   }
 
@@ -115,8 +133,7 @@ public class GroupQueryService {
   @Transactional(readOnly = true)
   public GroupDetailResponse detailGroup(Long groupId, CustomUserDetails customUserDetails) {
     GroupDetailStaticInfo staticInfo = groupCacheService.getGroupDetailStatic(groupId);
-    Group group = groupValidator.findByIdOrThrow(groupId);
-    Role role = groupParticipantValidator.checkUserRole(customUserDetails, group);
+    Role role = groupParticipantValidator.checkUserRole(customUserDetails, groupId);
     return new GroupDetailResponse(
         staticInfo.name(),
         staticInfo.category(),
@@ -124,7 +141,7 @@ public class GroupQueryService {
         staticInfo.description(),
         staticInfo.plan(),
         staticInfo.location(),
-        group.getCurrentUserCount(),
+        staticInfo.currentUserCount(),
         staticInfo.maxUserCount(),
         staticInfo.imageUrl(),
         staticInfo.tags(),
