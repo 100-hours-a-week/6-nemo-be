@@ -93,14 +93,13 @@ public class GroupCommandService {
         .status(GroupStatus.ACTIVE)
         .build();
 
-    Group savedGroup = groupRepository.save(group);
+    Group savedGroup = groupRepository.saveAndFlush(group);
 
     if (request.tags() != null && !request.tags().isEmpty()) {
       groupTagService.assignTags(savedGroup, request.tags());
     }
 
-    groupParticipantsCommandService.applyToGroup(savedGroup.getId(), userDetails, Role.LEADER,
-        Status.JOINED);
+    groupParticipantsCommandService.createToGroupLeader(savedGroup, userDetails.getUser());
 
     List<String> tags = groupTagService.getTagNamesByGroupId(savedGroup.getId());
 
