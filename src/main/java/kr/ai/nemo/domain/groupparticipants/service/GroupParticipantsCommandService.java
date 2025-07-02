@@ -65,10 +65,11 @@ public class GroupParticipantsCommandService {
     if (isNewParticipant) {
       incrementCapacity(capacityKey);
       group.addCurrentUserCount();
-      groupCacheService.evictGroupDetailStatic(groupId);
     }
 
     scheduleParticipantsService.addParticipantToUpcomingSchedules(group, user);
+    groupCacheService.evictGroupDetailStatic(groupId);
+    groupCacheService.deleteGroupListCaches();
   }
 
   private Long getCachedOrLoadGroupCapacity(String key, Group group) {
@@ -128,6 +129,8 @@ public class GroupParticipantsCommandService {
     groupParticipantValidator.checkOwner(participants);
     participants.setStatus(Status.KICKED);
     group.decreaseCurrentUserCount();
+    groupCacheService.evictGroupDetailStatic(groupId);
+    groupCacheService.deleteGroupListCaches();
   }
 
   @TimeTrace
@@ -138,5 +141,7 @@ public class GroupParticipantsCommandService {
     groupParticipantValidator.checkOwner(participants);
     participants.setStatus(Status.WITHDRAWN);
     group.decreaseCurrentUserCount();
+    groupCacheService.evictGroupDetailStatic(groupId);
+    groupCacheService.deleteGroupListCaches();
   }
 }

@@ -31,8 +31,6 @@ import kr.ai.nemo.domain.group.dto.response.GroupCreateResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupDto;
 import kr.ai.nemo.domain.group.dto.response.GroupGenerateResponse;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
-import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
-import kr.ai.nemo.domain.groupparticipants.domain.enums.Status;
 import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsCommandService;
 import kr.ai.nemo.domain.group.repository.GroupRepository;
 import kr.ai.nemo.global.redis.CacheConstants;
@@ -41,8 +39,6 @@ import kr.ai.nemo.global.redis.RedisCacheService;
 import kr.ai.nemo.infra.ImageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,7 +66,6 @@ public class GroupCommandService {
     return GroupGenerateResponse.from(request, aiResponse);
   }
 
-  @CacheEvict(value = "group-list", allEntries = true)
   @TimeTrace
   @Transactional
   public GroupCreateResponse createGroup(@Valid GroupCreateRequest request,
@@ -102,20 +97,19 @@ public class GroupCommandService {
     groupParticipantsCommandService.createToGroupLeader(savedGroup, userDetails.getUser());
 
     List<String> tags = groupTagService.getTagNamesByGroupId(savedGroup.getId());
-
+    groupCacheService.deleteGroupListCaches();
     return GroupCreateResponse.from(savedGroup, tags);
   }
 
-  @CacheEvict(value = "group-list", allEntries = true)
   @TimeTrace
   @Transactional
   public void deleteGroup(Long groupId, Long userId) {
     Group group = groupValidator.isOwnerForGroupDelete(groupId, userId);
     group.deleteGroup();
     groupCacheService.evictGroupDetailStatic(groupId);
+    groupCacheService.deleteGroupListCaches();
   }
 
-  @CacheEvict(value = "group-list", allEntries = true)
   @TimeTrace
   @Transactional
   public void updateGroupImage(Long groupId, Long userId, UpdateGroupImageRequest request) {
