@@ -64,9 +64,8 @@ public class GroupParticipantsCommandService {
 
     if (isNewParticipant) {
       incrementCapacity(capacityKey);
-      group.addCurrentUserCount();
     }
-
+    group.addCurrentUserCount();
     scheduleParticipantsService.addParticipantToUpcomingSchedules(group, user);
     groupCacheService.evictGroupDetailStatic(groupId);
     groupCacheService.deleteGroupListCaches();
