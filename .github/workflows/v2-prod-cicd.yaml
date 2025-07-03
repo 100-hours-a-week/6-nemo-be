@@ -86,8 +86,8 @@ jobs:
         TEMPLATE_NAME="${{ env.SERVICE }}-${{ env.ENVIRONMENT }}-template-${{ env.TIME_TAG }}"
         echo "🔧 템플릿 이름: $TEMPLATE_NAME"
 
-        STARTUP_SCRIPT="bash ${{ env.STARTUP_SCRIPT_PATH }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}"
-        SHUTDOWN_SCRIPT="bash ${{ env.SHUTDOWN_SCRIPT_PATH }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}"
+        STARTUP_SCRIPT="chmod +x ${{ env.STARTUP_SCRIPT_PATH }} && bash ${{ env.STARTUP_SCRIPT_PATH }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}"
+        SHUTDOWN_SCRIPT="chmod +x ${{ env.SHUTDOWN_SCRIPT_PATH }} && bash ${{ env.SHUTDOWN_SCRIPT_PATH }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}"
 
         gcloud compute instance-templates create "$TEMPLATE_NAME" \
           --region="${{ env.REGION }}" \
