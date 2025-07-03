@@ -48,12 +48,6 @@ jobs:
     - name: Set GCP Project
       run: gcloud config set project ${{ secrets.GCP_PROJECT_ID_PROD }}
     
-    - name: Resize MIG to 3 (배포 전 확장, 무중단 보장)
-      run: |
-        gcloud compute instance-groups managed resize ${{ env.MIG_NAME }} \
-          --region=${{ env.REGION }} \
-          --size=3
-          
     - name: Set image tags and URI
       run: |
         TIME_TAG="${{ env.ENVIRONMENT }}-$(TZ=Asia/Seoul date +'%Y%m%d-%H%M')"
@@ -115,24 +109,3 @@ jobs:
           --minimal-action="${{ env.ROLLING_MINIMAL_ACTION }}" \
           --max-surge="${{ env.ROLLING_MAX_SURGE }}" \
           --max-unavailable="${{ env.ROLLING_MAX_UNAVAILABLE }}"
-
-    - name: Wait for MIG rolling update to complete (Polling)
-      run: |
-        echo "MIG 롤링 업데이트 완료 대기..."
-        for i in {1..60}; do
-          STATUS=$(gcloud compute instance-groups managed describe ${{ env.MIG_NAME }} \
-            --region=${{ env.REGION }} \
-            --format='get(status.versionTarget.isReached)')
-          if [ "$STATUS" = "True" ]; then
-            echo "MIG 롤링 업데이트 완료!"
-            break
-          fi
-          echo "아직 롤링 중... (대기 $i/60)"
-          sleep 10
-        done
-
-    - name: Resize MIG to 1 (배포 후 축소, 비용 절감)
-      run: |
-        gcloud compute instance-groups managed resize ${{ env.MIG_NAME }} \
-          --region=${{ env.REGION }} \
-          --size=1
