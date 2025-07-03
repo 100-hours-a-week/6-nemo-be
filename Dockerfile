@@ -9,4 +9,4 @@ COPY build/libs/*.jar app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-javaagent:/app/opentelemetry-javaagent.jar", "-Dotel.service.name=backend-service", "-Dotel.exporter.otlp.endpoint=http://35.216.67.116:4317", "-Dotel.exporter.otlp.protocol=grpc", "-Dotel.resource.attributes=deployment.environment=dev", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-javaagent:/app/opentelemetry-javaagent.jar", "-Dotel.service.name=backend-service", "-Dotel.exporter.otlp.endpoint=http://35.216.67.116:4317", "-Dotel.exporter.otlp.protocol=grpc", "-Dotel.resource.attributes=deployment.environment=dev", "-Dotel.instrumentation.jvm-metrics.enabled=true",  "-jar", "app.jar"]
