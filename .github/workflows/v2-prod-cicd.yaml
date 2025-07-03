@@ -37,12 +37,6 @@ jobs:
 
     steps:
 
-    - name: Resize MIG to 3 (배포 전 확장, 무중단 보장)
-      run: |
-        gcloud compute instance-groups managed resize ${{ env.MIG_NAME }} \
-          --region=${{ env.REGION }} \
-          --size=3
-
     - name: Checkout Code
       uses: actions/checkout@v3
 
@@ -53,7 +47,13 @@ jobs:
 
     - name: Set GCP Project
       run: gcloud config set project ${{ secrets.GCP_PROJECT_ID_PROD }}
-
+    
+    - name: Resize MIG to 3 (배포 전 확장, 무중단 보장)
+      run: |
+        gcloud compute instance-groups managed resize ${{ env.MIG_NAME }} \
+          --region=${{ env.REGION }} \
+          --size=3
+          
     - name: Set image tags and URI
       run: |
         TIME_TAG="${{ env.ENVIRONMENT }}-$(TZ=Asia/Seoul date +'%Y%m%d-%H%M')"
