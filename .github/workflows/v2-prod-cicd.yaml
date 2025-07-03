@@ -6,6 +6,9 @@ on:
       version:
         description: '릴리즈 버전 태그 (예: v1.3.0)'
         required: true
+  push:
+    branches:
+      - infra/fix-cicd
 
 jobs:
   build-and-deploy:
@@ -19,7 +22,7 @@ jobs:
       SERVICE: backend
       ENVIRONMENT: prod
       MACHINE_TYPE: e2-standard-2
-      IMAGE_NAME: be-deploy-server-image
+      IMAGE_NAME: nemo-v2-prod-image
       BOOT_DISK_SIZE: 80GB
       BOOT_DISK_TYPE: pd-balanced
       NETWORK: v2-nemo-prod
@@ -33,6 +36,12 @@ jobs:
       ROLLING_MAX_UNAVAILABLE: 2
 
     steps:
+
+    - name: Resize MIG to 3 (배포 전 확장, 무중단 보장)
+      run: |
+        gcloud compute instance-groups managed resize ${{ env.MIG_NAME }} \
+          --region=${{ env.REGION }} \
+          --size=3
 
     - name: Checkout Code
       uses: actions/checkout@v3
@@ -106,3 +115,24 @@ jobs:
           --minimal-action="${{ env.ROLLING_MINIMAL_ACTION }}" \
           --max-surge="${{ env.ROLLING_MAX_SURGE }}" \
           --max-unavailable="${{ env.ROLLING_MAX_UNAVAILABLE }}"
+
+    - name: Wait for MIG rolling update to complete (Polling)
+      run: |
+        echo "MIG 롤링 업데이트 완료 대기..."
+        for i in {1..60}; do
+          STATUS=$(gcloud compute instance-groups managed describe ${{ env.MIG_NAME }} \
+            --region=${{ env.REGION }} \
+            --format='get(status.versionTarget.isReached)')
+          if [ "$STATUS" = "True" ]; then
+            echo "MIG 롤링 업데이트 완료!"
+            break
+          fi
+          echo "아직 롤링 중... (대기 $i/60)"
+          sleep 10
+        done
+
+    - name: Resize MIG to 1 (배포 후 축소, 비용 절감)
+      run: |
+        gcloud compute instance-groups managed resize ${{ env.MIG_NAME }} \
+          --region=${{ env.REGION }} \
+          --size=1
