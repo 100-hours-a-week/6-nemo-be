@@ -88,11 +88,11 @@ jobs:
 
         STARTUP_SCRIPT="#!/bin/bash
         chmod +x ${{ env.STARTUP_SCRIPT_PATH }}
-        bash ${{ env.STARTUP_SCRIPT_PATH }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}"
+        su - ubuntu -c \"bash ${{ env.STARTUP_SCRIPT_PATH }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}\""
 
         SHUTDOWN_SCRIPT="#!/bin/bash
         chmod +x ${{ env.SHUTDOWN_SCRIPT_PATH }}
-        bash ${{ env.SHUTDOWN_SCRIPT_PATH }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}"
+        su - ubuntu -c \"bash ${{ env.SHUTDOWN_SCRIPT_PATH }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}\""
 
         gcloud compute instance-templates create "$TEMPLATE_NAME" \
           --region="${{ env.REGION }}" \
