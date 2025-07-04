@@ -3,6 +3,7 @@ package kr.ai.nemo.global.util;
 public class AuthConstants {
   // 쿠키 관련
   public static final String REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
+  public static final String ACCESS_TOKEN_COOKIE_NAME = "access_token";
 
   // 헤더 관련
   public static final String AUTHORIZATION_HEADER = "Authorization";
