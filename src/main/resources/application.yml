@@ -62,6 +62,7 @@ ai:
         group-recommend-freeform: /ai/v2/groups/recommendations/freeform
         group-recommend-questions: /ai/v2/groups/recommendations/questions
         group-recommend: /ai/v2/groups/recommendations
+        group-websocket: ${GROUP_CHATBOT_URI}
       group-data:
         group-create: /ai/v2/groups
         group-delete: /ai/v2/groups/delete
