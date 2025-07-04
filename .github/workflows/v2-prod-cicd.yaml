@@ -1,4 +1,4 @@
-name: Backend CI for v2-prod
+name: Backend CI/CD for v2-prod
 
 on:
   workflow_dispatch:
@@ -6,12 +6,14 @@ on:
       version:
         description: '릴리즈 버전 태그 (예: v1.3.0)'
         required: true
+  push:
+    branches:
+      - infra/fix-cicd
 
 jobs:
   build-and-deploy:
     name: Build & Deploy to MIG
     runs-on: ubuntu-latest
-    environment: prod
 
     env:
       REGION: asia-northeast3
@@ -19,8 +21,8 @@ jobs:
       SERVICE: backend
       ENVIRONMENT: prod
       MACHINE_TYPE: e2-standard-2
-      IMAGE_NAME: be-deploy-server-image
-      BOOT_DISK_SIZE: 80GB
+      IMAGE_NAME: prod-base-250704
+      BOOT_DISK_SIZE: 20GB
       BOOT_DISK_TYPE: pd-balanced
       NETWORK: v2-nemo-prod
       SUBNET: prod-backend
@@ -44,7 +46,7 @@ jobs:
 
     - name: Set GCP Project
       run: gcloud config set project ${{ secrets.GCP_PROJECT_ID_PROD }}
-
+    
     - name: Set image tags and URI
       run: |
         TIME_TAG="${{ env.ENVIRONMENT }}-$(TZ=Asia/Seoul date +'%Y%m%d-%H%M')"
@@ -83,8 +85,13 @@ jobs:
         TEMPLATE_NAME="${{ env.SERVICE }}-${{ env.ENVIRONMENT }}-template-${{ env.TIME_TAG }}"
         echo "🔧 템플릿 이름: $TEMPLATE_NAME"
 
-        STARTUP_SCRIPT="bash ${{ env.STARTUP_SCRIPT_PATH }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}"
-        SHUTDOWN_SCRIPT="bash ${{ env.SHUTDOWN_SCRIPT_PATH }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}"
+        STARTUP_SCRIPT="#!/bin/bash
+        chmod +x ${{ env.STARTUP_SCRIPT_PATH }}
+        su - ubuntu -c \"bash ${{ env.STARTUP_SCRIPT_PATH }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}\""
+
+        SHUTDOWN_SCRIPT="#!/bin/bash
+        chmod +x ${{ env.SHUTDOWN_SCRIPT_PATH }}
+        su - ubuntu -c \"bash ${{ env.SHUTDOWN_SCRIPT_PATH }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}\""
 
         gcloud compute instance-templates create "$TEMPLATE_NAME" \
           --region="${{ env.REGION }}" \
