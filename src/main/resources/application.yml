@@ -2,78 +2,46 @@ spring:
   application:
     name: nemo
 
+  # 활성 프로필
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:local}
 
+  # 파일 업로드 설정 (이미지 파일)
   servlet:
     multipart:
-      max-file-size: ${IMAGE_FILE_BYTE}
-      max-request-size: ${IMAGE_REQUEST_BYTE}
+      max-file-size: ${IMAGE_FILE_BYTE:10MB}
+      max-request-size: ${IMAGE_REQUEST_BYTE:50MB}
 
+  # MySQL 드라이버
   datasource:
-    url: jdbc:mysql://${DB_URL}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: ${USERNAME}
-    password: ${PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-  data:
-    redis:
-      host: ${REDIS_URL:localhost}
-      port: ${REDIS_PORT:6379}
-      timeout: 2s
-      password: ${REDIS_PASSWORD}
-
+  # MySQL 방언
   jpa:
-    hibernate:
-      ddl-auto: none
-    show-sql: true
+    database-platform: org.hibernate.dialect.MySQL8Dialect
     properties:
       hibernate:
+        # sql 포매팅 (가독성 향상)
         format_sql: true
-    database-platform: org.hibernate.dialect.MySQL8Dialect
 
   messages:
     basename: validation
     encoding: UTF-8
-
 
 oauth:
   kakao:
     rest-api-key: ${KAKAO_REST_API_KEY}
     redirect-uri: ${KAKAO_REDIRECT_URI}
 
-
 jwt:
   secret: ${JWT_SECRET}
-  access-token-validity: ${ACCESS_TOKEN_EXPIRATION}
-  refresh-token-validity: ${REFRESH_TOKEN_EXPIRATION}
-
-
-management:
-  tracing:
-    sampling:
-      probability: 1.0
-  otlp:
-    metrics:
-      export:
-        enabled: true
-    tracing:
-      endpoint: http://35.216.67.116:4318
-      export:
-        enabled: true
-  endpoints:
-    web:
-      exposure:
-        include: health, info, metrics
-  endpoint:
-    health:
-      show-details: never
-
+  access-token-validity: ${ACCESS_TOKEN_EXPIRATION:3600000}
+  refresh-token-validity: ${REFRESH_TOKEN_EXPIRATION:604800000}
 
 server:
   forward-headers-strategy: framework
 
-
+# 이미지 파일 s3 사용
 cloud:
   aws:
     s3:
@@ -82,9 +50,9 @@ cloud:
       access-key: ${CLOUD_AWS_CREDENTIALS_ACCESS_KEY}
       secret-key: ${CLOUD_AWS_CREDENTIALS_SECRET_KEY}
     region:
-      static: ${AWS_REGION}
+      static: ${AWS_REGION:ap-northeast-2}
 
-
+# AI 서버 주소
 ai:
   service:
     url: ${AI_SERVICE_URL}
@@ -99,13 +67,3 @@ ai:
         group-delete: /ai/v2/groups/delete
         group-join: /ai/v2/groups/participants
         group-leave: /ai/v2/groups/participants/delete
-
-
-sentry:
-  dsn: ${SENTRY_DSN}
-  environment: ${SENTRY_ENV}
-  release: ${SENTRY_RELEASE}
-  traces-sample-rate: ${SENTRY_SAMPLE_RATE:0.1}
-  send-default-pii: ${SENTRY_SEND_PII:false}
-  enable-tracing: true
-  enabled: false
