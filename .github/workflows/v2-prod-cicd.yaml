@@ -1,4 +1,4 @@
-name: Backend CI for v2-prod
+name: Backend CI/CD for v2-prod
 
 on:
   workflow_dispatch:
@@ -14,7 +14,6 @@ jobs:
   build-and-deploy:
     name: Build & Deploy to MIG
     runs-on: ubuntu-latest
-    environment: prod
 
     env:
       REGION: asia-northeast3
@@ -22,8 +21,8 @@ jobs:
       SERVICE: backend
       ENVIRONMENT: prod
       MACHINE_TYPE: e2-standard-2
-      IMAGE_NAME: nemo-v2-prod-image
-      BOOT_DISK_SIZE: 80GB
+      IMAGE_NAME: prod-base-250704
+      BOOT_DISK_SIZE: 20GB
       BOOT_DISK_TYPE: pd-balanced
       NETWORK: v2-nemo-prod
       SUBNET: prod-backend
