@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class NotifyGroupService {
+public class KafkaNotifyGroupService {
 
   private final KafkaTemplate<String, Object> kafkaTemplate;
 

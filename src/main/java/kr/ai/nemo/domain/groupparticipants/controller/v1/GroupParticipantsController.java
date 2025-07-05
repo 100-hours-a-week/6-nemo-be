@@ -18,6 +18,7 @@ import kr.ai.nemo.domain.groupparticipants.dto.response.MyGroupDto;
 import kr.ai.nemo.domain.groupparticipants.dto.response.MyGroupListResponse;
 import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsQueryService;
 import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsCommandService;
+import kr.ai.nemo.global.kafka.producer.KafkaNotifyGroupService;
 import kr.ai.nemo.global.swagger.groupparticipant.SwaggerGroupParticipantsListResponse;
 import kr.ai.nemo.global.swagger.groupparticipant.SwaggerMyGroupListResponse;
 import kr.ai.nemo.global.swagger.jwt.SwaggerJwtErrorResponse;
@@ -38,6 +39,7 @@ public class GroupParticipantsController {
   private final GroupParticipantsCommandService groupParticipantsCommandService;
   private final GroupParticipantsQueryService groupParticipantsQueryService;
   private final AiGroupService aiGroupService;
+  private final KafkaNotifyGroupService kafkaNotifyGroupService;
 
   @Operation(summary = "모임 신청", description = "사용자가 특정 모임에 가입 신청을 합니다.")
   @ApiResponse(responseCode = "204", description = "성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
@@ -51,7 +53,11 @@ public class GroupParticipantsController {
       @Parameter(hidden = true)
       @AuthenticationPrincipal CustomUserDetails userDetails){
     groupParticipantsCommandService.applyToGroup(groupId, userDetails, Role.MEMBER, Status.JOINED);
+    kafkaNotifyGroupService.notifyGroupJoined(userDetails.getUserId(), groupId);
+    /*
+    이전 WebClient 코드
     aiGroupService.notifyGroupJoined(userDetails.getUserId(), groupId);
+     */
 
     return ResponseEntity.noContent().build();
   }

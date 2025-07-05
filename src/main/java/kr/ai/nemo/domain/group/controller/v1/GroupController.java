@@ -22,6 +22,7 @@ import kr.ai.nemo.domain.group.service.GroupQueryService;
 import kr.ai.nemo.global.dto.PageRequestDto;
 import kr.ai.nemo.domain.schedule.dto.response.ScheduleListResponse;
 import kr.ai.nemo.domain.schedule.service.ScheduleQueryService;
+import kr.ai.nemo.global.kafka.producer.KafkaNotifyGroupService;
 import kr.ai.nemo.global.swagger.group.SwaggerGroupCreateResponse;
 import kr.ai.nemo.global.swagger.group.SwaggerGroupDetailResponse;
 import kr.ai.nemo.global.swagger.group.SwaggerGroupGenerateResponse;
@@ -54,6 +55,7 @@ public class GroupController {
   private final GroupQueryService groupQueryService;
   private final ScheduleQueryService scheduleQueryService;
   private final AiGroupService aiGroupService;
+  private final KafkaNotifyGroupService kafkaNotifyGroupService;
 
   @Operation(summary = "모임 리스트 조회", description = "카테고리별 모임의 리스트를 조회합니다.")
   @ApiResponse(responseCode = "200", description = "성공적으로 조회되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupListResponse.class)))
@@ -106,7 +108,11 @@ public class GroupController {
       @AuthenticationPrincipal CustomUserDetails userDetails) {
 
     GroupCreateResponse createdGroup = groupCommandService.createGroup(request, userDetails);
+    kafkaNotifyGroupService.notifyGroupCreated(createdGroup);
+    /*
+    이전 WebClient 코드
     aiGroupService.notifyGroupCreated(createdGroup);
+     */
 
     URI location = ServletUriComponentsBuilder
         .fromCurrentRequest()

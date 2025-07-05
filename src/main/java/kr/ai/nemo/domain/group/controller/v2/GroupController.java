@@ -21,6 +21,7 @@ import kr.ai.nemo.domain.group.service.GroupCommandService;
 import kr.ai.nemo.domain.group.service.GroupQueryService;
 import kr.ai.nemo.global.common.BaseApiResponse;
 import kr.ai.nemo.global.common.constants.CookieConstants;
+import kr.ai.nemo.global.kafka.producer.KafkaNotifyGroupService;
 import kr.ai.nemo.global.swagger.groupparticipant.SwaggerGroupParticipantsListResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -46,6 +47,7 @@ public class GroupController {
   private final GroupCommandService groupCommandService;
   private final GroupQueryService groupQueryService;
   private final AiGroupService aiGroupService;
+  private final KafkaNotifyGroupService kafkaNotifyGroupService;
 
   @Operation(summary = "모임 해체", description = "모임을 해체합니다.")
   @ApiResponse(responseCode = "204", description = "성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
@@ -56,7 +58,11 @@ public class GroupController {
       @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
     groupCommandService.deleteGroup(groupId, userDetails.getUserId());
+    kafkaNotifyGroupService.notifyGroupDeleted(groupId);
+    /*
+    이전 WebClient 코드
     aiGroupService.notifyGroupDeleted(groupId);
+     */
     return ResponseEntity.noContent().build();
   }
 
