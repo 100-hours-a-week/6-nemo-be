@@ -25,6 +25,8 @@ import kr.ai.nemo.domain.group.dto.websocket.response.GroupRecommendQuestionResp
 import kr.ai.nemo.domain.group.dto.websocket.response.GroupRecommendReasonResponse;
 import kr.ai.nemo.global.error.code.CommonErrorCode;
 import kr.ai.nemo.global.error.exception.CustomException;
+import kr.ai.nemo.global.kafka.producer.GroupChatbotKafkaService;
+import kr.ai.nemo.global.kafka.utils.KafkaTopic;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +54,7 @@ public class GroupWebsocketService extends TextWebSocketHandler {
   private final ConcurrentHashMap<String, Long> groupIdCollectors = new ConcurrentHashMap<>();
   private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
   private final ConcurrentHashMap<String, ScheduledFuture<?>> timeoutTasks = new ConcurrentHashMap<>();
+  private final GroupChatbotKafkaService groupChatbotKafkaService;
 
   private final ObjectMapper objectMapper;
 
@@ -99,7 +102,7 @@ public class GroupWebsocketService extends TextWebSocketHandler {
   // 질문 생성 요청
   public GroupChatbotQuestionResponse sendQuestionToAI(GroupChatbotQuestionRequest request, Long userId,
       String sessionId) {
-    WebSocketSession session = getOrCreateSessionConnection(sessionId);
+    // getOrCreateSessionConnection(sessionId);
 
     try {
       CompletableFuture<GroupChatbotQuestionResponse> future = new CompletableFuture<>();
@@ -113,11 +116,15 @@ public class GroupWebsocketService extends TextWebSocketHandler {
 
       timeoutTasks.put(sessionId, timeoutTask);
 
+      groupChatbotKafkaService.sendQuestionRequest(request, userId, sessionId);
+      /*
+      기존 Websocket 코드
       GroupRecommendQuestionRequest aiRequest =
           new GroupRecommendQuestionRequest(
               AiMessageType.CREATE_QUESTION.getValue(), new Payload(sessionId, userId, request.answer()));
 
       sendAndWaitQuestionAndOptions(session, aiRequest);
+       */
       return future.get(6, TimeUnit.MINUTES);
     } catch (Exception e) {
       log.error("Error sending question to AI Websocket sessionId: {}", sessionId, e);
@@ -129,20 +136,25 @@ public class GroupWebsocketService extends TextWebSocketHandler {
   // 모임 추천 요청
   public GroupAiRecommendResponse sendRecommendToAI(GroupAiQuestionRecommendRequest request,
       String sessionId) {
-    WebSocketSession session = getOrCreateSessionConnection(sessionId);
+    getOrCreateSessionConnection(sessionId);
 
     try {
       CompletableFuture<GroupAiRecommendResponse> future = new CompletableFuture<>();
       pendingRecommendRequests.put(sessionId, future);
 
+      groupChatbotKafkaService.sendRecommendRequest(request, sessionId);
+
+      /*
+      기존 Websocket 코드
       GroupRecommendRequest aiRequest =
           new GroupRecommendRequest(
               AiMessageType.RECOMMEND_REQUEST.getValue(), new RequestPayload(sessionId, request.userId(), request.messages()));
 
       sendAndWaitRecommend(session, aiRequest);
+       */
       GroupAiRecommendResponse response = future.get(30, TimeUnit.SECONDS);
 
-      closeSessionConnection(sessionId);
+      cleanupSession(sessionId);
       return response;
     } catch (Exception e) {
       log.error("Error sending question to AI Websocket sessionId: {}", sessionId, e);
@@ -151,13 +163,15 @@ public class GroupWebsocketService extends TextWebSocketHandler {
     }
   }
 
-  private void sendAndWaitQuestionAndOptions(WebSocketSession session, GroupRecommendQuestionRequest aiRequest) throws Exception {
+  /*
+   private void sendAndWaitQuestionAndOptions(WebSocketSession session, GroupRecommendQuestionRequest aiRequest) throws Exception {
     session.sendMessage(new TextMessage(objectMapper.writeValueAsString(aiRequest)));
   }
 
   private void sendAndWaitRecommend(WebSocketSession session, GroupRecommendRequest aiRequest) throws Exception {
     session.sendMessage(new TextMessage(objectMapper.writeValueAsString(aiRequest)));
   }
+   */
 
   private void cleanupSession(String sessionId) {
     log.info("Cleaning up session: {}", sessionId);
