@@ -30,7 +30,7 @@ jobs:
       STARTUP_SCRIPT_PATH: /home/ubuntu/nemo/cloud/v2/scripts/startup.sh
       SHUTDOWN_SCRIPT_PATH: /home/ubuntu/nemo/cloud/v2/scripts/shutdown.sh
       MIG_NAME: backend-instance-group
-      ROLLING_MINIMAL_ACTION: replace
+      ROLLING_MINIMAL_ACTION: restart
       ROLLING_MAX_SURGE: 2
       ROLLING_MAX_UNAVAILABLE: 2
 
