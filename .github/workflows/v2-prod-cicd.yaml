@@ -82,7 +82,7 @@ jobs:
 
     - name: Create Instance Template & Start MIG Rolling Update
       run: |
-        TEMPLATE_NAME="${{ env.SERVICE }}-${{ env.ENVIRONMENT }}-template-${{ env.TIME_TAG }}"
+        TEMPLATE_NAME="${{ env.SERVICE }}-${{ env.ENVIRONMENT }}-template-${{ env.TIME_TAG }}-${{ env.VERSION_TAG }}"
         echo "🔧 템플릿 이름: $TEMPLATE_NAME"
 
         STARTUP_SCRIPT="#!/bin/bash
