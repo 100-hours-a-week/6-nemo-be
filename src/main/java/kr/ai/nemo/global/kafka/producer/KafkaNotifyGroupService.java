@@ -1,5 +1,6 @@
 package kr.ai.nemo.global.kafka.producer;
 
+import java.util.UUID;
 import kr.ai.nemo.domain.group.dto.response.GroupCreateResponse;
 import kr.ai.nemo.domain.groupparticipants.dto.request.GroupParticipantAiRequest;
 import kr.ai.nemo.global.kafka.utils.GroupEvent;
@@ -48,7 +49,8 @@ public class KafkaNotifyGroupService {
 
   private void sendEvent(GroupEvent event) {
     try {
-      kafkaTemplate.send(KafkaTopic.GROUP_EVENT.getName(), event)
+      String randomKey = UUID.randomUUID().toString();
+      kafkaTemplate.send(KafkaTopic.GROUP_EVENT.getName(), randomKey, event)
           .whenComplete((result, ex) -> {
             if (ex == null) {
               log.info("✅ [Kafka] Event sent: {}", event.eventType());

@@ -41,16 +41,16 @@ public class GroupChatbotKafkaService {
 
   private void sendToKafka(Object request, String requestType, String sessionId) {
     try {
-      kafkaTemplate.send(KafkaTopic.GROUP_RECOMMEND_QUESTION.getName(), request)
+      kafkaTemplate.send(KafkaTopic.GROUP_RECOMMEND_QUESTION.getName(), sessionId, request)
           .whenComplete((result, ex) -> {
             if (ex == null) {
               log.info("✅ [Kafka][{}] Request sent successfully for session: {}", requestType, sessionId);
             } else {
-              log.error("❌ [Kafka][{}] Failed to send request for session: {}", ex, sessionId);
+              log.error("❌ [Kafka][{}] Failed to send request for session: {}", requestType, sessionId, ex);
             }
           });
     } catch (Exception e) {
-      log.error("❌ [Kafka][{}] Error sending request for session: {}", e, sessionId);
+      log.error("❌ [Kafka][{}] Error sending request for session: {}", requestType, sessionId, e);
     }
   }
 }
