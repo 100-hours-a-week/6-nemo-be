@@ -8,7 +8,7 @@ on:
         required: true
   push:
     branches:
-      - infra/fix-cicd
+      - infra/fix-cicd #
 
 jobs:
   build-and-deploy:
