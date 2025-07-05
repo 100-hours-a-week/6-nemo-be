@@ -8,7 +8,7 @@ on:
         required: true
   push:
     branches:
-      - infra/fix-cicd #
+      - infra/fix-cicd
 
 jobs:
   build-and-deploy:
@@ -21,7 +21,7 @@ jobs:
       SERVICE: backend
       ENVIRONMENT: prod
       MACHINE_TYPE: e2-standard-2
-      IMAGE_NAME: prod-base-250704
+      IMAGE_NAME: v2-prod-base-image
       BOOT_DISK_SIZE: 20GB
       BOOT_DISK_TYPE: pd-balanced
       NETWORK: v2-nemo-prod
@@ -30,7 +30,7 @@ jobs:
       STARTUP_SCRIPT_PATH: /home/ubuntu/nemo/cloud/v2/scripts/startup.sh
       SHUTDOWN_SCRIPT_PATH: /home/ubuntu/nemo/cloud/v2/scripts/shutdown.sh
       MIG_NAME: backend-instance-group
-      ROLLING_MINIMAL_ACTION: restart
+      ROLLING_MINIMAL_ACTION: replace
       ROLLING_MAX_SURGE: 2
       ROLLING_MAX_UNAVAILABLE: 2
 
@@ -87,11 +87,11 @@ jobs:
 
         STARTUP_SCRIPT="#!/bin/bash
         chmod +x ${{ env.STARTUP_SCRIPT_PATH }}
-        su - ubuntu -c \"bash ${{ env.STARTUP_SCRIPT_PATH }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}\""
+        runuser -l ubuntu -c 'bash ${{ env.STARTUP_SCRIPT_PATH }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}'"
 
         SHUTDOWN_SCRIPT="#!/bin/bash
         chmod +x ${{ env.SHUTDOWN_SCRIPT_PATH }}
-        su - ubuntu -c \"bash ${{ env.SHUTDOWN_SCRIPT_PATH }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}\""
+        runuser -l ubuntu -c 'bash ${{ env.SHUTDOWN_SCRIPT_PATH }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}'"
 
         gcloud compute instance-templates create "$TEMPLATE_NAME" \
           --region="${{ env.REGION }}" \
