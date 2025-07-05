@@ -102,7 +102,7 @@ public class GroupWebsocketService extends TextWebSocketHandler {
   // 질문 생성 요청
   public GroupChatbotQuestionResponse sendQuestionToAI(GroupChatbotQuestionRequest request, Long userId,
       String sessionId) {
-    // getOrCreateSessionConnection(sessionId);
+    getOrCreateSessionConnection(sessionId);
 
     try {
       CompletableFuture<GroupChatbotQuestionResponse> future = new CompletableFuture<>();
