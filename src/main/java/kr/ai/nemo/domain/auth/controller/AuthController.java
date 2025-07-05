@@ -95,7 +95,7 @@ public class AuthController {
     if (refreshToken != null && !refreshToken.isEmpty()) {
       oauthService.invalidateRefreshToken(refreshToken);
     }
-
+    tokenManager.clearAccessTokenCookie(response);
     tokenManager.clearRefreshTokenCookie(response);
 
     return ResponseEntity.ok(BaseApiResponse.success(SuccessCode.SUCCESS));

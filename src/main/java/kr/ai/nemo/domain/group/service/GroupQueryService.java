@@ -56,32 +56,36 @@ public class GroupQueryService {
   @TimeTrace
   @Transactional(readOnly = true)
   public GroupListResponse getGroups(GroupSearchRequest request, Pageable pageable) {
-    String cacheKey = groupCacheKeyUtil.getGroupListKey();
+    if (request.getPage() == 0) {
+      String cacheKey = groupCacheKeyUtil.getGroupListKey();
 
-    Optional<GroupListResponse> cached = redisCacheService.get(cacheKey, GroupListResponse.class);
-    if (cached.isPresent()) {
-      return cached.get();
-    }
-
-    try {
-      return loadWithLock(request, pageable, cacheKey);
-    } catch (RuntimeException e) {
-      log.warn("Lock failed, checking cache again", e);
-
-      try {
-        Thread.sleep(100);
-        cached = redisCacheService.get(cacheKey, GroupListResponse.class);
-        if (cached.isPresent()) {
-          return cached.get();
-        }
-      } catch (InterruptedException ie) {
-        Thread.currentThread().interrupt();
+      Optional<GroupListResponse> cached = redisCacheService.get(cacheKey, GroupListResponse.class);
+      if (cached.isPresent()) {
+        return cached.get();
       }
 
-      throw new CustomException(CommonErrorCode.INTERNAL_SERVER_ERROR);
+      try {
+        return loadWithLock(request, pageable, cacheKey);
+      } catch (RuntimeException e) {
+        log.warn("Lock failed, checking cache again", e);
+
+        try {
+          Thread.sleep(100);
+          cached = redisCacheService.get(cacheKey, GroupListResponse.class);
+          if (cached.isPresent()) {
+            return cached.get();
+          }
+        } catch (InterruptedException ie) {
+          Thread.currentThread().interrupt();
+        }
+
+        throw new CustomException(CommonErrorCode.INTERNAL_SERVER_ERROR);
+      }
     }
+    return loadFromDatabase(request, pageable);
   }
 
+  // 0 페이지는 캐싱처리
   @DistributedLock(
       key = "T(kr.ai.nemo.domain.group.service.GroupCacheKeyUtil).getGroupListKey()",
       waitTime = 3,
@@ -123,6 +127,27 @@ public class GroupQueryService {
     // 캐시에 저장
     redisCacheService.set(cacheKey, result, java.time.Duration.ofMinutes(5));
     return result;
+  }
+
+  // 1페이지부터는 기본 조회
+  private GroupListResponse loadFromDatabase(GroupSearchRequest request, Pageable pageable) {
+    Page<Long> groupIdPage;
+
+    if (request.getCategory() != null) {
+      groupIdPage = groupRepository.findGroupIdsByCategoryAndStatusNot(
+          request.getCategory(), GroupStatus.DISBANDED, pageable);
+    } else if (request.getKeyword() != null && !request.getKeyword().isBlank()) {
+      groupIdPage = groupRepository.searchGroupIdsWithKeywordOnly(
+          request.getKeyword(), pageable);
+    } else {
+      groupIdPage = groupRepository.findGroupIdsByStatusNot(pageable);
+    }
+
+    List<Group> groups = groupRepository.findGroupsWithTagsByIds(groupIdPage.getContent());
+    List<GroupDto> dtos = groups.stream().map(GroupDto::from).toList();
+
+    return GroupListResponse.from(
+        new PageImpl<>(dtos, pageable, groupIdPage.getTotalElements()));
   }
 
   @TimeTrace
