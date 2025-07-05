@@ -6,9 +6,9 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum KafkaTopic {
-  GROUP_EVENT("group_event"),
-  GROUP_RECOMMEND_QUESTION("group-recommend-question"),
-  GROUP_RECOMMEND("group-recommend");
+  GROUP_EVENT("GROUP_EVENT"),
+  GROUP_RECOMMEND_QUESTION("GROUP_RECOMMEND_QUESTION"),
+  GROUP_RECOMMEND("GROUP_RECOMMEND");
 
   private final String name;
 }
