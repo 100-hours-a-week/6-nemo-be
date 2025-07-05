@@ -28,6 +28,8 @@ import kr.ai.nemo.global.error.exception.CustomException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHttpHeaders;
@@ -53,6 +55,9 @@ public class GroupWebsocketService extends TextWebSocketHandler {
 
   private final ObjectMapper objectMapper;
 
+  @Value("${GROUP_CHATBOT_URI}")
+  private String groupChatbotUri;
+
   // session을 만들거나 해제
   public WebSocketSession getOrCreateSessionConnection(String sessionId) {
     return aiConnctions.computeIfAbsent(sessionId, this::createSessionConnection);
@@ -61,7 +66,7 @@ public class GroupWebsocketService extends TextWebSocketHandler {
   private WebSocketSession createSessionConnection(String sessionId) {
     try {
       WebSocketClient client = new StandardWebSocketClient();
-      URI uri = URI.create("ws://172.20.5.180:8000/ai/v2/chatbot");
+      URI uri = URI.create(groupChatbotUri);
 
       WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
       headers.add("X-CHATBOT-KEY", sessionId);
@@ -187,14 +192,11 @@ public class GroupWebsocketService extends TextWebSocketHandler {
   protected void handleTextMessage(@NonNull WebSocketSession session, @NonNull TextMessage message) throws Exception {
     // 1. 일단 공통으로 파싱
     String payload = message.getPayload();
-    log.info("Received AI message: {}", payload);
 
     // 2. type만 먼저 확인
     JsonNode jsonNode = objectMapper.readTree(payload);
     String messageType = jsonNode.get("type").asText();
     String sessionId = jsonNode.get("payload").get("sessionId").asText();
-
-    log.info("Message type: {}, sessionId: {}", messageType, sessionId);
 
     switch (messageType) {
       case "QUESTION_CHUNK" -> {
