@@ -22,6 +22,22 @@ spring:
       ddl-auto: none
     show-sql: false
 
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVER}
+    producer:
+      acks: all  # 모든 replica가 메시지를 받았을 때만 성공으로 처리
+      retries: 5   # 전송 실패시 재시도 횟수
+      batch-size: 32768   # 한 번에 보낼 메시지들을 모아두는 배치 크기
+      buffer-memory: 67108864
+      properties:
+        max.in.flight.requests.per.connection: 1   # 순서 보장
+        enable.idempotence: true   # 중복 방지
+        linger.ms: 5   # 배치가 가득 안 차도 5ms 후에는 전송
+    consumer:
+      group-id: nemo-group-local
+      auto-offset-reset: earliest  # 개발시 최신 메시지만
+      max-poll-records: 100   # 배치 처리 최적화
+
 management:
   tracing:
     sampling:
