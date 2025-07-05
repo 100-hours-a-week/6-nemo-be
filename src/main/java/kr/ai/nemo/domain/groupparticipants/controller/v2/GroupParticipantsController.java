@@ -61,7 +61,11 @@ public class GroupParticipantsController {
       @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
     groupParticipantsCommandService.withdrawGroup(groupId, userDetails.getUserId());
-    aiGroupService.notifyGroupLeft(userDetails.getUserId(), groupId);
+    kafkaNotifyGroupService.notifyGroupLeft(userDetails.getUserId(), groupId);
+    /*
+    이전 WebClient 코드
+    aiGroupService.notifyGroupLeft(userId, groupId);
+    */
     return ResponseEntity.noContent().build();
   }
 }
