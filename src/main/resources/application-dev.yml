@@ -17,7 +17,6 @@ spring:
     show-sql: true
 
   kafka:
-    bootstrap-servers: ${KAFKA_SERVERS:dev-kafka:9092}
     producer:
       acks: all  # 모든 replica가 메시지를 받았을 때만 성공으로 처리
       retries: 3   # 전송 실패시 재시도 횟수

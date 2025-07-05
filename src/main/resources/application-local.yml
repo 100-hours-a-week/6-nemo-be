@@ -19,10 +19,9 @@ spring:
     show-sql: true
 
   kafka:
-    bootstrap-servers: localhost:9092
     producer:
-      acks: 1  # 모든 replica가 메시지를 받았을 때만 성공으로 처리
-      retries: 1   # 전송 실패시 재시도 횟수
+      acks: all  # idempotent producer를 위해 all로 설정
+      retries: 3   # 전송 실패시 재시도 횟수
       batch-size: 1024   # 한 번에 보낼 메시지들을 모아두는 배치 크기
       properties:
         max.in.flight.requests.per.connection: 1   # 순서 보장
