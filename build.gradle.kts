@@ -170,3 +170,10 @@ tasks.jacocoTestReport {
 		)
 	)
 }
+
+
+if (System.getenv("CI") == "true") {
+    tasks.matching { it.name.startsWith("sentry") }.configureEach {
+        enabled = false
+    }
+}
