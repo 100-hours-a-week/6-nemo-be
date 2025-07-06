@@ -1,0 +1,69 @@
+name: Backend CI - Push to ECR
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '릴리즈 버전 태그 (예: v3.0.0)'
+        required: true
+  push:
+    branches:
+      - infra/ci-test # 임시 브랜치명으로 사용하세요
+jobs:
+  build-and-push:
+    name: Build & Push to AWS ECR
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: ap-northeast-2
+      SERVICE: backend
+      ENVIRONMENT: prod
+
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Set image tags and URI
+        run: |
+          TIME_TAG="${{ env.ENVIRONMENT }}-$(TZ=Asia/Seoul date +'%Y%m%d-%H%M')"
+          echo "TIME_TAG=$TIME_TAG" >> $GITHUB_ENV
+
+          VERSION_TAG="${{ env.ENVIRONMENT }}-${{ github.event.inputs.version }}"
+          echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
+
+          IMAGE_URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.SERVICE }}"
+          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{ env.AWS_REGION }} \
+          | docker login --username AWS \
+            --password-stdin "${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Gradle Build
+        run: ./gradlew clean build --no-daemon
+
+      - name: Build and Push Docker Image to ECR
+        run: |
+          docker buildx build \
+            --platform linux/amd64 \
+            -t "${IMAGE_URI}:${TIME_TAG}" \
+            -t "${IMAGE_URI}:${VERSION_TAG}" \
+            -t "${IMAGE_URI}:latest" \
+            --push .
+
+      - name: Print image tag (for Helm Chart)
+        run: |
+          echo "✅ ECR Image URI:"
+          echo "${IMAGE_URI}:${VERSION_TAG}"
