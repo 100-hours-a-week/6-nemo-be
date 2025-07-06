@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import kr.ai.nemo.domain.group.messaging.GroupEventPublisher;
 import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.service.AiGroupService;
@@ -29,6 +30,7 @@ public class GroupParticipantsController {
   private final GroupParticipantsCommandService groupParticipantsCommandService;
   private final AiGroupService aiGroupService;
   private final KafkaNotifyGroupService kafkaNotifyGroupService;
+  private final GroupEventPublisher groupEventPublisher;
 
   @Operation(summary = "모임원 추방", description = "모임장이 모임원을 추방합니다.")
   @ApiResponse(responseCode = "204", description = "성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
@@ -42,8 +44,12 @@ public class GroupParticipantsController {
       @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
     groupParticipantsCommandService.kickOut(groupId, userId, userDetails);
-    kafkaNotifyGroupService.notifyGroupLeft(userId, groupId);
+    groupEventPublisher.publishGroupLeft(userId, groupId);
+
     /*
+    이전 kafka 코드 (interface 전)
+    kafkaNotifyGroupService.notifyGroupLeft(userId, groupId);
+
     이전 WebClient 코드
     aiGroupService.notifyGroupLeft(userId, groupId);
     */
@@ -62,7 +68,12 @@ public class GroupParticipantsController {
   ) {
     groupParticipantsCommandService.withdrawGroup(groupId, userDetails.getUserId());
     kafkaNotifyGroupService.notifyGroupLeft(userDetails.getUserId(), groupId);
+    groupEventPublisher.publishGroupLeft(userDetails.getUserId(), groupId);
+
     /*
+    이전 kafka 코드 (interface 전)
+    kafkaNotifyGroupService.notifyGroupLeft(userId, groupId);
+
     이전 WebClient 코드
     aiGroupService.notifyGroupLeft(userId, groupId);
     */

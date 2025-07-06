@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import kr.ai.nemo.domain.group.messaging.GroupEventPublisher;
 import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.service.AiGroupService;
@@ -40,6 +41,7 @@ public class GroupParticipantsController {
   private final GroupParticipantsQueryService groupParticipantsQueryService;
   private final AiGroupService aiGroupService;
   private final KafkaNotifyGroupService kafkaNotifyGroupService;
+  private final GroupEventPublisher groupEventPublisher;
 
   @Operation(summary = "모임 신청", description = "사용자가 특정 모임에 가입 신청을 합니다.")
   @ApiResponse(responseCode = "204", description = "성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
@@ -53,8 +55,12 @@ public class GroupParticipantsController {
       @Parameter(hidden = true)
       @AuthenticationPrincipal CustomUserDetails userDetails){
     groupParticipantsCommandService.applyToGroup(groupId, userDetails, Role.MEMBER, Status.JOINED);
-    kafkaNotifyGroupService.notifyGroupJoined(userDetails.getUserId(), groupId);
+    groupEventPublisher.publishGroupJoined(userDetails.getUserId(), groupId);
+
     /*
+    이전 kafka 코드 (interface 전)
+    kafkaNotifyGroupService.notifyGroupJoined(userDetails.getUserId(), groupId);
+
     이전 WebClient 코드
     aiGroupService.notifyGroupJoined(userDetails.getUserId(), groupId);
      */

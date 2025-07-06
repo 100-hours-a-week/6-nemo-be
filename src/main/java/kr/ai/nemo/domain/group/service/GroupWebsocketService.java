@@ -10,28 +10,21 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import kr.ai.nemo.domain.group.domain.enums.AiMessageType;
 import kr.ai.nemo.domain.group.dto.request.GroupAiQuestionRecommendRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupChatbotQuestionRequest;
-import kr.ai.nemo.domain.group.dto.websocket.request.GroupRecommendRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupAiRecommendResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupChatbotQuestionResponse;
-import kr.ai.nemo.domain.group.dto.websocket.request.GroupRecommendQuestionRequest;
-import kr.ai.nemo.domain.group.dto.websocket.request.GroupRecommendQuestionRequest.Payload;
-import kr.ai.nemo.domain.group.dto.websocket.request.GroupRecommendRequest.RequestPayload;
 import kr.ai.nemo.domain.group.dto.websocket.response.GroupRecommendGroupIdResponse;
 import kr.ai.nemo.domain.group.dto.websocket.response.GroupRecommendOptionResponse;
 import kr.ai.nemo.domain.group.dto.websocket.response.GroupRecommendQuestionResponse;
 import kr.ai.nemo.domain.group.dto.websocket.response.GroupRecommendReasonResponse;
+import kr.ai.nemo.domain.group.messaging.GroupChatbotMessagePublisher;
 import kr.ai.nemo.global.error.code.CommonErrorCode;
 import kr.ai.nemo.global.error.exception.CustomException;
-import kr.ai.nemo.global.kafka.producer.GroupChatbotKafkaService;
-import kr.ai.nemo.global.kafka.utils.KafkaTopic;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHttpHeaders;
@@ -54,7 +47,7 @@ public class GroupWebsocketService extends TextWebSocketHandler {
   private final ConcurrentHashMap<String, Long> groupIdCollectors = new ConcurrentHashMap<>();
   private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
   private final ConcurrentHashMap<String, ScheduledFuture<?>> timeoutTasks = new ConcurrentHashMap<>();
-  private final GroupChatbotKafkaService groupChatbotKafkaService;
+  private final GroupChatbotMessagePublisher groupChatbotMessagePublisher;
 
   private final ObjectMapper objectMapper;
 
@@ -116,15 +109,8 @@ public class GroupWebsocketService extends TextWebSocketHandler {
 
       timeoutTasks.put(sessionId, timeoutTask);
 
-      groupChatbotKafkaService.sendQuestionRequest(request, userId, sessionId);
-      /*
-      기존 Websocket 코드
-      GroupRecommendQuestionRequest aiRequest =
-          new GroupRecommendQuestionRequest(
-              AiMessageType.CREATE_QUESTION.getValue(), new Payload(sessionId, userId, request.answer()));
+      groupChatbotMessagePublisher.publishQuestionRequest(request, userId, sessionId);
 
-      sendAndWaitQuestionAndOptions(session, aiRequest);
-       */
       return future.get(6, TimeUnit.MINUTES);
     } catch (Exception e) {
       log.error("Error sending question to AI Websocket sessionId: {}", sessionId, e);
@@ -142,16 +128,8 @@ public class GroupWebsocketService extends TextWebSocketHandler {
       CompletableFuture<GroupAiRecommendResponse> future = new CompletableFuture<>();
       pendingRecommendRequests.put(sessionId, future);
 
-      groupChatbotKafkaService.sendRecommendRequest(request, sessionId);
+      groupChatbotMessagePublisher.publishRecommendRequest(request, sessionId);
 
-      /*
-      기존 Websocket 코드
-      GroupRecommendRequest aiRequest =
-          new GroupRecommendRequest(
-              AiMessageType.RECOMMEND_REQUEST.getValue(), new RequestPayload(sessionId, request.userId(), request.messages()));
-
-      sendAndWaitRecommend(session, aiRequest);
-       */
       GroupAiRecommendResponse response = future.get(30, TimeUnit.SECONDS);
 
       cleanupSession(sessionId);
@@ -162,16 +140,6 @@ public class GroupWebsocketService extends TextWebSocketHandler {
       throw new CustomException(CommonErrorCode.AI_SERVER_CONNECTION_FAILED);
     }
   }
-
-  /*
-   private void sendAndWaitQuestionAndOptions(WebSocketSession session, GroupRecommendQuestionRequest aiRequest) throws Exception {
-    session.sendMessage(new TextMessage(objectMapper.writeValueAsString(aiRequest)));
-  }
-
-  private void sendAndWaitRecommend(WebSocketSession session, GroupRecommendRequest aiRequest) throws Exception {
-    session.sendMessage(new TextMessage(objectMapper.writeValueAsString(aiRequest)));
-  }
-   */
 
   private void cleanupSession(String sessionId) {
     log.info("Cleaning up session: {}", sessionId);
