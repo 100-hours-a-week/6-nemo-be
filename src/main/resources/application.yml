@@ -28,6 +28,31 @@ spring:
     basename: validation
     encoding: UTF-8
 
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVER:localhost:9092}
+
+    # Producer 설정
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer   # 메시지 키를 바이트로 변환하는 방식
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer   # 메시지 값을 바이트로 변환하는 방식
+      compression-type: lz4
+      buffer-memory: 33554432
+      properties:
+        socket.send.buffer.bytes: 102400
+        socket.receive.buffer.bytes: 102400
+
+    # Consumer 설정
+    consumer:
+      bootstrap-servers: ${KAFKA_SERVER:localhost:9092}
+      group-id: nemo-group   # Consumer 그룹 ID
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer   # 바이트 키를 String으로 역직렬화
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer   #  바이트 값을 JSON에서 Object로 역직렬화
+      auto-offset-reset: earliest   # 새로운 Consumer가 처음 시작할 때 가장 처음 메시지부터 읽기
+      properties:
+        spring.json.trusted.packages: "kr.ai.nemo"  # JSON 역직렬화 보안 설정
+        socket.send.buffer.bytes: 102400
+        socket.receive.buffer.bytes: 102400
+
 oauth:
   kakao:
     rest-api-key: ${KAKAO_REST_API_KEY}
@@ -59,12 +84,4 @@ ai:
     endpoints:
       group-generate: /ai/v1/groups/information
       group-chatbot:
-        group-recommend-freeform: /ai/v2/groups/recommendations/freeform
-        group-recommend-questions: /ai/v2/groups/recommendations/questions
-        group-recommend: /ai/v2/groups/recommendations
-        group-websocket: ${GROUP_CHATBOT_URI}
-      group-data:
-        group-create: /ai/v2/groups
-        group-delete: /ai/v2/groups/delete
-        group-join: /ai/v2/groups/participants
-        group-leave: /ai/v2/groups/participants/delete
+        group-recommend-freeform: /ai
