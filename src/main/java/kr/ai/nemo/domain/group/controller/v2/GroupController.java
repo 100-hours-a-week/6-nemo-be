@@ -109,7 +109,7 @@ public class GroupController {
   ) {
     return chatbotSseService.createStream(userDetails.getUserId(), sessionId);
   }
-  
+
   @Operation(summary = "선택지 기반 모임 추천 - session 정보 가져오기", description = "기존에 대화 세션이 있었는지 확인합니다.")
   @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.")
   @TimeTrace
@@ -148,22 +148,58 @@ public class GroupController {
   @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.")
   @TimeTrace
   @PostMapping("/recommendations/questions")
+  public ResponseEntity<BaseApiResponse<String>> recommendGroupQuestions(
+      @RequestBody GroupChatbotQuestionRequest request,
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @CookieValue(name = "chatbot_session_id") String sessionId
+  ) {
+
+    chatbotSseService.processQuestionWithStream(request, userDetails.getUserId(), sessionId);
+    /*
+    GroupChatbotQuestionResponse response =
+        groupCommandService.recommendGroupQuestion(request, userDetails.getUserId(), sessionId);
+     */
+    return ResponseEntity.accepted()  // 202 Accepted
+        .body(BaseApiResponse.success("질문 처리를 시작했습니다. SSE 연결에서 응답을 확인하세요."));
+  }
+  /*
+  Kafka 코드
+  @Operation(summary = "선택지 기반 모임 추천 - 질문 생성/답장", description = "모임의 질문을 생성/답장 합니다.")
+  @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.")
+  @TimeTrace
+  @PostMapping("/recommendations/questions")
   public ResponseEntity<BaseApiResponse<GroupChatbotQuestionResponse>> recommendGroupQuestions(
       @RequestBody GroupChatbotQuestionRequest request,
       @AuthenticationPrincipal CustomUserDetails userDetails,
       @CookieValue(name = "chatbot_session_id") String sessionId
-      ) {
+  ) {
 
-       GroupChatbotQuestionResponse response =
-           groupCommandService.recommendGroupQuestion(request, userDetails.getUserId(), sessionId);
+    GroupChatbotQuestionResponse response =
+        groupCommandService.recommendGroupQuestion(request, userDetails.getUserId(), sessionId);
     return ResponseEntity.ok(BaseApiResponse.success(response));
   }
+   */
 
   @GetMapping("/chatbot/connections/count")
   public ResponseEntity<Integer> getConnectionCount() {
     return ResponseEntity.ok(chatbotSseService.getActiveConnectionCount());
   }
 
+  @Operation(summary = "선택지 기반 모임 추천 - 모임 추천 요청", description = "모든 선택지에 응답 후 모임 추천을 요청합니다.")
+  @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.")
+  @TimeTrace
+  @GetMapping("/recommendations")
+  public ResponseEntity<BaseApiResponse<String>> recommendGroupRecommendation(
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @CookieValue(name = "chatbot_session_id") String sessionId
+  ) {
+    chatbotSseService.processRecommendWithStream(userDetails.getUserId(), sessionId);
+    return ResponseEntity.accepted()  // 202 Accepted
+        .body(BaseApiResponse.success("질문 처리를 시작했습니다. SSE 연결에서 응답을 확인하세요."));
+  }
+
+  /*
+  Kafka 코드
   @Operation(summary = "선택지 기반 모임 추천 - 모임 추천 요청", description = "모든 선택지에 응답 후 모임 추천을 요청합니다.")
   @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.")
   @TimeTrace
@@ -177,4 +213,5 @@ public class GroupController {
     return ResponseEntity.ok(BaseApiResponse.success(
         groupQueryService.recommendGroup(userDetails.getUserId(), chatbotSession, sessionId)));
   }
+   */
 }

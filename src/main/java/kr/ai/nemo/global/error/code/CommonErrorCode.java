@@ -22,6 +22,7 @@ public enum CommonErrorCode implements ErrorCode {
   AI_SERVER_CONNECTION_FAILED("AI_SERVER_CONNECTION_FAILED", "AI 서버 연결에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
   EXTERNAL_API_ERROR("EXTERNAL_API_ERROR", "외부 API 호출 중 오류가 발생했습니다.", HttpStatus.SERVICE_UNAVAILABLE),
   AI_RESPONSE_PARSE_ERROR("AI_RESPONSE_PARSE_ERROR", "AI 서버로부터 받은 응답을 처리할 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+  SSE_ERROR("SSE_ERROR", "SSE 연결에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
   REDIRECT_FAIL("REDIRECT_FAIL", "Redirect 실패", HttpStatus.INTERNAL_SERVER_ERROR );
 
   private final String code;
