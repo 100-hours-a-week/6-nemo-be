@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Duration;
 import kr.ai.nemo.global.aop.logging.TimeTrace;
@@ -38,6 +37,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Tag(name = "모임 API", description = "모임 관련 API 입니다.")
 @RestController("groupControllerV2")
@@ -95,6 +95,17 @@ public class GroupController {
   ) {
     return ResponseEntity.ok(BaseApiResponse.success(
         groupCommandService.recommendGroupFreeform(request, userDetails.getUserId())));
+  }
+
+  @Operation(summary = "선택지 기반 모임 추천 - SSE 연결", description = "FE와 SSE를 연결합니다.")
+  @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.")
+  @TimeTrace
+  @GetMapping("/chatbot/stream")
+  public SseEmitter createChatbotStream(
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @CookieValue(name = CookieConstants.CHATBOT_SESSION_ID) String sessionId
+  ) {
+    return chatbotSseService.createStream(userDetails.getUserId(), sessionId);
   }
   
   @Operation(summary = "선택지 기반 모임 추천 - session 정보 가져오기", description = "기존에 대화 세션이 있었는지 확인합니다.")
