@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Duration;
+import kr.ai.nemo.domain.group.service.ChatbotSseService;
 import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.dto.request.GroupChatbotQuestionRequest;
@@ -50,6 +51,7 @@ public class GroupController {
   private final AiGroupService aiGroupService;
   private final KafkaNotifyGroupService kafkaNotifyGroupService;
   private final GroupEventPublisher groupEventPublisher;
+  private final ChatbotSseService chatbotSseService;
 
   @Operation(summary = "모임 해체", description = "모임을 해체합니다.")
   @ApiResponse(responseCode = "204", description = "성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = BaseApiResponse.class)))
@@ -100,7 +102,7 @@ public class GroupController {
   @Operation(summary = "선택지 기반 모임 추천 - SSE 연결", description = "FE와 SSE를 연결합니다.")
   @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.")
   @TimeTrace
-  @GetMapping("/chatbot/stream")
+  @GetMapping("/recommendations/chatbot/stream")
   public SseEmitter createChatbotStream(
       @AuthenticationPrincipal CustomUserDetails userDetails,
       @CookieValue(name = CookieConstants.CHATBOT_SESSION_ID) String sessionId
@@ -155,6 +157,11 @@ public class GroupController {
        GroupChatbotQuestionResponse response =
            groupCommandService.recommendGroupQuestion(request, userDetails.getUserId(), sessionId);
     return ResponseEntity.ok(BaseApiResponse.success(response));
+  }
+
+  @GetMapping("/chatbot/connections/count")
+  public ResponseEntity<Integer> getConnectionCount() {
+    return ResponseEntity.ok(chatbotSseService.getActiveConnectionCount());
   }
 
   @Operation(summary = "선택지 기반 모임 추천 - 모임 추천 요청", description = "모든 선택지에 응답 후 모임 추천을 요청합니다.")
