@@ -18,6 +18,7 @@ import kr.ai.nemo.domain.group.dto.request.GroupChatbotQuestionRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupAiRecommendResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupChatbotQuestionResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupDto;
+import kr.ai.nemo.domain.group.dto.sse.response.SseDoneResponse;
 import kr.ai.nemo.domain.group.dto.sse.response.SseGroupQuestionOptionResponse;
 import kr.ai.nemo.domain.group.dto.sse.response.SseGroupQuestionOptionResponse.Option;
 import kr.ai.nemo.domain.group.dto.sse.response.SseGroupQuestionResponse;
@@ -363,10 +364,8 @@ public class GroupWebsocketService extends TextWebSocketHandler {
         ChatbotSseService sseService = sseServices.get(sessionId);
         if (sseService != null && userId != null) {
           sseService.streamAiResponse(userId, sessionId, new SseGroupQuestionOptionResponse(AiMessageType.QUESTION_OPTIONS, new Option(optionsList)));
+          sseService.streamAiResponse(userId, sessionId, new SseDoneResponse(AiMessageType.RECOMMEND_DONE, null));
         }
-
-        // 질문 + 선택지 모두 완료
-        completeAiResponse(sessionId);
       }
 
       case "RECOMMEND_ID" -> {
@@ -388,6 +387,9 @@ public class GroupWebsocketService extends TextWebSocketHandler {
             GroupRecommendReasonResponse.class);
         String chunk = response.payload().reason();
 
+        // reasonCollectors에 저장 (completeRecommendResponse에서 사용)
+        reasonCollectors.computeIfAbsent(sessionId, k -> new StringBuilder()).append(chunk);
+
         ChatbotSseService sseService = sseServices.get(sessionId);
         Long userId = userIds.get(sessionId);
         if (sseService != null && userId != null) {
@@ -396,12 +398,10 @@ public class GroupWebsocketService extends TextWebSocketHandler {
       }
 
       case "RECOMMEND_DONE" -> {
-        completeRecommendResponse(sessionId);
-
         ChatbotSseService sseService = sseServices.get(sessionId);
         Long userId = userIds.get(sessionId);
         if (sseService != null && userId != null) {
-          sseService.streamAiResponse(userId, sessionId, new SseGroupQuestionResponse(AiMessageType.RECOMMEND_DONE, null));
+          sseService.streamAiResponse(userId, sessionId, new SseDoneResponse(AiMessageType.RECOMMEND_DONE, null));
           sseService.disconnectStream(userId, sessionId); // 연결 끊기
 
           // 정리
@@ -411,6 +411,9 @@ public class GroupWebsocketService extends TextWebSocketHandler {
       }
     }
   }
+
+  /*
+  SSE 사용으로 불필요
 
   private void completeAiResponse(String sessionId) {
     String completeQuestion = questionCollectors.remove(sessionId).toString();
@@ -424,15 +427,25 @@ public class GroupWebsocketService extends TextWebSocketHandler {
     }
   }
 
+
   private void completeRecommendResponse(String sessionId) {
     Long completeGroupId = groupIdCollectors.remove(sessionId);
-    String completeReason = reasonCollectors.remove(sessionId).toString();
+
+    // NPE 방지: null 체크 추가
+    StringBuilder reasonBuilder = reasonCollectors.remove(sessionId);
+    String completeReason = reasonBuilder != null ? reasonBuilder.toString() : "";
+
+    log.info("추천 응답 완료 - 세션: {}, 그룹ID: {}, 이유 길이: {}",
+        sessionId, completeGroupId, completeReason.length());
 
     CompletableFuture<GroupAiRecommendResponse> future = pendingRecommendRequests.remove(sessionId);
     if (future != null) {
       GroupAiRecommendResponse response = new GroupAiRecommendResponse(completeGroupId,
           completeReason, null);
       future.complete(response);
+    } else {
+      log.warn("pendingRecommendRequests에서 해당 세션을 찾을 수 없음: {}", sessionId);
     }
   }
+   */
 }

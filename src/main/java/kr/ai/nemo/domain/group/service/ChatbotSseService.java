@@ -148,6 +148,12 @@ public class ChatbotSseService {
 
   // Ping 전송
   private void sendPing(String streamKey) {
+
+    if (!pingTasks.containsKey(streamKey)) {
+      log.debug("이미 취소된 ping 작업 무시: {}", streamKey);
+      return;
+    }
+
     SseEmitter emitter = emitters.get(streamKey);
     if (emitter != null) {
       try {
@@ -203,17 +209,18 @@ public class ChatbotSseService {
   }
 
   private String createStreamKey(Long userId, String sessionId) {
-    return userId + "_" + sessionId + "_" + UUID.randomUUID().toString().substring(0, 8);
+    return userId + "_" + sessionId;
   }
 
   public void disconnectStream(Long userId, String sessionId) {
     String streamKey = createStreamKey(userId, sessionId);
+    stopPing(streamKey); // ping 정지 추가
+
     SseEmitter emitter = emitters.get(streamKey);
     if (emitter != null) {
       emitter.complete();
       emitters.remove(streamKey);
     }
-    stopPing(streamKey); // ping 정지 추가
   }
 
   public int getActiveConnectionCount() {
