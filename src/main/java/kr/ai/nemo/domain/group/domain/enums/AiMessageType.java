@@ -11,6 +11,7 @@ public enum AiMessageType {
   RECOMMEND_ID("RECOMMEND_ID"),
   RECOMMEND_REASON("RECOMMEND_REASON"),
   RECOMMEND_DONE("RECOMMEND_DONE"),
+  PING("PING"),
   ERROR("ERROR");
 
   private final String value;

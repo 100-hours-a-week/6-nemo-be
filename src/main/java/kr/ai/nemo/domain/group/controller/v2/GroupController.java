@@ -160,7 +160,7 @@ public class GroupController {
         groupCommandService.recommendGroupQuestion(request, userDetails.getUserId(), sessionId);
      */
     return ResponseEntity.accepted()  // 202 Accepted
-        .body(BaseApiResponse.success("질문 처리를 시작했습니다. SSE 연결에서 응답을 확인하세요."));
+        .body(BaseApiResponse.success(null));
   }
   /*
   Kafka 코드
@@ -195,7 +195,7 @@ public class GroupController {
   ) {
     chatbotSseService.processRecommendWithStream(userDetails.getUserId(), sessionId);
     return ResponseEntity.accepted()  // 202 Accepted
-        .body(BaseApiResponse.success("질문 처리를 시작했습니다. SSE 연결에서 응답을 확인하세요."));
+        .body(BaseApiResponse.success(null));
   }
 
   /*

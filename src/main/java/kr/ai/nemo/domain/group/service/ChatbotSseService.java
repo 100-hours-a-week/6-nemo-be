@@ -3,7 +3,12 @@ package kr.ai.nemo.domain.group.service;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import kr.ai.nemo.domain.group.domain.enums.AiMessageType;
 import kr.ai.nemo.domain.group.domain.enums.ChatbotRole;
 import kr.ai.nemo.domain.group.dto.request.ChatMessage;
@@ -12,6 +17,7 @@ import kr.ai.nemo.domain.group.dto.request.GroupChatbotQuestionRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupChatbotSessionResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupChatbotSessionResponse.Message;
 import kr.ai.nemo.domain.group.dto.sse.response.SseErrorResponse;
+import kr.ai.nemo.domain.group.dto.sse.response.SsePingResponse;
 import kr.ai.nemo.domain.group.exception.GroupErrorCode;
 import kr.ai.nemo.global.error.code.CommonErrorCode;
 import kr.ai.nemo.global.redis.CacheConstants;
@@ -31,12 +37,18 @@ public class ChatbotSseService {
   private final RedisCacheService redisCacheService;
   private final GroupQueryService groupQueryService;
   private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
+  
+  // Ping 관련 추가
+  private final ScheduledExecutorService pingScheduler = Executors.newScheduledThreadPool(5);
+  private final Map<String, ScheduledFuture<?>> pingTasks = new ConcurrentHashMap<>();
+  
   private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 10; // SSE 연결 유지 시간 10분
+  private static final Long PING_INTERVAL = 30L * 1000; // 30초마다 ping
 
   // 사용자 답변 Redis에 저장 후 WebSocket 연결
   public void processQuestionWithStream(GroupChatbotQuestionRequest request, Long userId, String sessionId) {
 
-    if (request == null) {
+    if (request != null) {
       String redisKey = CacheKeyUtil.key(CacheConstants.REDIS_CHATBOT_PREFIX, userId, sessionId);
       ChatMessage userMsg = new ChatMessage(ChatbotRole.USER, request.answer());
       redisCacheService.appendToList(redisKey, CacheConstants.REDIS_CHATBOT_MESSAGES_FIELD, userMsg,
@@ -88,6 +100,7 @@ public class ChatbotSseService {
       // 정상적인 SSE 연결 종료
       existingEmitter.complete();
       emitters.remove(streamKey);
+      stopPing(streamKey); // 기존 ping 정지
     }
 
     // SSE 생성
@@ -98,12 +111,14 @@ public class ChatbotSseService {
     emitter.onCompletion(() -> {
       log.info("SSE 연결 완료 - 사용자: {}, 세션: {}", userId, sessionId);
       emitters.remove(streamKey);
+      stopPing(streamKey); // ping 정지
     });
 
-    // 콜백 설정 - 60분 뒤 자동으로 실행되는 콜백
+    // 콜백 설정 - 10분 뒤 자동으로 실행되는 콜백
     emitter.onTimeout(() -> {
       log.info("SSE 연결 타임아웃 - 사용자: {}, 세션: {}", userId, sessionId);
       emitter.complete();
+      stopPing(streamKey); // ping 정지
     });
 
     // 콜백 설정 - 예외 발생 시 실행
@@ -111,10 +126,60 @@ public class ChatbotSseService {
       log.error("SSE 연결 오류 - 사용자: {}, 세션: {}", userId, sessionId, throwable);
       emitters.remove(streamKey);
       emitter.completeWithError(throwable);
+      stopPing(streamKey); // ping 정지
     });
+
+    // Ping 시작
+    startPing(streamKey);
 
     log.info("챗봇 SSE 연결 생성 - 사용자: {}, 세션: {}", userId, sessionId);
     return emitter;
+  }
+
+  // Ping 시작
+  private void startPing(String streamKey) {
+    ScheduledFuture<?> pingTask = pingScheduler.scheduleAtFixedRate(() -> {
+      sendPing(streamKey);
+    }, PING_INTERVAL, PING_INTERVAL, TimeUnit.MILLISECONDS);
+    
+    pingTasks.put(streamKey, pingTask);
+    log.debug("Ping 시작 - {}", streamKey);
+  }
+
+  // Ping 전송
+  private void sendPing(String streamKey) {
+    SseEmitter emitter = emitters.get(streamKey);
+    if (emitter != null) {
+      try {
+        SsePingResponse pingData = new SsePingResponse(AiMessageType.PING, null);
+
+        emitter.send(SseEmitter.event()
+          .id("ping_" + System.currentTimeMillis())
+          .name("ping")
+          .data(pingData));
+
+        log.debug("Ping 전송 성공 - {}", streamKey);
+
+      } catch (IOException e) {
+        log.warn("Ping 전송 실패 - 연결 끊어짐: {}", streamKey);
+        // Ping 실패 시 연결 정리
+        emitters.remove(streamKey);
+        stopPing(streamKey);
+        emitter.completeWithError(e);
+      }
+    } else {
+      log.debug("Ping 대상 없음 - {}", streamKey);
+      stopPing(streamKey);
+    }
+  }
+
+  // Ping 정지
+  private void stopPing(String streamKey) {
+    ScheduledFuture<?> pingTask = pingTasks.remove(streamKey);
+    if (pingTask != null) {
+      pingTask.cancel(false);
+      log.debug("Ping 정지 - {}", streamKey);
+    }
   }
 
   // AI 응답 청크를 SSE로 스트리밍
@@ -138,7 +203,7 @@ public class ChatbotSseService {
   }
 
   private String createStreamKey(Long userId, String sessionId) {
-    return userId + "_" + sessionId;
+    return userId + "_" + sessionId + "_" + UUID.randomUUID().toString().substring(0, 8);
   }
 
   public void disconnectStream(Long userId, String sessionId) {
@@ -148,6 +213,7 @@ public class ChatbotSseService {
       emitter.complete();
       emitters.remove(streamKey);
     }
+    stopPing(streamKey); // ping 정지 추가
   }
 
   public int getActiveConnectionCount() {
