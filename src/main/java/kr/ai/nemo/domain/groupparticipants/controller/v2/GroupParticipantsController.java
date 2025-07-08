@@ -67,7 +67,6 @@ public class GroupParticipantsController {
       @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
     groupParticipantsCommandService.withdrawGroup(groupId, userDetails.getUserId());
-    kafkaNotifyGroupService.notifyGroupLeft(userDetails.getUserId(), groupId);
     groupEventPublisher.publishGroupLeft(userDetails.getUserId(), groupId);
 
     /*
