@@ -364,7 +364,7 @@ public class GroupWebsocketService extends TextWebSocketHandler {
         ChatbotSseService sseService = sseServices.get(sessionId);
         if (sseService != null && userId != null) {
           sseService.streamAiResponse(userId, sessionId, new SseGroupQuestionOptionResponse(AiMessageType.QUESTION_OPTIONS, new Option(optionsList)));
-          sseService.streamAiResponse(userId, sessionId, new SseDoneResponse(AiMessageType.RECOMMEND_DONE, null));
+          sseService.streamAiResponse(userId, sessionId, new SseDoneResponse(AiMessageType.QUESTION_DONE, null));
         }
       }
 
