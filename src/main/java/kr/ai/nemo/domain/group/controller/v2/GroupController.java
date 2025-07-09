@@ -102,11 +102,20 @@ public class GroupController {
   @Operation(summary = "선택지 기반 모임 추천 - SSE 연결", description = "FE와 SSE를 연결합니다.")
   @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.")
   @TimeTrace
-  @GetMapping("/recommendations/chatbot/stream")
+  @GetMapping(value = "/recommendations/chatbot/stream", produces = "text/event-stream")
   public SseEmitter createChatbotStream(
       @AuthenticationPrincipal CustomUserDetails userDetails,
-      @CookieValue(name = CookieConstants.CHATBOT_SESSION_ID) String sessionId
+      @CookieValue(name = CookieConstants.CHATBOT_SESSION_ID) String sessionId,
+      HttpServletResponse response
   ) {
+    // CORS 헤더 추가
+    response.setHeader("Access-Control-Allow-Origin", "*");
+    response.setHeader("Access-Control-Allow-Methods", "GET");
+    response.setHeader("Access-Control-Allow-Headers", "*");
+    response.setHeader("Cache-Control", "no-cache");
+    response.setHeader("Connection", "keep-alive");
+    response.setHeader("Content-Type", "text/event-stream");
+
     return chatbotSseService.createStream(userDetails.getUserId(), sessionId);
   }
 
