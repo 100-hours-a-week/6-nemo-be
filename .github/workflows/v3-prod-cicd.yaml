@@ -1,11 +1,11 @@
 name: Backend CI - Push to ECR
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: '릴리즈 버전 태그 (예: v3.0.0)'
-        required: true
+  # workflow_dispatch:
+  #   inputs:
+  #     version:
+  #       description: '릴리즈 버전 태그 (예: v3.0.0)'
+  #       required: true
   push:
     branches:
       - infra/ci-test # 임시 브랜치명으로 사용하세요
@@ -29,7 +29,7 @@ jobs:
           TIME_TAG="${{ env.ENVIRONMENT }}-$(TZ=Asia/Seoul date +'%Y%m%d-%H%M')"
           echo "TIME_TAG=$TIME_TAG" >> $GITHUB_ENV
 
-          VERSION_TAG="${{ env.ENVIRONMENT }}-${{ github.event.inputs.version }}"
+          VERSION_TAG="${{ env.ENVIRONMENT }}-${{ github.event.inputs.version || 'v0.0.0' }}"
           echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
 
           IMAGE_URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.SERVICE }}"
