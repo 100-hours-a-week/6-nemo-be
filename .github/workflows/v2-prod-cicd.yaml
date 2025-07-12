@@ -87,7 +87,9 @@ jobs:
           -t "${IMAGE_URI}:${TIME_TAG}" \
           -t "${IMAGE_URI}:${{ env.ENVIRONMENT }}-latest" \
           -t "${IMAGE_URI}:${VERSION_TAG}" \
-          --push .
+          --push \
+          .
+
 
     - name: Create Instance Template & Start MIG Rolling Update
       run: |
