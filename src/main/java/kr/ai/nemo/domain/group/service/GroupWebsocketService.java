@@ -59,12 +59,8 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 public class GroupWebsocketService extends TextWebSocketHandler {
 
   private final ConcurrentHashMap<String, WebSocketSession> aiConnctions = new ConcurrentHashMap<>();
-  private final ConcurrentHashMap<String, CompletableFuture<GroupChatbotQuestionResponse>> pendingRequests = new ConcurrentHashMap<>();
-  private final ConcurrentHashMap<String, CompletableFuture<GroupAiRecommendResponse>> pendingRecommendRequests = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<String, StringBuilder> questionCollectors = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<String, StringBuilder> reasonCollectors = new ConcurrentHashMap<>();
-  private final ConcurrentHashMap<String, List<String>> optionsCollectors = new ConcurrentHashMap<>();
-  private final ConcurrentHashMap<String, Long> groupIdCollectors = new ConcurrentHashMap<>();
   private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
   private final ConcurrentHashMap<String, ScheduledFuture<?>> timeoutTasks = new ConcurrentHashMap<>();
   private final GroupChatbotMessagePublisher groupChatbotMessagePublisher;
@@ -125,7 +121,6 @@ public class GroupWebsocketService extends TextWebSocketHandler {
 
     try {
       CompletableFuture<GroupChatbotQuestionResponse> future = new CompletableFuture<>();
-      pendingRequests.put(sessionId, future);
 
       ScheduledFuture<?> timeoutTask = scheduler.schedule(() -> {
         log.warn("Request timeout for session: {}", sessionId);
@@ -270,7 +265,6 @@ public class GroupWebsocketService extends TextWebSocketHandler {
 
     try {
       CompletableFuture<GroupAiRecommendResponse> future = new CompletableFuture<>();
-      pendingRecommendRequests.put(sessionId, future);
 
       groupChatbotMessagePublisher.publishRecommendRequest(request, sessionId);
 
@@ -302,10 +296,6 @@ public class GroupWebsocketService extends TextWebSocketHandler {
     // 모든 데이터 정리
     questionCollectors.remove(sessionId);
     reasonCollectors.remove(sessionId);
-    optionsCollectors.remove(sessionId);
-    groupIdCollectors.remove(sessionId);
-    pendingRequests.remove(sessionId);
-    pendingRecommendRequests.remove(sessionId);
 
     sseServices.remove(sessionId);
     userIds.remove(sessionId);
@@ -351,7 +341,6 @@ public class GroupWebsocketService extends TextWebSocketHandler {
             GroupRecommendOptionResponse.class);
         String completeQuestion = questionCollectors.get(sessionId).toString();
         List<String> optionsList = optionResponse.payload().options(); // 실제 필드명에 따라
-        optionsCollectors.put(sessionId, optionsList);
 
         Long userId = userIds.get(sessionId);
         if (userId != null) {
@@ -372,7 +361,6 @@ public class GroupWebsocketService extends TextWebSocketHandler {
         GroupRecommendGroupIdResponse response = objectMapper.readValue(payload,
             GroupRecommendGroupIdResponse.class);
         Long groupId = response.payload().groupId();
-        groupIdCollectors.put(sessionId, groupId);
 
         ChatbotSseService sseService = sseServices.get(sessionId);
         Long userId = userIds.get(sessionId);

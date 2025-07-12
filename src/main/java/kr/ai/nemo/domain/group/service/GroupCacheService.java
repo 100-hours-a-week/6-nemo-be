@@ -9,6 +9,7 @@ import kr.ai.nemo.domain.group.dto.response.GroupDetailStaticInfo;
 import kr.ai.nemo.domain.group.exception.GroupErrorCode;
 import kr.ai.nemo.domain.group.exception.GroupException;
 import kr.ai.nemo.domain.group.repository.GroupRepository;
+import kr.ai.nemo.global.redis.CacheJitterUtil;
 import kr.ai.nemo.global.redis.CacheKeyUtil;
 import kr.ai.nemo.global.redis.RedisCacheService;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +28,8 @@ public class GroupCacheService {
     private final RedisCacheService redisCacheService;
     private final GroupCacheKeyUtil groupCacheKeyUtil;
 
-    private static final Duration groupCacheExpire = Duration.ofMinutes(10);
-    private static final Duration errorCacheExpire = Duration.ofMinutes(5);
+    private static final Duration groupCacheExpire = Duration.ofMinutes(3);
+    private static final Duration errorCacheExpire = Duration.ofMinutes(2);
 
     private static class GroupCacheKeys {
         final String groupDetail;
@@ -90,7 +91,9 @@ public class GroupCacheService {
             List<String> tags = groupTagService.getTagNamesByGroupId(group.getId());
             GroupDetailStaticInfo result = GroupDetailStaticInfo.from(group, tags);
 
-            redisCacheService.set(keys.groupDetail, result, groupCacheExpire);
+            Duration jitteredExpire = CacheJitterUtil.addJitter(groupCacheExpire, 3);
+            redisCacheService.set(keys.groupDetail, result, jitteredExpire);
+
             log.info("Cache Set (success): groupId = {}", groupId);
 
             return result;
