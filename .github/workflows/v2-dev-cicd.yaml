@@ -2,7 +2,7 @@ name: Backend CI/CD for v2-dev
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ infra/signoz-refactor , develop ]
 
 jobs:
   build-and-deploy:
@@ -42,6 +42,13 @@ jobs:
     - name: Configure Docker for Artifact Registry
       run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
+    - name: Load OTEL_ENVIRONMENT from GCP Secret Manager
+      run: |
+        gcloud secrets versions access latest --secret="backend-env-dev" \
+          | grep '=' \
+          | grep -v '^[[:space:]]*$' \
+          >> $GITHUB_ENV
+
     - name: Gradle Build
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -50,15 +57,17 @@ jobs:
 
     - name: Build and Push Docker Image
       run: |
-        echo Checking pushed image: ${IMAGE_URI}:${TIME_TAG}"
-        echo Checking pushed image: ${IMAGE_URI}:${{ env.ENVIRONMENT }}-latest"
+        echo "Checking pushed image: ${IMAGE_URI}:${TIME_TAG}"
+        echo "Checking pushed image: ${IMAGE_URI}:${{ env.ENVIRONMENT }}-latest"
 
         docker buildx build \
           --no-cache \
           --platform linux/amd64 \
+          --build-arg "OTEL_ENVIRONMENT=${{ env.OTEL_ENVIRONMENT }}" \
           -t "${IMAGE_URI}:${TIME_TAG}" \
           -t "${IMAGE_URI}:${{ env.ENVIRONMENT }}-latest" \
-          --push .
+          --push \
+          .
 
     - name: Deploy via Bastion to Dev Server
       uses: appleboy/ssh-action@v1.0.0
