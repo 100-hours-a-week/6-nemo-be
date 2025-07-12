@@ -26,6 +26,7 @@ import kr.ai.nemo.domain.group.dto.response.GroupGenerateResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupListResponse;
 import kr.ai.nemo.domain.group.exception.GroupErrorCode;
 import kr.ai.nemo.domain.group.exception.GroupException;
+import kr.ai.nemo.domain.group.messaging.GroupEventPublisher;
 import kr.ai.nemo.domain.group.service.AiGroupService;
 import kr.ai.nemo.domain.group.service.GroupCommandService;
 import kr.ai.nemo.domain.group.service.GroupQueryService;
@@ -33,6 +34,7 @@ import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.schedule.domain.enums.ScheduleStatus;
 import kr.ai.nemo.domain.schedule.dto.response.ScheduleListResponse;
 import kr.ai.nemo.domain.schedule.service.ScheduleQueryService;
+import kr.ai.nemo.global.kafka.producer.KafkaNotifyGroupService;
 import kr.ai.nemo.global.testUtil.MockMember;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -71,6 +73,12 @@ class GroupControllerTest {
 
   @MockitoBean
   private AiGroupService aiGroupService;
+
+  @MockitoBean
+  private KafkaNotifyGroupService kafkaNotifyGroupService;
+
+  @MockitoBean
+  private GroupEventPublisher groupEventPublisher;
 
   @MockitoBean
   private CustomUserDetailsService customUserDetailsService;
@@ -283,6 +291,7 @@ class GroupControllerTest {
     given(groupCommandService.createGroup(any(GroupCreateRequest.class), any(CustomUserDetails.class)))
         .willReturn(mockResponse);
     doNothing().when(aiGroupService).notifyGroupCreated(mockResponse);
+    doNothing().when(groupEventPublisher).publishGroupCreated(mockResponse);
 
     // when & then
     mockMvc.perform(post("/api/v1/groups")
@@ -295,7 +304,6 @@ class GroupControllerTest {
         .andExpect(jsonPath("$.data.category").value("IT/개발"));
 
     then(groupCommandService).should().createGroup(any(GroupCreateRequest.class), any(CustomUserDetails.class));
-    then(aiGroupService).should().notifyGroupCreated(mockResponse);
   }
 
   @Test

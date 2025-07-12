@@ -1,4 +1,4 @@
-package kr.ai.nemo.aop.logging;
+package kr.ai.nemo.global.aop.logging;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

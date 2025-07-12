@@ -14,11 +14,14 @@ import kr.ai.nemo.domain.auth.security.JwtProvider;
 import kr.ai.nemo.domain.auth.service.CustomUserDetailsService;
 import kr.ai.nemo.domain.group.exception.GroupErrorCode;
 import kr.ai.nemo.domain.group.exception.GroupException;
+import kr.ai.nemo.domain.group.messaging.GroupEventPublisher;
 import kr.ai.nemo.domain.group.service.AiGroupService;
 import kr.ai.nemo.domain.groupparticipants.exception.GroupParticipantErrorCode;
 import kr.ai.nemo.domain.groupparticipants.exception.GroupParticipantException;
 import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsCommandService;
-import kr.ai.nemo.domain.user.repository.UserRepository;import kr.ai.nemo.global.testUtil.MockMember;
+import kr.ai.nemo.domain.user.repository.UserRepository;
+import kr.ai.nemo.global.kafka.producer.KafkaNotifyGroupService;
+import kr.ai.nemo.global.testUtil.MockMember;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +48,12 @@ class GroupParticipantsControllerTest {
   private AiGroupService aiGroupService;
 
   @MockitoBean
+  private KafkaNotifyGroupService kafkaNotifyGroupService;
+
+  @MockitoBean
+  private GroupEventPublisher groupEventPublisher;
+
+  @MockitoBean
   private CustomUserDetailsService customUserDetailsService;
 
   @MockitoBean
@@ -61,6 +70,7 @@ class GroupParticipantsControllerTest {
 
     doNothing().when(groupParticipantsCommandService).kickOut(eq(groupId), eq(targetUserId), any());
     doNothing().when(aiGroupService).notifyGroupLeft(targetUserId, groupId);
+    doNothing().when(groupEventPublisher).publishGroupLeft(groupId, targetUserId);
 
     // when & then
     mockMvc.perform(delete("/api/v2/groups/{groupId}/participants/{userId}", groupId, targetUserId)
@@ -68,7 +78,6 @@ class GroupParticipantsControllerTest {
         .andExpect(status().isNoContent());
 
     verify(groupParticipantsCommandService).kickOut(eq(groupId), eq(targetUserId), any());
-    verify(aiGroupService).notifyGroupLeft(targetUserId, groupId);
   }
 
   @Test
@@ -187,6 +196,7 @@ class GroupParticipantsControllerTest {
 
     doNothing().when(groupParticipantsCommandService).withdrawGroup(eq(groupId), eq(userId));
     doNothing().when(aiGroupService).notifyGroupLeft(userId, groupId);
+    doNothing().when(groupEventPublisher).publishGroupLeft(groupId, userId);
 
     // when & then
     mockMvc.perform(delete("/api/v2/groups/{groupId}/participants/me", groupId)
@@ -194,7 +204,6 @@ class GroupParticipantsControllerTest {
         .andExpect(status().isNoContent());
 
     verify(groupParticipantsCommandService).withdrawGroup(eq(groupId), eq(userId));
-    verify(aiGroupService).notifyGroupLeft(userId, groupId);
   }
 
   @Test

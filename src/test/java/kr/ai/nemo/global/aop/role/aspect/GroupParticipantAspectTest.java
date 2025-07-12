@@ -1,4 +1,4 @@
-package kr.ai.nemo.aop.role.aspect;
+package kr.ai.nemo.global.aop.role.aspect;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;

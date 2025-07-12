@@ -2,6 +2,8 @@ package kr.ai.nemo.domain.auth.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -96,15 +98,17 @@ class TokenManagerTest {
         tokenManager.setRefreshTokenInCookie(response, refreshToken);
 
         // then
-        ArgumentCaptor<Cookie> cookieCaptor = ArgumentCaptor.forClass(Cookie.class);
-        verify(response).addCookie(cookieCaptor.capture());
+        ArgumentCaptor<String> headerValueCaptor = ArgumentCaptor.forClass(String.class);
+        verify(response).addHeader(eq("Set-Cookie"), headerValueCaptor.capture());
 
-        Cookie cookie = cookieCaptor.getValue();
-        assertThat(cookie.getName()).isEqualTo("refresh_token");
-        assertThat(cookie.getValue()).isEqualTo(refreshToken);
-        assertThat(cookie.isHttpOnly()).isTrue();
-        assertThat(cookie.getSecure()).isTrue();
-        assertThat(cookie.getPath()).isEqualTo("/");
+        assertThat(headerValueCaptor.getValue()).satisfies(value -> {
+            assertThat(value).contains("refresh_token=refresh-token");
+            assertThat(value).contains("Max-Age=86400");
+            assertThat(value).contains("Expires=");
+            assertThat(value).contains("HttpOnly");
+            assertThat(value).contains("Secure");
+            assertThat(value).contains("SameSite=None");
+        });
     }
 
     @Test
@@ -144,15 +148,16 @@ class TokenManagerTest {
         tokenManager.clearRefreshTokenCookie(response);
 
         // then
-        ArgumentCaptor<Cookie> cookieCaptor = ArgumentCaptor.forClass(Cookie.class);
-        verify(response).addCookie(cookieCaptor.capture());
+        ArgumentCaptor<String> headerValueCaptor = ArgumentCaptor.forClass(String.class);
+        verify(response).addHeader(eq("Set-Cookie"), headerValueCaptor.capture());
 
-        Cookie cookie = cookieCaptor.getValue();
-        assertThat(cookie.getName()).isEqualTo("refresh_token");
-        assertThat(cookie.getValue()).isNull();
-        assertThat(cookie.getMaxAge()).isZero();
-        assertThat(cookie.isHttpOnly()).isTrue();
-        assertThat(cookie.getSecure()).isTrue();
-        assertThat(cookie.getPath()).isEqualTo("/");
+        assertThat(headerValueCaptor.getValue()).satisfies(value -> {
+            assertThat(value).contains("refresh_token=");
+            assertThat(value).contains("Max-Age=0");
+            assertThat(value).contains("Expires=Thu, 01 Jan 1970 00:00:00 GMT");
+            assertThat(value).contains("HttpOnly");
+            assertThat(value).contains("Secure");
+            assertThat(value).contains("SameSite=None");
+        });
     }
 }
