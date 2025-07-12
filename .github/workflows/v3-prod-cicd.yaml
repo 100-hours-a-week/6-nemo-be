@@ -29,9 +29,6 @@ jobs:
           TIME_TAG="${{ env.ENVIRONMENT }}-$(TZ=Asia/Seoul date +'%Y%m%d-%H%M')"
           echo "TIME_TAG=$TIME_TAG" >> $GITHUB_ENV
 
-          VERSION_TAG="${{ env.ENVIRONMENT }}-${{ github.event.inputs.version || 'v0.0.0' }}"
-          echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
-
           IMAGE_URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.SERVICE }}"
           echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
 
@@ -61,5 +58,4 @@ jobs:
           docker buildx build \
             --platform linux/amd64 \
             -t "${IMAGE_URI}:${TIME_TAG}" \
-            -t "${IMAGE_URI}:${VERSION_TAG}" \
             --push .
