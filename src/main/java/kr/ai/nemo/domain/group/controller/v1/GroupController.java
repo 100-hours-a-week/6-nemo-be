@@ -64,7 +64,7 @@ public class GroupController {
   @TimeTrace
   @GetMapping
   public ResponseEntity<BaseApiResponse<GroupListResponse>> getAllGroupList(@Valid @ModelAttribute GroupSearchRequest request, @ParameterObject @Valid PageRequestDto pageRequestDto) {
-    PageRequest pageRequest = pageRequestDto.toPageRequest("createAt", "desc");
+    PageRequest pageRequest = pageRequestDto.toPageRequest("createdAt", "desc");
     return ResponseEntity.ok(BaseApiResponse.success(groupQueryService.getGroups(request, pageRequest)));
   }
 

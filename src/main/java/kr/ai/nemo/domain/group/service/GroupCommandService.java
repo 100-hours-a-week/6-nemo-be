@@ -8,7 +8,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import kr.ai.nemo.domain.groupparticipants.domain.GroupParticipants;
+import kr.ai.nemo.domain.groupparticipants.domain.enums.Status;
+import kr.ai.nemo.domain.groupparticipants.repository.GroupParticipantsRepository;
 import kr.ai.nemo.domain.groupparticipants.validator.GroupParticipantValidator;
+import kr.ai.nemo.domain.schedule.domain.Schedule;
+import kr.ai.nemo.domain.schedule.domain.enums.ScheduleStatus;
+import kr.ai.nemo.domain.schedule.repository.ScheduleRepository;
+import kr.ai.nemo.domain.scheduleparticipants.domain.ScheduleParticipant;
+import kr.ai.nemo.domain.scheduleparticipants.repository.ScheduleParticipantRepository;
 import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
@@ -48,6 +56,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class GroupCommandService {
 
   private final GroupRepository groupRepository;
+  private final GroupParticipantsRepository groupParticipantsRepository;
+  private final ScheduleRepository scheduleRepository;
+  private final ScheduleParticipantRepository scheduleParticipantRepository;
   private final GroupTagService groupTagService;
   private final GroupParticipantsCommandService groupParticipantsCommandService;
   private final GroupCacheService groupCacheService;
@@ -106,6 +117,21 @@ public class GroupCommandService {
   public void deleteGroup(Long groupId, Long userId) {
     Group group = groupValidator.isOwnerForGroupDelete(groupId, userId);
     group.deleteGroup();
+
+    // 2. 모든 그룹 참가자 상태 변경 (JOINED -> WITHDRAWN)
+    List<GroupParticipants> participants = groupParticipantsRepository.findByGroupIdAndStatus(groupId, Status.JOINED);
+    participants.forEach(GroupParticipants::withdraw);
+
+    // 3. 관련된 모든 일정 상태 변경 (RECRUITING -> CANCELED)
+    List<Schedule> schedules = scheduleRepository.findByGroupIdAndStatus(groupId, ScheduleStatus.RECRUITING);
+    schedules.forEach(Schedule::cancel);
+
+    // 4. 모든 일정 참가자 삭제 또는 상태 변경
+    schedules.forEach(schedule -> {
+      List<ScheduleParticipant> scheduleParticipants = scheduleParticipantRepository.findByScheduleId(schedule.getId());
+      scheduleParticipantRepository.deleteAll(scheduleParticipants);
+    });
+
     groupCacheService.evictGroupDetailStatic(groupId);
     groupCacheService.deleteGroupListCaches();
   }
