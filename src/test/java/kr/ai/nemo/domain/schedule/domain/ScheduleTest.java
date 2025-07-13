@@ -6,9 +6,9 @@ import java.time.LocalDateTime;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.schedule.domain.enums.ScheduleStatus;
 import kr.ai.nemo.domain.user.domain.User;
-import kr.ai.nemo.unit.global.fixture.group.GroupFixture;
-import kr.ai.nemo.unit.global.fixture.user.UserFixture;
-import kr.ai.nemo.unit.global.testUtil.TestReflectionUtils;
+import kr.ai.nemo.global.fixture.group.GroupFixture;
+import kr.ai.nemo.global.fixture.user.UserFixture;
+import kr.ai.nemo.global.testUtil.TestReflectionUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

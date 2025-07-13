@@ -35,9 +35,9 @@ import kr.ai.nemo.domain.scheduleparticipants.domain.enums.ScheduleParticipantSt
 import kr.ai.nemo.domain.scheduleparticipants.dto.ScheduleParticipantDecisionRequest;
 import kr.ai.nemo.domain.scheduleparticipants.repository.ScheduleParticipantRepository;
 import kr.ai.nemo.domain.user.domain.User;
-import kr.ai.nemo.unit.global.fixture.group.GroupFixture;
-import kr.ai.nemo.unit.global.fixture.schedule.ScheduleFixture;
-import kr.ai.nemo.unit.global.fixture.user.UserFixture;
+import kr.ai.nemo.global.fixture.group.GroupFixture;
+import kr.ai.nemo.global.fixture.schedule.ScheduleFixture;
+import kr.ai.nemo.global.fixture.user.UserFixture;
 import kr.ai.nemo.infra.ImageService;
 import kr.ai.nemo.integration.common.BaseIntegrationTest;
 import org.junit.jupiter.api.AfterEach;

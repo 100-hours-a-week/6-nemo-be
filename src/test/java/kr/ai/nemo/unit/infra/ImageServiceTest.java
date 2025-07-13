@@ -16,7 +16,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import kr.ai.nemo.infra.ImageService;
-import kr.ai.nemo.unit.global.error.exception.CustomException;
+import kr.ai.nemo.global.error.exception.CustomException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

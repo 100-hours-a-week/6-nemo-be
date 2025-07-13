@@ -13,7 +13,7 @@ import kr.ai.nemo.domain.auth.dto.KakaoUserResponse;
 import kr.ai.nemo.domain.auth.exception.AuthException;
 import kr.ai.nemo.domain.user.domain.User;
 import kr.ai.nemo.domain.user.repository.UserRepository;
-import kr.ai.nemo.unit.global.fixture.user.UserFixture;
+import kr.ai.nemo.global.fixture.user.UserFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

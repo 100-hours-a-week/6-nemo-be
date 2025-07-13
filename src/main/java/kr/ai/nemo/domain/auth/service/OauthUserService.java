@@ -1,7 +1,7 @@
 package kr.ai.nemo.domain.auth.service;
 
 import java.time.LocalDateTime;
-import kr.ai.nemo.unit.global.aop.logging.TimeTrace;
+import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.domain.enums.DefaultUserValue;
 import kr.ai.nemo.domain.auth.domain.enums.OAuthProvider;
 import kr.ai.nemo.domain.auth.dto.KakaoUserResponse;

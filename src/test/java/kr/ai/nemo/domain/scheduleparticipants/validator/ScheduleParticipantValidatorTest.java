@@ -14,8 +14,8 @@ import kr.ai.nemo.domain.scheduleparticipants.exception.ScheduleParticipantError
 import kr.ai.nemo.domain.scheduleparticipants.exception.ScheduleParticipantException;
 import kr.ai.nemo.domain.scheduleparticipants.repository.ScheduleParticipantRepository;
 import kr.ai.nemo.domain.user.domain.User;
-import kr.ai.nemo.unit.global.fixture.schedule.ScheduleFixture;
-import kr.ai.nemo.unit.global.fixture.user.UserFixture;
+import kr.ai.nemo.global.fixture.schedule.ScheduleFixture;
+import kr.ai.nemo.global.fixture.user.UserFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

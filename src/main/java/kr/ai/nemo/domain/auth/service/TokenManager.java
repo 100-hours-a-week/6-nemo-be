@@ -3,10 +3,10 @@ package kr.ai.nemo.domain.auth.service;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
-import kr.ai.nemo.unit.global.aop.logging.TimeTrace;
+import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.domain.UserToken;
 import kr.ai.nemo.domain.auth.security.JwtProvider;
-import kr.ai.nemo.unit.global.util.AuthConstants;
+import kr.ai.nemo.global.util.AuthConstants;
 import kr.ai.nemo.domain.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;

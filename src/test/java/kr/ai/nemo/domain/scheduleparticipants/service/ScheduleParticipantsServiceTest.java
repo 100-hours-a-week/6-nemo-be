@@ -20,9 +20,9 @@ import kr.ai.nemo.domain.scheduleparticipants.repository.ScheduleParticipantRepo
 import kr.ai.nemo.domain.scheduleparticipants.validator.ScheduleParticipantValidator;
 import kr.ai.nemo.domain.user.domain.User;
 import kr.ai.nemo.domain.user.repository.UserRepository;
-import kr.ai.nemo.unit.global.fixture.group.GroupFixture;
-import kr.ai.nemo.unit.global.fixture.schedule.ScheduleFixture;
-import kr.ai.nemo.unit.global.fixture.user.UserFixture;
+import kr.ai.nemo.global.fixture.group.GroupFixture;
+import kr.ai.nemo.global.fixture.schedule.ScheduleFixture;
+import kr.ai.nemo.global.fixture.user.UserFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

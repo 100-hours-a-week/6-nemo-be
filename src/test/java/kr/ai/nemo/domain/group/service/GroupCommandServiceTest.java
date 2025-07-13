@@ -27,10 +27,10 @@ import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsCommandServi
 import kr.ai.nemo.domain.groupparticipants.validator.GroupParticipantValidator;
 import kr.ai.nemo.domain.schedule.repository.ScheduleRepository;
 import kr.ai.nemo.domain.user.domain.User;
-import kr.ai.nemo.unit.global.fixture.group.GroupFixture;
-import kr.ai.nemo.unit.global.fixture.user.UserFixture;
-import kr.ai.nemo.unit.global.redis.RedisCacheService;
-import kr.ai.nemo.unit.global.testUtil.TestReflectionUtils;
+import kr.ai.nemo.global.fixture.group.GroupFixture;
+import kr.ai.nemo.global.fixture.user.UserFixture;
+import kr.ai.nemo.global.redis.RedisCacheService;
+import kr.ai.nemo.global.testUtil.TestReflectionUtils;
 import kr.ai.nemo.infra.ImageService;
 
 import org.junit.jupiter.api.DisplayName;
