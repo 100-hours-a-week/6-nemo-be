@@ -1,7 +1,7 @@
 package kr.ai.nemo.domain.group.service;
 
 import java.io.IOException;
-import kr.ai.nemo.global.aop.logging.TimeTrace;
+import kr.ai.nemo.unit.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.dto.request.GroupAiDeleteRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupAiQuestionRecommendRequest;
@@ -13,10 +13,10 @@ import kr.ai.nemo.domain.group.dto.response.GroupCreateResponse;
 import kr.ai.nemo.domain.group.exception.GroupException;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
 import kr.ai.nemo.domain.groupparticipants.dto.request.GroupParticipantAiRequest;
-import kr.ai.nemo.global.common.BaseApiResponse;
-import kr.ai.nemo.global.config.AiApiProperties;
-import kr.ai.nemo.global.error.code.CommonErrorCode;
-import kr.ai.nemo.global.error.exception.CustomException;
+import kr.ai.nemo.unit.global.common.BaseApiResponse;
+import kr.ai.nemo.unit.global.config.AiApiProperties;
+import kr.ai.nemo.unit.global.error.code.CommonErrorCode;
+import kr.ai.nemo.unit.global.error.exception.CustomException;
 import kr.ai.nemo.domain.group.dto.request.GroupAiGenerateRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupAiGenerateResponse;
 import lombok.RequiredArgsConstructor;

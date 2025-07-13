@@ -7,8 +7,8 @@ import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Status;
 import kr.ai.nemo.domain.user.domain.User;
-import kr.ai.nemo.global.fixture.group.GroupFixture;
-import kr.ai.nemo.global.fixture.user.UserFixture;
+import kr.ai.nemo.unit.global.fixture.group.GroupFixture;
+import kr.ai.nemo.unit.global.fixture.user.UserFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

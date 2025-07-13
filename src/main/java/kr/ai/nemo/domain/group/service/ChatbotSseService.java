@@ -3,7 +3,6 @@ package kr.ai.nemo.domain.group.service;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -19,10 +18,9 @@ import kr.ai.nemo.domain.group.dto.response.GroupChatbotSessionResponse.Message;
 import kr.ai.nemo.domain.group.dto.sse.response.SseErrorResponse;
 import kr.ai.nemo.domain.group.dto.sse.response.SsePingResponse;
 import kr.ai.nemo.domain.group.exception.GroupErrorCode;
-import kr.ai.nemo.global.error.code.CommonErrorCode;
-import kr.ai.nemo.global.redis.CacheConstants;
-import kr.ai.nemo.global.redis.CacheKeyUtil;
-import kr.ai.nemo.global.redis.RedisCacheService;
+import kr.ai.nemo.unit.global.redis.CacheConstants;
+import kr.ai.nemo.unit.global.redis.CacheKeyUtil;
+import kr.ai.nemo.unit.global.redis.RedisCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -67,7 +65,7 @@ public class ChatbotSseService {
       GroupChatbotSessionResponse session = groupQueryService.getChatbotSession(userId, sessionId);
 
       List<Message> messages = session.messages();
-      if (messages.isEmpty()) {
+      if (messages == null || messages.isEmpty()) {
         streamAiResponse(userId, sessionId, new SseErrorResponse(AiMessageType.ERROR,
             GroupErrorCode.CHAT_SESSION_NOT_FOUND.getMessage()));
         return;

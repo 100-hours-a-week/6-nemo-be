@@ -1,7 +1,7 @@
 package kr.ai.nemo.domain.groupparticipants.service;
 
 import java.util.List;
-import kr.ai.nemo.global.aop.logging.TimeTrace;
+import kr.ai.nemo.unit.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.group.domain.enums.GroupStatus;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
 import kr.ai.nemo.domain.groupparticipants.domain.GroupParticipants;

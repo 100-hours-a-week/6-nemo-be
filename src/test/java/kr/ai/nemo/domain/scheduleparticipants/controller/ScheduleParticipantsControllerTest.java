@@ -14,7 +14,7 @@ import kr.ai.nemo.domain.auth.service.CustomUserDetailsService;
 import kr.ai.nemo.domain.scheduleparticipants.domain.enums.ScheduleParticipantStatus;
 import kr.ai.nemo.domain.scheduleparticipants.dto.ScheduleParticipantDecisionRequest;
 import kr.ai.nemo.domain.scheduleparticipants.service.ScheduleParticipantsService;
-import kr.ai.nemo.global.testUtil.MockMember;
+import kr.ai.nemo.unit.global.testUtil.MockMember;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

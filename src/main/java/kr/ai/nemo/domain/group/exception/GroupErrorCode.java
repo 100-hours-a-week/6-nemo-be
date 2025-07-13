@@ -1,7 +1,7 @@
 package kr.ai.nemo.domain.group.exception;
 
 
-import kr.ai.nemo.global.error.code.ErrorCode;
+import kr.ai.nemo.unit.global.error.code.ErrorCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

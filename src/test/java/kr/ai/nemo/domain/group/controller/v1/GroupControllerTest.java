@@ -34,8 +34,8 @@ import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.schedule.domain.enums.ScheduleStatus;
 import kr.ai.nemo.domain.schedule.dto.response.ScheduleListResponse;
 import kr.ai.nemo.domain.schedule.service.ScheduleQueryService;
-import kr.ai.nemo.global.kafka.producer.KafkaNotifyGroupService;
-import kr.ai.nemo.global.testUtil.MockMember;
+import kr.ai.nemo.unit.global.kafka.producer.KafkaNotifyGroupService;
+import kr.ai.nemo.unit.global.testUtil.MockMember;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +49,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(controllers = kr.ai.nemo.domain.group.controller.v1.GroupController.class)
+@WebMvcTest(controllers = GroupController.class)
 @MockMember
 @Import(JwtProvider.class)
 @ActiveProfiles("test")

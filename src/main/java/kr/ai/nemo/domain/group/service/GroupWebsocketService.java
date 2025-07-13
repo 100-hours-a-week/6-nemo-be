@@ -36,11 +36,11 @@ import kr.ai.nemo.domain.group.dto.websocket.response.GroupRecommendQuestionResp
 import kr.ai.nemo.domain.group.dto.websocket.response.GroupRecommendReasonResponse;
 import kr.ai.nemo.domain.group.messaging.GroupChatbotMessagePublisher;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
-import kr.ai.nemo.global.error.code.CommonErrorCode;
-import kr.ai.nemo.global.error.exception.CustomException;
-import kr.ai.nemo.global.redis.CacheConstants;
-import kr.ai.nemo.global.redis.CacheKeyUtil;
-import kr.ai.nemo.global.redis.RedisCacheService;
+import kr.ai.nemo.unit.global.error.code.CommonErrorCode;
+import kr.ai.nemo.unit.global.error.exception.CustomException;
+import kr.ai.nemo.unit.global.redis.CacheConstants;
+import kr.ai.nemo.unit.global.redis.CacheKeyUtil;
+import kr.ai.nemo.unit.global.redis.RedisCacheService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -23,11 +23,11 @@ import kr.ai.nemo.domain.groupparticipants.dto.response.MyGroupDto;
 import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsCommandService;
 import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsQueryService;
 import kr.ai.nemo.domain.user.domain.User;
-import kr.ai.nemo.global.fixture.group.GroupFixture;
-import kr.ai.nemo.global.fixture.user.UserFixture;
-import kr.ai.nemo.global.kafka.producer.KafkaNotifyGroupService;
-import kr.ai.nemo.global.testUtil.MockMember;
-import kr.ai.nemo.global.testUtil.TestReflectionUtils;
+import kr.ai.nemo.unit.global.fixture.group.GroupFixture;
+import kr.ai.nemo.unit.global.fixture.user.UserFixture;
+import kr.ai.nemo.unit.global.kafka.producer.KafkaNotifyGroupService;
+import kr.ai.nemo.unit.global.testUtil.MockMember;
+import kr.ai.nemo.unit.global.testUtil.TestReflectionUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +38,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(controllers = kr.ai.nemo.domain.groupparticipants.controller.v1.GroupParticipantsController.class)
+@WebMvcTest(controllers = GroupParticipantsController.class)
 @MockMember
 @Import(JwtProvider.class)
 @ActiveProfiles("test")

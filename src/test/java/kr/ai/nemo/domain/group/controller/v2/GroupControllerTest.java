@@ -21,8 +21,8 @@ import kr.ai.nemo.domain.group.service.AiGroupService;
 import kr.ai.nemo.domain.group.service.ChatbotSseService;
 import kr.ai.nemo.domain.group.service.GroupCommandService;
 import kr.ai.nemo.domain.group.service.GroupQueryService;
-import kr.ai.nemo.global.kafka.producer.KafkaNotifyGroupService;
-import kr.ai.nemo.global.testUtil.MockMember;
+import kr.ai.nemo.unit.global.kafka.producer.KafkaNotifyGroupService;
+import kr.ai.nemo.unit.global.testUtil.MockMember;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +33,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(controllers = kr.ai.nemo.domain.group.controller.v2.GroupController.class)
+@WebMvcTest(controllers = GroupController.class)
 @MockMember
 @Import({JwtProvider.class})
 @ActiveProfiles("test")

@@ -1,6 +1,6 @@
 package kr.ai.nemo.domain.group.service;
 
-import kr.ai.nemo.global.redis.CacheKeyUtil;
+import kr.ai.nemo.unit.global.redis.CacheKeyUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

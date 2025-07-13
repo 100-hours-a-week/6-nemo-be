@@ -15,7 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
-import kr.ai.nemo.global.aop.role.annotation.RequireScheduleOwner;
+import kr.ai.nemo.unit.global.aop.role.annotation.RequireScheduleOwner;
 import kr.ai.nemo.domain.auth.security.JwtProvider;
 import kr.ai.nemo.domain.auth.service.CustomUserDetailsService;
 import kr.ai.nemo.domain.group.domain.Group;
@@ -29,9 +29,9 @@ import kr.ai.nemo.domain.schedule.exception.ScheduleException;
 import kr.ai.nemo.domain.schedule.service.ScheduleCommandService;
 import kr.ai.nemo.domain.schedule.service.ScheduleQueryService;
 import kr.ai.nemo.domain.user.domain.User;
-import kr.ai.nemo.global.fixture.group.GroupFixture;
-import kr.ai.nemo.global.fixture.schedule.ScheduleFixture;
-import kr.ai.nemo.global.testUtil.MockMember;
+import kr.ai.nemo.unit.global.fixture.group.GroupFixture;
+import kr.ai.nemo.unit.global.fixture.schedule.ScheduleFixture;
+import kr.ai.nemo.unit.global.testUtil.MockMember;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

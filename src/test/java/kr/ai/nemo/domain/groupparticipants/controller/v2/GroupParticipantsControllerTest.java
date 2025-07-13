@@ -20,8 +20,8 @@ import kr.ai.nemo.domain.groupparticipants.exception.GroupParticipantErrorCode;
 import kr.ai.nemo.domain.groupparticipants.exception.GroupParticipantException;
 import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsCommandService;
 import kr.ai.nemo.domain.user.repository.UserRepository;
-import kr.ai.nemo.global.kafka.producer.KafkaNotifyGroupService;
-import kr.ai.nemo.global.testUtil.MockMember;
+import kr.ai.nemo.unit.global.kafka.producer.KafkaNotifyGroupService;
+import kr.ai.nemo.unit.global.testUtil.MockMember;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(controllers = kr.ai.nemo.domain.groupparticipants.controller.v2.GroupParticipantsController.class)
+@WebMvcTest(controllers = GroupParticipantsController.class)
 @MockMember
 @Import({JwtProvider.class})
 @ActiveProfiles("test")

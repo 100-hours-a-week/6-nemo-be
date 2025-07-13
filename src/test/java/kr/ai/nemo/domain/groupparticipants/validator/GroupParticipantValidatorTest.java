@@ -15,15 +15,14 @@ import kr.ai.nemo.domain.groupparticipants.domain.enums.Status;
 import kr.ai.nemo.domain.groupparticipants.exception.GroupParticipantException;
 import kr.ai.nemo.domain.groupparticipants.repository.GroupParticipantsRepository;
 import kr.ai.nemo.domain.user.domain.User;
-import kr.ai.nemo.global.fixture.group.GroupFixture;
-import kr.ai.nemo.global.fixture.user.UserFixture;
+import kr.ai.nemo.unit.global.fixture.group.GroupFixture;
+import kr.ai.nemo.unit.global.fixture.user.UserFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("GroupParticipantValidator 테스트")

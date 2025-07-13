@@ -7,7 +7,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import java.util.Optional;
 import kr.ai.nemo.domain.group.domain.Tag;
-import kr.ai.nemo.global.fixture.group.TagFixture;
+import kr.ai.nemo.unit.global.fixture.group.TagFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

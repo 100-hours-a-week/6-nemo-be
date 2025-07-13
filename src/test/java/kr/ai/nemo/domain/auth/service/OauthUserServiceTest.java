@@ -8,7 +8,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.Optional;
@@ -17,7 +16,7 @@ import kr.ai.nemo.domain.auth.exception.AuthException;
 import kr.ai.nemo.domain.user.domain.User;
 import kr.ai.nemo.domain.user.domain.enums.UserStatus;
 import kr.ai.nemo.domain.user.repository.UserRepository;
-import kr.ai.nemo.global.fixture.user.UserFixture;
+import kr.ai.nemo.unit.global.fixture.user.UserFixture;
 import kr.ai.nemo.infra.ImageService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

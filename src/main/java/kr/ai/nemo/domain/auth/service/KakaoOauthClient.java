@@ -1,6 +1,6 @@
 package kr.ai.nemo.domain.auth.service;
 
-import kr.ai.nemo.global.aop.logging.TimeTrace;
+import kr.ai.nemo.unit.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.auth.dto.KakaoTokenResponse;
 import kr.ai.nemo.domain.auth.dto.KakaoUserResponse;
 import kr.ai.nemo.domain.auth.exception.KakaoOAuthErrorCode;

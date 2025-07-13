@@ -2,8 +2,6 @@ package kr.ai.nemo.domain.group.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -24,13 +22,15 @@ import kr.ai.nemo.domain.group.dto.request.UpdateGroupImageRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupCreateResponse;
 import kr.ai.nemo.domain.group.repository.GroupRepository;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
+import kr.ai.nemo.domain.groupparticipants.repository.GroupParticipantsRepository;
 import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsCommandService;
 import kr.ai.nemo.domain.groupparticipants.validator.GroupParticipantValidator;
+import kr.ai.nemo.domain.schedule.repository.ScheduleRepository;
 import kr.ai.nemo.domain.user.domain.User;
-import kr.ai.nemo.global.fixture.group.GroupFixture;
-import kr.ai.nemo.global.fixture.user.UserFixture;
-import kr.ai.nemo.global.redis.RedisCacheService;
-import kr.ai.nemo.global.testUtil.TestReflectionUtils;
+import kr.ai.nemo.unit.global.fixture.group.GroupFixture;
+import kr.ai.nemo.unit.global.fixture.user.UserFixture;
+import kr.ai.nemo.unit.global.redis.RedisCacheService;
+import kr.ai.nemo.unit.global.testUtil.TestReflectionUtils;
 import kr.ai.nemo.infra.ImageService;
 
 import org.junit.jupiter.api.DisplayName;
@@ -46,6 +46,12 @@ class GroupCommandServiceTest {
 
   @Mock
   private GroupRepository groupRepository;
+
+  @Mock
+  private GroupParticipantsRepository groupParticipantsRepository;
+
+  @Mock
+  private ScheduleRepository scheduleRepository;
 
   @Mock
   private GroupTagService groupTagService;
@@ -78,7 +84,7 @@ class GroupCommandServiceTest {
   private GroupCommandService groupCommandService;
 
   @Test
-  @DisplayName("[성공] 그룹 생성 성공 테스트")
+  @DisplayName("[성공] 모임 생성 성공 테스트")
   void createGroup_Success() {
     // given
     User user = UserFixture.createDefaultUser();
@@ -152,7 +158,7 @@ class GroupCommandServiceTest {
   }
 
   @Test
-  @DisplayName("[성공] 그룹 생성 - 태그 없음")
+  @DisplayName("[성공] 모임 생성 - 태그 없음")
   void createGroup_WithoutTags_Success() {
     // given
     User user = UserFixture.createDefaultUser();
@@ -214,7 +220,7 @@ class GroupCommandServiceTest {
   }
 
   @Test
-  @DisplayName("[성공] 그룹 생성 - 빈 태그 리스트")
+  @DisplayName("[성공] 모임 생성 - 빈 태그 리스트")
   void createGroup_WithEmptyTags_Success() {
     // given
     User user = UserFixture.createDefaultUser();
@@ -272,7 +278,7 @@ class GroupCommandServiceTest {
   }
 
   @Test
-  @DisplayName("[성공] 그룹 삭제")
+  @DisplayName("[성공] 모임 삭제")
   void deleteGroup_Success() {
     // given
     Long groupId = 1L;
@@ -301,7 +307,7 @@ class GroupCommandServiceTest {
   }
 
   @Test
-  @DisplayName("[성공] 그룹 이미지 업데이트")
+  @DisplayName("[성공] 모임 이미지 업데이트")
   void updateGroupImage_Success() {
     // given
     Long groupId = 1L;

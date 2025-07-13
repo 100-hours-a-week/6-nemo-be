@@ -23,8 +23,8 @@ import kr.ai.nemo.domain.scheduleparticipants.service.ScheduleParticipantsServic
 import kr.ai.nemo.domain.user.domain.User;
 import kr.ai.nemo.domain.user.repository.UserRepository;
 import kr.ai.nemo.domain.group.repository.GroupRepository;
-import kr.ai.nemo.global.fixture.schedule.ScheduleFixture;
-import kr.ai.nemo.global.testUtil.TestReflectionUtils;
+import kr.ai.nemo.unit.global.fixture.schedule.ScheduleFixture;
+import kr.ai.nemo.unit.global.testUtil.TestReflectionUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
