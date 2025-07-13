@@ -10,8 +10,6 @@ import static org.mockito.Mockito.verify;
 import java.util.Arrays;
 import java.util.List;
 import kr.ai.nemo.domain.group.domain.Group;
-import kr.ai.nemo.domain.groupparticipants.domain.GroupParticipants;
-import kr.ai.nemo.domain.groupparticipants.domain.enums.Status;
 import kr.ai.nemo.domain.schedule.domain.Schedule;
 import kr.ai.nemo.domain.schedule.domain.enums.ScheduleStatus;
 import kr.ai.nemo.domain.schedule.repository.ScheduleRepository;

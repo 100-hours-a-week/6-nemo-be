@@ -14,7 +14,6 @@ import kr.ai.nemo.domain.group.dto.request.GroupChatbotQuestionRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupRecommendRequest;
 import kr.ai.nemo.domain.group.dto.request.UpdateGroupImageRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupRecommendResponse;
-import kr.ai.nemo.domain.group.dto.response.GroupChatbotQuestionResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupChatbotSessionResponse;
 import kr.ai.nemo.domain.group.service.AiGroupService;
 import kr.ai.nemo.domain.group.service.GroupCommandService;

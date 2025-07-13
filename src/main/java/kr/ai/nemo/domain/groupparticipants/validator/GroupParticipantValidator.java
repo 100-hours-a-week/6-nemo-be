@@ -2,7 +2,6 @@ package kr.ai.nemo.domain.groupparticipants.validator;
 
 import java.util.Optional;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
-import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.exception.GroupErrorCode;
 import kr.ai.nemo.domain.group.exception.GroupException;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;

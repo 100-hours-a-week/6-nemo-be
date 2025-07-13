@@ -1,4 +1,4 @@
-package kr.ai.nemo.aop.role.aspect;
+package kr.ai.nemo.global.aop.role.aspect;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
@@ -12,7 +12,6 @@ import kr.ai.nemo.domain.groupparticipants.exception.GroupParticipantErrorCode;
 import kr.ai.nemo.domain.groupparticipants.exception.GroupParticipantException;
 import kr.ai.nemo.domain.groupparticipants.validator.GroupParticipantValidator;
 import kr.ai.nemo.domain.schedule.dto.request.ScheduleCreateRequest;
-import kr.ai.nemo.global.aop.role.aspect.GroupParticipantAspect;
 import org.aspectj.lang.JoinPoint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

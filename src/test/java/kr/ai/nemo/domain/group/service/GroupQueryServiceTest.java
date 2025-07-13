@@ -3,12 +3,12 @@ package kr.ai.nemo.domain.group.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,6 +17,7 @@ import java.util.Optional;
 import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.group.domain.Group;
 import kr.ai.nemo.domain.group.domain.enums.GroupStatus;
+import kr.ai.nemo.domain.group.dto.request.GroupAiQuestionRecommendRequest;
 import kr.ai.nemo.domain.group.dto.request.GroupSearchRequest;
 import kr.ai.nemo.domain.group.dto.response.GroupAiRecommendResponse;
 import kr.ai.nemo.domain.group.dto.response.GroupChatbotSessionResponse;
@@ -71,22 +72,31 @@ class GroupQueryServiceTest {
     @Mock
     private GroupCacheService groupCacheService;
 
+    @Mock
+    private GroupWebsocketService groupWebsocketService;
+
+    @Mock
+    private GroupCacheKeyUtil groupCacheKeyUtil;
+
     @InjectMocks
     private GroupQueryService groupQueryService;
 
     @Test
-    @DisplayName("[성공] 카테고리별 그룹 조회")
-    void getGroups_ByCategory_Success() {
+    @DisplayName("[성공] 첫 페이지 카테고리별 그룹 조회 - 캐시 미스")
+    void getGroups_FirstPage_ByCategory_CacheMiss_Success() {
         // given
         GroupSearchRequest request = new GroupSearchRequest();
         request.setCategory("스포츠");
+        request.setPage(0); // 첫 페이지
         Pageable pageable = PageRequest.of(0, 10);
 
         Group mockGroup = createMockGroup(1L, "축구 모임", "스포츠");
         Page<Long> groupIdPage = new PageImpl<>(List.of(1L), pageable, 1);
+        String cacheKey = "group:list:cache";
 
         // 캐시 미스 시나리오
-        given(redisCacheService.get(anyString(), eq(GroupListResponse.class)))
+        given(groupCacheKeyUtil.getGroupListKey()).willReturn(cacheKey);
+        given(redisCacheService.get(cacheKey, GroupListResponse.class))
             .willReturn(Optional.empty());
 
         given(groupRepository.findGroupIdsByCategoryAndStatusNot("스포츠", GroupStatus.DISBANDED, pageable))
@@ -100,25 +110,23 @@ class GroupQueryServiceTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result.groups()).hasSize(1);
+        verify(groupCacheKeyUtil).getGroupListKey();
         verify(groupRepository).findGroupIdsByCategoryAndStatusNot("스포츠", GroupStatus.DISBANDED, pageable);
         verify(groupRepository).findGroupsWithTagsByIds(List.of(1L));
-        verify(redisCacheService).set(anyString(), any(GroupListResponse.class), any());
+        verify(redisCacheService).set(eq(cacheKey), any(GroupListResponse.class), any());
     }
 
     @Test
-    @DisplayName("[성공] 키워드로 그룹 검색")
-    void getGroups_ByKeyword_Success() {
+    @DisplayName("[성공] 두 번째 페이지 키워드로 그룹 검색 - 캐시 사용 안함")
+    void getGroups_SecondPage_ByKeyword_Success() {
         // given
         GroupSearchRequest request = new GroupSearchRequest();
         request.setKeyword("축구");
-        Pageable pageable = PageRequest.of(0, 10);
+        request.setPage(1); // 두 번째 페이지
+        Pageable pageable = PageRequest.of(1, 10);
 
         Group mockGroup = createMockGroup(1L, "축구 모임", "스포츠");
         Page<Long> groupIdPage = new PageImpl<>(List.of(1L), pageable, 1);
-
-        // 캐시 미스 시나리오
-        given(redisCacheService.get(anyString(), eq(GroupListResponse.class)))
-            .willReturn(Optional.empty());
 
         given(groupRepository.searchGroupIdsWithKeywordOnly("축구", pageable))
             .willReturn(groupIdPage);
@@ -133,21 +141,26 @@ class GroupQueryServiceTest {
         assertThat(result.groups()).hasSize(1);
         verify(groupRepository).searchGroupIdsWithKeywordOnly("축구", pageable);
         verify(groupRepository).findGroupsWithTagsByIds(List.of(1L));
-        verify(redisCacheService).set(anyString(), any(GroupListResponse.class), any());
+        // 첫 페이지가 아니므로 캐시 관련 메소드는 호출되지 않음
+        verify(groupCacheKeyUtil, never()).getGroupListKey();
+        verify(redisCacheService, never()).get(anyString(), any());
     }
 
     @Test
-    @DisplayName("[성공] 전체 그룹 조회")
-    void getGroups_All_Success() {
+    @DisplayName("[성공] 첫 페이지 전체 그룹 조회 - 캐시 미스")
+    void getGroups_FirstPage_All_CacheMiss_Success() {
         // given
         GroupSearchRequest request = new GroupSearchRequest();
+        request.setPage(0); // 첫 페이지
         Pageable pageable = PageRequest.of(0, 10);
 
         Group mockGroup = createMockGroup(1L, "모임", "스포츠");
         Page<Long> groupIdPage = new PageImpl<>(List.of(1L), pageable, 1);
+        String cacheKey = "group:list:cache";
 
         // 캐시 미스 시나리오
-        given(redisCacheService.get(anyString(), eq(GroupListResponse.class)))
+        given(groupCacheKeyUtil.getGroupListKey()).willReturn(cacheKey);
+        given(redisCacheService.get(cacheKey, GroupListResponse.class))
             .willReturn(Optional.empty());
 
         given(groupRepository.findGroupIdsByStatusNot(pageable))
@@ -163,22 +176,25 @@ class GroupQueryServiceTest {
         assertThat(result.groups()).hasSize(1);
         verify(groupRepository).findGroupIdsByStatusNot(pageable);
         verify(groupRepository).findGroupsWithTagsByIds(List.of(1L));
-        verify(redisCacheService).set(anyString(), any(GroupListResponse.class), any());
+        verify(redisCacheService).set(eq(cacheKey), any(GroupListResponse.class), any());
     }
 
     @Test
-    @DisplayName("[성공] 빈 키워드로 그룹 검색")
-    void getGroups_EmptyKeyword_Success() {
+    @DisplayName("[성공] 첫 페이지 빈 키워드로 그룹 검색 - 전체 조회로 처리")
+    void getGroups_FirstPage_EmptyKeyword_Success() {
         // given
         GroupSearchRequest request = new GroupSearchRequest();
         request.setKeyword("   "); // 빈 문자열
+        request.setPage(0); // 첫 페이지
         Pageable pageable = PageRequest.of(0, 10);
 
         Group mockGroup = createMockGroup(1L, "모임", "스포츠");
         Page<Long> groupIdPage = new PageImpl<>(List.of(1L), pageable, 1);
+        String cacheKey = "group:list:cache";
 
         // 캐시 미스 시나리오
-        given(redisCacheService.get(anyString(), eq(GroupListResponse.class)))
+        given(groupCacheKeyUtil.getGroupListKey()).willReturn(cacheKey);
+        given(redisCacheService.get(cacheKey, GroupListResponse.class))
             .willReturn(Optional.empty());
 
         given(groupRepository.findGroupIdsByStatusNot(pageable))
@@ -192,22 +208,25 @@ class GroupQueryServiceTest {
         // then
         assertThat(result).isNotNull();
         verify(groupRepository).findGroupIdsByStatusNot(pageable);
-        verify(redisCacheService).set(anyString(), any(GroupListResponse.class), any());
+        verify(redisCacheService).set(eq(cacheKey), any(GroupListResponse.class), any());
     }
 
     @Test
-    @DisplayName("[성공] 캐시 히트 - 그룹 조회")
-    void getGroups_CacheHit_Success() {
+    @DisplayName("[성공] 첫 페이지 캐시 히트 - 그룹 조회")
+    void getGroups_FirstPage_CacheHit_Success() {
         // given
         GroupSearchRequest request = new GroupSearchRequest();
+        request.setPage(0); // 첫 페이지
         Pageable pageable = PageRequest.of(0, 10);
+        String cacheKey = "group:list:cache";
 
         GroupListResponse cachedResponse = GroupListResponse.from(
             new PageImpl<>(List.of(), pageable, 0)
         );
 
         // 캐시 히트 시나리오
-        given(redisCacheService.get(anyString(), eq(GroupListResponse.class)))
+        given(groupCacheKeyUtil.getGroupListKey()).willReturn(cacheKey);
+        given(redisCacheService.get(cacheKey, GroupListResponse.class))
             .willReturn(Optional.of(cachedResponse));
 
         // when
@@ -216,9 +235,9 @@ class GroupQueryServiceTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result).isEqualTo(cachedResponse);
-        verify(redisCacheService).get(anyString(), eq(GroupListResponse.class));
+        verify(redisCacheService).get(cacheKey, GroupListResponse.class);
         // DB 조회가 일어나지 않아야 함
-        verify(groupRepository, org.mockito.Mockito.never()).findGroupIdsByStatusNot(any());
+        verify(groupRepository, never()).findGroupIdsByStatusNot(any());
     }
 
     @Test
@@ -231,11 +250,10 @@ class GroupQueryServiceTest {
         CustomUserDetails customUserDetails = new CustomUserDetails(user);
 
         GroupDetailStaticInfo staticInfo = new GroupDetailStaticInfo(
-            "테스트 그룹", "스포츠", "요약", "설명", "계획", "서울", 5,10, "image.jpg", List.of("태그1"), "소유자"
+            "테스트 그룹", "스포츠", "요약", "설명", "계획", "서울", 5, 10, "image.jpg", List.of("태그1"), "소유자"
         );
 
         given(groupCacheService.getGroupDetailStatic(group.getId())).willReturn(staticInfo);
-        given(groupValidator.findByIdOrThrow(group.getId())).willReturn(group);
         given(groupParticipantValidator.checkUserRole(customUserDetails, group.getId())).willReturn(Role.MEMBER);
 
         // when
@@ -244,8 +262,8 @@ class GroupQueryServiceTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result.name()).isEqualTo("테스트 그룹");
+        assertThat(result.role()).isEqualTo(Role.MEMBER);
         verify(groupCacheService).getGroupDetailStatic(group.getId());
-        verify(groupValidator).findByIdOrThrow(group.getId());
         verify(groupParticipantValidator).checkUserRole(customUserDetails, group.getId());
     }
 
@@ -271,14 +289,17 @@ class GroupQueryServiceTest {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonNode = mapper.readTree(jsonData);
 
-        given(redisCacheService.get(anyString(), any(Class.class))).willReturn(Optional.of(jsonNode));
+        given(redisCacheService.get(anyString(), eq(JsonNode.class))).willReturn(Optional.of(jsonNode));
 
         // when
         GroupChatbotSessionResponse result = groupQueryService.getChatbotSession(userId, sessionId);
 
         // then
         assertThat(result).isNotNull();
-        verify(redisCacheService).get(anyString(), any(Class.class));
+        assertThat(result.messages()).hasSize(1);
+        assertThat(result.messages().get(0).role()).isEqualTo("user");
+        assertThat(result.messages().get(0).text()).isEqualTo("안녕하세요");
+        verify(redisCacheService).get(anyString(), eq(JsonNode.class));
     }
 
     @Test
@@ -288,7 +309,7 @@ class GroupQueryServiceTest {
         Long userId = 100L;
         String sessionId = "session123";
 
-        given(redisCacheService.get(anyString(), any(Class.class))).willReturn(Optional.empty());
+        given(redisCacheService.get(anyString(), eq(JsonNode.class))).willReturn(Optional.empty());
 
         // when
         GroupChatbotSessionResponse result = groupQueryService.getChatbotSession(userId, sessionId);
@@ -296,7 +317,7 @@ class GroupQueryServiceTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result.messages()).isNull();
-        verify(redisCacheService).get(anyString(), any(Class.class));
+        verify(redisCacheService).get(anyString(), eq(JsonNode.class));
     }
 
     @Test
@@ -332,7 +353,8 @@ class GroupQueryServiceTest {
         GroupAiRecommendResponse aiResponse = new GroupAiRecommendResponse(1L, "추천 이유", null);
         Group mockGroup = createMockGroup(1L, "축구 모임", "스포츠");
 
-        given(aiGroupService.recommendGroup(any(), anyString())).willReturn(aiResponse);
+        given(groupWebsocketService.sendRecommendToAI(any(GroupAiQuestionRecommendRequest.class), eq(sessionId)))
+            .willReturn(aiResponse);
         given(groupValidator.findByIdOrThrow(1L)).willReturn(mockGroup);
 
         // when
@@ -341,7 +363,7 @@ class GroupQueryServiceTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result.reason()).isEqualTo("추천 이유");
-        verify(aiGroupService).recommendGroup(any(), anyString());
+        verify(groupWebsocketService).sendRecommendToAI(any(GroupAiQuestionRecommendRequest.class), eq(sessionId));
         verify(groupValidator).findByIdOrThrow(1L);
     }
 

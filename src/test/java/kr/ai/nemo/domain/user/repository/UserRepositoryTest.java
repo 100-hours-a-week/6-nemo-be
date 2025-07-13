@@ -1,8 +1,6 @@
 package kr.ai.nemo.domain.user.repository;
 
-import java.util.Optional;
 import kr.ai.nemo.domain.user.domain.User;
-import kr.ai.nemo.domain.user.dto.MyPageResponse;
 import kr.ai.nemo.global.fixture.user.UserFixture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

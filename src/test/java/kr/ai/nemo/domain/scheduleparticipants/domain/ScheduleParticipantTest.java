@@ -3,7 +3,6 @@ package kr.ai.nemo.domain.scheduleparticipants.domain;
 import kr.ai.nemo.domain.schedule.domain.Schedule;
 import kr.ai.nemo.domain.scheduleparticipants.domain.enums.ScheduleParticipantStatus;
 import kr.ai.nemo.domain.user.domain.User;
-import kr.ai.nemo.domain.user.domain.enums.UserStatus;
 import kr.ai.nemo.global.fixture.user.UserFixture;
 import kr.ai.nemo.global.testUtil.TestReflectionUtils;
 import org.junit.jupiter.api.BeforeEach;

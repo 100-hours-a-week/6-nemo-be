@@ -1,4 +1,4 @@
-package kr.ai.nemo.aop.logging;
+package kr.ai.nemo.global.aop.logging;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -7,7 +7,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import kr.ai.nemo.global.aop.logging.TimeTraceAspect;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.junit.jupiter.api.DisplayName;
