@@ -1,4 +1,4 @@
-package kr.ai.nemo.infra;
+package kr.ai.nemo.unit.infra;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import kr.ai.nemo.infra.ImageService;
 import kr.ai.nemo.global.error.exception.CustomException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

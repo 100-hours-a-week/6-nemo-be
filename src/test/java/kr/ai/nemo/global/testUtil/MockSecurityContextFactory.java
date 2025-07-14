@@ -15,8 +15,13 @@ public class MockSecurityContextFactory implements WithSecurityContextFactory<Mo
   public SecurityContext createSecurityContext(MockMember mockMember) {
     SecurityContext context = SecurityContextHolder.createEmptyContext();
 
+    // 기본 사용자 생성 (ID는 실제 테스트에서 관리)
     User mockUser = UserFixture.createDefaultUser();
+
+    // 통합 테스트의 경우 실제 저장된 사용자 ID를 사용
+    // 단위 테스트의 경우 고정 ID 사용
     TestReflectionUtils.setField(mockUser, "id", 1L);
+
     CustomUserDetails userDetails = new CustomUserDetails(mockUser);
 
     Authentication auth = new UsernamePasswordAuthenticationToken(

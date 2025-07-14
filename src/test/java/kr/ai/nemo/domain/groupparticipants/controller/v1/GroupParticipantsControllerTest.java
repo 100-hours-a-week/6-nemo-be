@@ -14,6 +14,7 @@ import kr.ai.nemo.domain.auth.security.CustomUserDetails;
 import kr.ai.nemo.domain.auth.security.JwtProvider;
 import kr.ai.nemo.domain.auth.service.CustomUserDetailsService;
 import kr.ai.nemo.domain.group.domain.Group;
+import kr.ai.nemo.domain.group.messaging.GroupEventPublisher;
 import kr.ai.nemo.domain.group.service.AiGroupService;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Role;
 import kr.ai.nemo.domain.groupparticipants.domain.enums.Status;
@@ -24,6 +25,7 @@ import kr.ai.nemo.domain.groupparticipants.service.GroupParticipantsQueryService
 import kr.ai.nemo.domain.user.domain.User;
 import kr.ai.nemo.global.fixture.group.GroupFixture;
 import kr.ai.nemo.global.fixture.user.UserFixture;
+import kr.ai.nemo.global.kafka.producer.KafkaNotifyGroupService;
 import kr.ai.nemo.global.testUtil.MockMember;
 import kr.ai.nemo.global.testUtil.TestReflectionUtils;
 import org.junit.jupiter.api.DisplayName;
@@ -36,7 +38,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(controllers = kr.ai.nemo.domain.groupparticipants.controller.v1.GroupParticipantsController.class)
+@WebMvcTest(controllers = GroupParticipantsController.class)
 @MockMember
 @Import(JwtProvider.class)
 @ActiveProfiles("test")
@@ -56,6 +58,12 @@ class GroupParticipantsControllerTest {
   private AiGroupService aiGroupService;
 
   @MockitoBean
+  private KafkaNotifyGroupService kafkaNotifyGroupService;
+
+  @MockitoBean
+  private GroupEventPublisher groupEventPublisher;
+
+  @MockitoBean
   private CustomUserDetailsService customUserDetailsService;
 
   @Test
@@ -66,7 +74,7 @@ class GroupParticipantsControllerTest {
     Long groupId = 1L;
     doNothing().when(groupParticipantsCommandService).applyToGroup(
         groupId, userDetails, Role.MEMBER, Status.JOINED);
-    doNothing().when(aiGroupService).notifyGroupJoined(userDetails.getUserId(), groupId);
+    doNothing().when(groupEventPublisher).publishGroupJoined(userDetails.getUserId(), groupId);
 
     // when & then
     mockMvc.perform(post("/api/v1/groups/{groupId}/applications", groupId)

@@ -18,6 +18,19 @@ spring:
       ddl-auto: none
     show-sql: true
 
+  kafka:
+    producer:
+      acks: all  # idempotent producer를 위해 all로 설정
+      retries: 3   # 전송 실패시 재시도 횟수
+      batch-size: 1024   # 한 번에 보낼 메시지들을 모아두는 배치 크기
+      properties:
+        max.in.flight.requests.per.connection: 1   # 순서 보장
+        enable.idempotence: true   # 중복 방지
+        linger.ms: 0
+    consumer:
+      group-id: nemo-group-local
+      auto-offset-reset: latest  # 개발시 최신 메시지만
+
 management:
   tracing:
     sampling:

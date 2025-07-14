@@ -2,8 +2,6 @@ package kr.ai.nemo.global.testUtil;
 
 import java.util.List;
 import kr.ai.nemo.domain.group.dto.request.GroupCreateRequest;
-import kr.ai.nemo.domain.group.dto.request.GroupGenerateRequest;
-import kr.ai.nemo.domain.group.dto.request.UpdateGroupImageRequest;
 
 /**
  * 테스트 데이터 빌더 유틸리티 클래스

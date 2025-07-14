@@ -1,7 +1,7 @@
+package kr.ai.nemo.global.util;
+
 import kr.ai.nemo.domain.auth.security.JwtProvider;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import java.util.Date;
 
 public class TokenGenerator {
     public static void main(String[] args) {

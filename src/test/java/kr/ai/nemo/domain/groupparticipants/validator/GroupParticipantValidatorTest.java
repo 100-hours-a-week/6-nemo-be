@@ -23,7 +23,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("GroupParticipantValidator 테스트")
@@ -111,15 +110,26 @@ class GroupParticipantValidatorTest {
     void checkUserRole_GroupOwner_ReturnLeader() {
         // given
         User owner = User.builder()
-                .id(1L)
-                .nickname("owner")
-                .email("owner@example.com")
-                .provider("kakao")
-                .providerId("123")
-                .build();
-        
+            .id(1L)
+            .nickname("owner")
+            .email("owner@example.com")
+            .provider("kakao")
+            .providerId("123")
+            .build();
+
         Group group = GroupFixture.createGroupWithId(1L, owner, "테스트 그룹");
+
+        GroupParticipants participant = GroupParticipants.builder()
+            .user(owner)
+            .group(group)
+            .role(Role.LEADER)
+            .status(Status.JOINED)
+            .build();
+
         CustomUserDetails userDetails = new CustomUserDetails(owner);
+
+        given(repository.findByGroupIdAndUserId(1L, 1L))
+            .willReturn(Optional.of(participant));
 
         // when
         Role result = groupParticipantValidator.checkUserRole(userDetails, group.getId());
@@ -132,17 +142,27 @@ class GroupParticipantValidatorTest {
     @DisplayName("[성공] 사용자 역할 확인 - 그룹 멤버")
     void checkUserRole_GroupMember_ReturnMember() {
         // given
-        User owner = UserFixture.createDefaultUser();
-        ReflectionTestUtils.setField(owner, "id", 1L);
-
-        User member = UserFixture.createDefaultUser();
-        ReflectionTestUtils.setField(member, "id", 2L);
+        User owner = User.builder()
+            .id(1L)
+            .nickname("owner")
+            .email("owner@example.com")
+            .provider("kakao")
+            .providerId("123")
+            .build();
 
         Group group = GroupFixture.createGroupWithId(1L, owner, "테스트 그룹");
-        CustomUserDetails userDetails = new CustomUserDetails(member);
 
-        given(repository.existsByGroupIdAndUserIdAndStatus(1L, 2L, Status.JOINED))
-            .willReturn(true);
+        GroupParticipants participant = GroupParticipants.builder()
+            .user(owner)
+            .group(group)
+            .role(Role.MEMBER)
+            .status(Status.JOINED)
+            .build();
+
+        CustomUserDetails userDetails = new CustomUserDetails(owner);
+
+        given(repository.findByGroupIdAndUserId(1L, 1L))
+            .willReturn(Optional.of(participant));
 
         // when
         Role result = groupParticipantValidator.checkUserRole(userDetails, group.getId());
@@ -155,17 +175,16 @@ class GroupParticipantValidatorTest {
     @DisplayName("[성공] 사용자 역할 확인 - 비멤버")
     void checkUserRole_NonMember_ReturnNonMember() {
         // given
-        User owner = UserFixture.createDefaultUser();
-        ReflectionTestUtils.setField(owner, "id", 1L);
-
-        User nonMember = UserFixture.createDefaultUser();
-        ReflectionTestUtils.setField(nonMember, "id", 2L);
+        User owner = User.builder()
+            .id(1L)
+            .nickname("owner")
+            .email("owner@example.com")
+            .provider("kakao")
+            .providerId("123")
+            .build();
 
         Group group = GroupFixture.createGroupWithId(1L, owner, "테스트 그룹");
-        CustomUserDetails userDetails = new CustomUserDetails(nonMember);
-
-        given(repository.existsByGroupIdAndUserIdAndStatus(1L, 2L, Status.JOINED))
-            .willReturn(false);
+        CustomUserDetails userDetails = new CustomUserDetails(owner);
 
         // when
         Role result = groupParticipantValidator.checkUserRole(userDetails, group.getId());

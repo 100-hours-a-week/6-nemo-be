@@ -51,6 +51,7 @@ dependencies {
     implementation("org.springframework.retry:spring-retry")
     implementation("org.redisson:redisson-spring-boot-starter:$redissonVersion")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
+    implementation("org.springframework.kafka:spring-kafka")
 
     // Jackson JSR310 모듈 명시적 추가
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
@@ -67,6 +68,7 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("org.springframework.kafka:spring-kafka-test")
     testImplementation("com.h2database:h2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
