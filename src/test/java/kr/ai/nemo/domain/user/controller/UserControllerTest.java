@@ -51,6 +51,7 @@ class UserControllerTest {
   void getMyPage_Success() throws Exception {
     // given
     MyPageResponse response = new MyPageResponse(
+        1L,
         "test",
         "test@example.com",
         "test.jpg",
@@ -78,6 +79,7 @@ class UserControllerTest {
     );
 
     MyPageResponse response = new MyPageResponse(
+        1L,
         "nickname",
         "email",
         "image.jpg",
