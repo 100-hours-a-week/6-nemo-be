@@ -92,6 +92,7 @@ class GroupQueryServiceTest {
 
         Group mockGroup = createMockGroup(1L, "축구 모임", "스포츠");
         Page<Long> groupIdPage = new PageImpl<>(List.of(1L), pageable, 1);
+        String cacheKey = "group:list:cache";
 
         // 카테고리별 조회는 캐싱하지 않으므로 바로 DB 조회
         given(groupRepository.findGroupIdsByCategoryAndStatusNot("스포츠", GroupStatus.DISBANDED, pageable))
