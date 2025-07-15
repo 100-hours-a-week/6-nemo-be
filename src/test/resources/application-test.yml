@@ -1,14 +1,17 @@
 spring:
   datasource:
     driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=1
+    hikari:
+      maximum-pool-size: 1
+      connection-timeout: 5000
     username: sa
     password:
 
   jpa:
     hibernate:
       ddl-auto: create-drop
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -25,11 +28,11 @@ spring:
       host: localhost
       port: 6379
       database: 0
-      timeout: 2000ms
+      timeout: 100ms
       lettuce:
         pool:
-          max-active: 8
-          max-idle: 8
+          max-active: 1
+          max-idle: 1
           min-idle: 0
 
 logging:
