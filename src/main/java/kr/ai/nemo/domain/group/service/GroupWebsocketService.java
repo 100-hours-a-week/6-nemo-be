@@ -75,9 +75,6 @@ public class GroupWebsocketService extends TextWebSocketHandler {
   @Value("${GROUP_CHATBOT_URI}")
   private String groupChatbotUri;
 
-  @Value("${GROUP_CHATBOT_URI}")
-  private String groupChatbotUri;
-
   // session을 만들거나 해제
   public WebSocketSession getOrCreateSessionConnection(String sessionId) {
     return aiConnctions.computeIfAbsent(sessionId, this::createSessionConnection);
