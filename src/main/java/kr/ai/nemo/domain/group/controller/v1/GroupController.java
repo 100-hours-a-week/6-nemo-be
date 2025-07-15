@@ -63,7 +63,9 @@ public class GroupController {
   @ApiResponse(responseCode = "200", description = "성공적으로 조회되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerGroupListResponse.class)))
   @TimeTrace
   @GetMapping
-  public ResponseEntity<BaseApiResponse<GroupListResponse>> getAllGroupList(@Valid @ModelAttribute GroupSearchRequest request, @ParameterObject @Valid PageRequestDto pageRequestDto) {
+  public ResponseEntity<BaseApiResponse<GroupListResponse>> getAllGroupList(
+      @Valid @ModelAttribute GroupSearchRequest request,
+      @ParameterObject @Valid PageRequestDto pageRequestDto) {
     PageRequest pageRequest = pageRequestDto.toPageRequest("createdAt", "desc");
     return ResponseEntity.ok(BaseApiResponse.success(groupQueryService.getGroups(request, pageRequest)));
   }

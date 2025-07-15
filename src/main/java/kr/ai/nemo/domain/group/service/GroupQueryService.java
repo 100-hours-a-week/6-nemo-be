@@ -56,7 +56,11 @@ public class GroupQueryService {
   @TimeTrace
   @Transactional(readOnly = true)
   public GroupListResponse getGroups(GroupSearchRequest request, Pageable pageable) {
-    if (request.getPage() == 0) {
+    // 전체 모임 목록의 첫 페이지만 캐싱
+    if (request.getPage() == 0 &&
+        request.getCategory() == null &&
+        (request.getKeyword() == null || request.getKeyword().isBlank())) {
+
       String cacheKey = groupCacheKeyUtil.getGroupListKey();
 
       Optional<GroupListResponse> cached = redisCacheService.get(cacheKey, GroupListResponse.class);
@@ -82,6 +86,8 @@ public class GroupQueryService {
         throw new CustomException(CommonErrorCode.INTERNAL_SERVER_ERROR);
       }
     }
+
+    // 나머지 모든 경우는 DB에서 직접 조회
     return loadFromDatabase(request, pageable);
   }
 
