@@ -135,7 +135,7 @@ class ChatbotSseIntegrationTest extends BaseIntegrationTest {
             .andDo(print());
 
         // WebSocket 서비스가 호출되었는지 비동기 검증
-        await().atMost(3, TimeUnit.SECONDS)
+        await().atMost(1, TimeUnit.SECONDS)
             .untilAsserted(() -> {
                 verify(groupWebsocketService, times(1))
                     .sendQuestionToAIWithStream(any(), eq(testUser.getId()), eq(sessionId), any());

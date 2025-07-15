@@ -82,23 +82,18 @@ class GroupQueryServiceTest {
     private GroupQueryService groupQueryService;
 
     @Test
-    @DisplayName("[성공] 첫 페이지 카테고리별 그룹 조회 - 캐시 미스")
-    void getGroups_FirstPage_ByCategory_CacheMiss_Success() {
+    @DisplayName("[성공] 첫 페이지 카테고리별 그룹 조회 - DB 직접 조회")
+    void getGroups_FirstPage_ByCategory_DirectDBQuery_Success() {
         // given
         GroupSearchRequest request = new GroupSearchRequest();
-        request.setCategory("스포츠");
         request.setPage(0); // 첫 페이지
+        request.setCategory("스포츠"); // 카테고리 설정
         Pageable pageable = PageRequest.of(0, 10);
 
         Group mockGroup = createMockGroup(1L, "축구 모임", "스포츠");
         Page<Long> groupIdPage = new PageImpl<>(List.of(1L), pageable, 1);
-        String cacheKey = "group:list:cache";
 
-        // 캐시 미스 시나리오
-        given(groupCacheKeyUtil.getGroupListKey()).willReturn(cacheKey);
-        given(redisCacheService.get(cacheKey, GroupListResponse.class))
-            .willReturn(Optional.empty());
-
+        // 카테고리별 조회는 캐싱하지 않으므로 바로 DB 조회
         given(groupRepository.findGroupIdsByCategoryAndStatusNot("스포츠", GroupStatus.DISBANDED, pageable))
             .willReturn(groupIdPage);
         given(groupRepository.findGroupsWithTagsByIds(List.of(1L)))
@@ -110,10 +105,15 @@ class GroupQueryServiceTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result.groups()).hasSize(1);
-        verify(groupCacheKeyUtil).getGroupListKey();
+
+        // 캐시 관련 메서드들은 호출되지 않음
+        verify(groupCacheKeyUtil, never()).getGroupListKey();
+        verify(redisCacheService, never()).get(anyString(), eq(GroupListResponse.class));
+        verify(redisCacheService, never()).set(anyString(), any(), any());
+
+        // DB 조회만 확인
         verify(groupRepository).findGroupIdsByCategoryAndStatusNot("스포츠", GroupStatus.DISBANDED, pageable);
         verify(groupRepository).findGroupsWithTagsByIds(List.of(1L));
-        verify(redisCacheService).set(eq(cacheKey), any(GroupListResponse.class), any());
     }
 
     @Test
