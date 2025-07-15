@@ -26,3 +26,4 @@ ENTRYPOINT sh -c "java \
   -Dotel.instrumentation.runtime-telemetry.enabled=true \
   -Dotel.metric.export.interval=5000 \
   -jar app.jar"
+

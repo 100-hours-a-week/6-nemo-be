@@ -62,7 +62,6 @@ public class GroupQueryService {
         (request.getKeyword() == null || request.getKeyword().isBlank())) {
 
       String cacheKey = groupCacheKeyUtil.getGroupListKey();
-
       Optional<GroupListResponse> cached = redisCacheService.get(cacheKey, GroupListResponse.class);
       if (cached.isPresent()) {
         return cached.get();

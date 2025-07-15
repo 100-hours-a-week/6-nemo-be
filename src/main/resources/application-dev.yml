@@ -72,4 +72,3 @@ sentry:
   send-default-pii: false
   enable-tracing: true
   enabled: true
-

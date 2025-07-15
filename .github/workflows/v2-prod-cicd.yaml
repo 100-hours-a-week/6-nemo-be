@@ -8,7 +8,7 @@ on:
         required: true
   push:
     branches:
-      - main
+      - infra/fix-cicd
 
 jobs:
   build-and-deploy:
@@ -89,7 +89,6 @@ jobs:
           -t "${IMAGE_URI}:${VERSION_TAG}" \
           --push \
           .
-
 
     - name: Create Instance Template & Start MIG Rolling Update
       run: |

@@ -61,6 +61,7 @@ spring:
         socket.send.buffer.bytes: 102400
         socket.receive.buffer.bytes: 102400
 
+
 oauth:
   kakao:
     rest-api-key: ${KAKAO_REST_API_KEY}
