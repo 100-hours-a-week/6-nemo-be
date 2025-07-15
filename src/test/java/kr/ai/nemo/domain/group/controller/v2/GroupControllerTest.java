@@ -16,9 +16,12 @@ import kr.ai.nemo.domain.auth.service.CustomUserDetailsService;
 import kr.ai.nemo.domain.group.dto.request.UpdateGroupImageRequest;
 import kr.ai.nemo.domain.group.exception.GroupErrorCode;
 import kr.ai.nemo.domain.group.exception.GroupException;
+import kr.ai.nemo.domain.group.messaging.GroupEventPublisher;
 import kr.ai.nemo.domain.group.service.AiGroupService;
+import kr.ai.nemo.domain.group.service.ChatbotSseService;
 import kr.ai.nemo.domain.group.service.GroupCommandService;
 import kr.ai.nemo.domain.group.service.GroupQueryService;
+import kr.ai.nemo.global.kafka.producer.KafkaNotifyGroupService;
 import kr.ai.nemo.global.testUtil.MockMember;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,7 +33,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(controllers = kr.ai.nemo.domain.group.controller.v2.GroupController.class)
+@WebMvcTest(controllers = GroupController.class)
 @MockMember
 @Import({JwtProvider.class})
 @ActiveProfiles("test")
@@ -52,6 +55,15 @@ class GroupControllerTest {
   @MockitoBean
   private CustomUserDetailsService customUserDetailsService;
 
+  @MockitoBean
+  private KafkaNotifyGroupService kafkaNotifyGroupService;
+
+  @MockitoBean
+  private GroupEventPublisher groupEventPublisher;
+
+  @MockitoBean
+  private ChatbotSseService chatbotSseService;
+
   @Autowired
   private ObjectMapper objectMapper;
 
@@ -64,6 +76,7 @@ class GroupControllerTest {
     Long groupId = 1L;
     doNothing().when(groupCommandService).deleteGroup(eq(groupId), anyLong());
     doNothing().when(aiGroupService).notifyGroupDeleted(groupId);
+    doNothing().when(groupEventPublisher).publishGroupDeleted(groupId);
 
     // when & then
     mockMvc.perform(delete("/api/v2/groups/{groupId}", groupId)
@@ -71,7 +84,6 @@ class GroupControllerTest {
         .andExpect(status().isNoContent());
 
     verify(groupCommandService).deleteGroup(eq(groupId), anyLong());
-    verify(aiGroupService).notifyGroupDeleted(groupId);
   }
 
   @Test

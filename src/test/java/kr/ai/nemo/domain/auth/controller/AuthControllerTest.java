@@ -30,6 +30,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.RestTemplate;
 
 @WebMvcTest(AuthController.class)
 @ActiveProfiles("test")
@@ -40,6 +41,9 @@ class AuthControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private RestTemplate restTemplate;
 
     @MockitoBean
     private OauthService oauthService;

@@ -14,6 +14,7 @@ jobs:
   build-and-deploy:
     name: Build & Deploy to MIG
     runs-on: ubuntu-latest
+    environment: prod 
 
     env:
       REGION: asia-northeast3
@@ -21,7 +22,7 @@ jobs:
       SERVICE: backend
       ENVIRONMENT: prod
       MACHINE_TYPE: e2-standard-2
-      IMAGE_NAME: prod-base-250704
+      IMAGE_NAME: v2-prod-base-image
       BOOT_DISK_SIZE: 20GB
       BOOT_DISK_TYPE: pd-balanced
       NETWORK: v2-nemo-prod
@@ -30,7 +31,7 @@ jobs:
       STARTUP_SCRIPT_PATH: /home/ubuntu/nemo/cloud/v2/scripts/startup.sh
       SHUTDOWN_SCRIPT_PATH: /home/ubuntu/nemo/cloud/v2/scripts/shutdown.sh
       MIG_NAME: backend-instance-group
-      ROLLING_MINIMAL_ACTION: restart
+      ROLLING_MINIMAL_ACTION: replace
       ROLLING_MAX_SURGE: 2
       ROLLING_MAX_UNAVAILABLE: 2
 
@@ -64,6 +65,13 @@ jobs:
     - name: Configure Docker for Artifact Registry
       run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
+    - name: Load OTEL_ENVIRONMENT from GCP Secret Manager
+      run: |
+        gcloud secrets versions access latest --secret="backend-env-prod" \
+          | grep '=' \
+          | grep -v '^[[:space:]]*$' \
+          >> $GITHUB_ENV
+
     - name: Gradle Build
       env:
         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -75,10 +83,12 @@ jobs:
         docker buildx build \
           --no-cache \
           --platform linux/amd64 \
+          --build-arg "OTEL_ENVIRONMENT=${{ env.OTEL_ENVIRONMENT }}" \
           -t "${IMAGE_URI}:${TIME_TAG}" \
           -t "${IMAGE_URI}:${{ env.ENVIRONMENT }}-latest" \
           -t "${IMAGE_URI}:${VERSION_TAG}" \
-          --push .
+          --push \
+          .
 
     - name: Create Instance Template & Start MIG Rolling Update
       run: |
@@ -87,11 +97,11 @@ jobs:
 
         STARTUP_SCRIPT="#!/bin/bash
         chmod +x ${{ env.STARTUP_SCRIPT_PATH }}
-        su - ubuntu -c \"bash ${{ env.STARTUP_SCRIPT_PATH }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}\""
+        runuser -l ubuntu -c 'bash ${{ env.STARTUP_SCRIPT_PATH }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}'"
 
         SHUTDOWN_SCRIPT="#!/bin/bash
         chmod +x ${{ env.SHUTDOWN_SCRIPT_PATH }}
-        su - ubuntu -c \"bash ${{ env.SHUTDOWN_SCRIPT_PATH }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}\""
+        runuser -l ubuntu -c 'bash ${{ env.SHUTDOWN_SCRIPT_PATH }} ${{ env.SERVICE }} ${{ env.ENVIRONMENT }}'"
 
         gcloud compute instance-templates create "$TEMPLATE_NAME" \
           --region="${{ env.REGION }}" \

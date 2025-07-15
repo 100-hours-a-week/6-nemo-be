@@ -1,4 +1,4 @@
-package kr.ai.nemo;
+package kr.ai.nemo.global.util;
 
 import org.springframework.boot.test.context.TestConfiguration;
 

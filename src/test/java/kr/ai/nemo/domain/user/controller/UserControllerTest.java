@@ -15,7 +15,6 @@ import kr.ai.nemo.domain.auth.security.JwtProvider;
 import kr.ai.nemo.domain.auth.service.CustomUserDetailsService;
 import kr.ai.nemo.domain.user.dto.MyPageResponse;
 import kr.ai.nemo.domain.user.dto.NicknameUpdateRequest;
-import kr.ai.nemo.domain.user.dto.NicknameUpdateResponse;
 import kr.ai.nemo.domain.user.service.UserService;
 import kr.ai.nemo.global.testUtil.MockMember;
 import org.junit.jupiter.api.DisplayName;
@@ -52,6 +51,7 @@ class UserControllerTest {
   void getMyPage_Success() throws Exception {
     // given
     MyPageResponse response = new MyPageResponse(
+        1L,
         "test",
         "test@example.com",
         "test.jpg",
@@ -79,6 +79,7 @@ class UserControllerTest {
     );
 
     MyPageResponse response = new MyPageResponse(
+        1L,
         "nickname",
         "email",
         "image.jpg",

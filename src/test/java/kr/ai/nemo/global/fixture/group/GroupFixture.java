@@ -1,7 +1,7 @@
 package kr.ai.nemo.global.fixture.group;
 
-import java.time.LocalDateTime;
 import kr.ai.nemo.domain.group.domain.Group;
+import kr.ai.nemo.domain.group.domain.enums.CategoryConstants;
 import kr.ai.nemo.domain.group.domain.enums.GroupStatus;
 import kr.ai.nemo.domain.user.domain.User;
 import kr.ai.nemo.global.testUtil.TestReflectionUtils;
@@ -29,7 +29,7 @@ public class GroupFixture {
     }
 
     public static Group createDefaultGroup(User owner) {
-        return createGroup(owner, "테스트 그룹", "운동", 10);
+        return createGroup(owner, "테스트 그룹", CategoryConstants.VALID_CATEGORIES.getFirst(), 10);
     }
 
     public static Group createFullGroup(User owner) {

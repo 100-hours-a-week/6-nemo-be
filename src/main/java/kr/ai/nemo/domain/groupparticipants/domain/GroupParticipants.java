@@ -62,16 +62,6 @@ public class GroupParticipants {
   @Column(name = "deleted_at")
   private LocalDateTime deletedAt;
 
-  public void markAsDeleted() {
-    this.deletedAt = LocalDateTime.now();
-    this.status = Status.WITHDRAWN;
-  }
-
-  public void markAsJoined() {
-    this.joinedAt = LocalDateTime.now();
-    this.status = Status.JOINED;
-  }
-
   public void setStatus(Status status) {
     this.status = status;
     this.deletedAt = LocalDateTime.now();
@@ -81,5 +71,10 @@ public class GroupParticipants {
     this.appliedAt = LocalDateTime.now();
     this.deletedAt = null;
     this.status = Status.JOINED;
+  }
+
+  public void withdraw() {
+    this.deletedAt = LocalDateTime.now();
+    this.status = Status.WITHDRAWN;
   }
 }

@@ -13,6 +13,13 @@ import org.springframework.data.jpa.repository.Query;
 public interface ScheduleParticipantRepository extends JpaRepository<ScheduleParticipant, Long> {
 
   @EntityGraph(attributePaths = {"user"})
+  @Query("""
+      SELECT sp
+      FROM ScheduleParticipant sp
+      JOIN FETCH sp.user
+      WHERE sp.schedule.id = :scheduleId
+      ORDER BY sp.updatedAt ASC
+      """)
   List<ScheduleParticipant> findByScheduleId(Long scheduleId);
 
   boolean existsByScheduleAndUser(Schedule schedule, User user);

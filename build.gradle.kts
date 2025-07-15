@@ -51,6 +51,7 @@ dependencies {
     implementation("org.springframework.retry:spring-retry")
     implementation("org.redisson:redisson-spring-boot-starter:$redissonVersion")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
+    implementation("org.springframework.kafka:spring-kafka")
 
     // Jackson JSR310 모듈 명시적 추가
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
@@ -67,6 +68,7 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("org.springframework.kafka:spring-kafka-test")
     testImplementation("com.h2database:h2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
@@ -129,44 +131,4 @@ tasks.jacocoTestReport {
             )
         )
     }
-}
-
-jacoco {
-	toolVersion = "0.8.13"
-}
-
-tasks.test {
-	ignoreFailures = true  // 테스트 실패 있어도 실패로 간주하지 않음
-	useJUnitPlatform()
-	finalizedBy(tasks.jacocoTestReport)
-}
-
-tasks.jacocoTestReport {
-	dependsOn(tasks.test)
-
-	reports {
-		xml.required.set(false)
-		html.required.set(true)
-		csv.required.set(false)
-	}
-
-	sourceDirectories.setFrom(files("src/main/java"))
-
-	classDirectories.setFrom(
-		files(
-			classDirectories.files.map {
-				fileTree(it) {
-					// 커버리지에서 제외할 디렉터리/파일
-					exclude(
-						"**/dto/**",
-						"**/config/**",
-						"**/NemoApplication*",
-						"**/*Exception*",
-						"**/*Request*",
-						"**/*Response*"
-					)
-				}
-			}
-		)
-	)
 }

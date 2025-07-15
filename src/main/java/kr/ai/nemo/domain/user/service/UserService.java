@@ -30,6 +30,7 @@ public class UserService {
         .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
     
     return new MyPageResponse(
+        userId,
         user.getNickname(),
         user.getEmail(), 
         user.getProfileImageUrl(),
@@ -47,6 +48,7 @@ public class UserService {
     user.setNickname(newNickname);
 
     return new MyPageResponse(
+        userId,
         user.getNickname(),
         user.getEmail(),
         user.getProfileImageUrl(),
@@ -63,6 +65,7 @@ public class UserService {
     user.setProfileImageUrl(imageService.updateUserImage(user.getProfileImageUrl(), request.profileImage(), userId));
 
     return new MyPageResponse(
+        userId,
         user.getNickname(),
         user.getEmail(),
         user.getProfileImageUrl(),

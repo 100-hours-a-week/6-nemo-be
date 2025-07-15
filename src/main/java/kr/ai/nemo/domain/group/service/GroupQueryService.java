@@ -56,9 +56,12 @@ public class GroupQueryService {
   @TimeTrace
   @Transactional(readOnly = true)
   public GroupListResponse getGroups(GroupSearchRequest request, Pageable pageable) {
-    if (request.getPage() == 0) {
-      String cacheKey = groupCacheKeyUtil.getGroupListKey();
+    // 전체 모임 목록의 첫 페이지만 캐싱
+    if (request.getPage() == 0 &&
+        request.getCategory() == null &&
+        (request.getKeyword() == null || request.getKeyword().isBlank())) {
 
+      String cacheKey = groupCacheKeyUtil.getGroupListKey();
       Optional<GroupListResponse> cached = redisCacheService.get(cacheKey, GroupListResponse.class);
       if (cached.isPresent()) {
         return cached.get();
@@ -82,6 +85,8 @@ public class GroupQueryService {
         throw new CustomException(CommonErrorCode.INTERNAL_SERVER_ERROR);
       }
     }
+
+    // 나머지 모든 경우는 DB에서 직접 조회
     return loadFromDatabase(request, pageable);
   }
 
@@ -187,7 +192,6 @@ public class GroupQueryService {
       // 트리 형태로 저장
       JsonNode root = sessionJson.get();
 
-      // root에서 answers로 저장된 값 꺼내기
       JsonNode data = root.get(CacheConstants.REDIS_CHATBOT_MESSAGES_FIELD);
       if (data == null || !data.isArray()) {
         return new GroupChatbotSessionResponse(null);
@@ -196,10 +200,10 @@ public class GroupQueryService {
       List<GroupChatbotSessionResponse.Message> messages = new ArrayList<>();
 
       for (JsonNode dataNode : data) {
-        String role = dataNode.get("role").asText();
-        String text = dataNode.get("text").asText();
-        List<String> options = new ArrayList<>();
+        String role = dataNode.path("role").asText("user");
+        String text = dataNode.path("text").asText(""); // 안전한 기본값
 
+        List<String> options = new ArrayList<>();
         JsonNode optionNode = dataNode.get("options");
         if (optionNode != null && optionNode.isArray()) {
           for (JsonNode opt : optionNode) {
