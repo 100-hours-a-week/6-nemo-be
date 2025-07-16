@@ -57,3 +57,4 @@ jobs:
         run: |
           docker build -t "${IMAGE_URI}:${TIME_TAG}" .
           docker push "${IMAGE_URI}:${TIME_TAG}"
+
