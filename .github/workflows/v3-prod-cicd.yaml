@@ -1,124 +1,59 @@
 name: Backend CI - Push to ECR
 
 on:
+  # workflow_dispatch:
+  #   inputs:
+  #     version:
+  #       description: '릴리즈 버전 태그 (예: v3.0.0)'
+  #       required: true
   push:
     branches:
-      - main
-      - develop
-      - infra/ci-test # 테스트용
-  workflow_dispatch:
-    inputs:
-      version:
-        description: '릴리즈 버전 태그 (예: v3.0.0)'
-        required: false
-
+      - infra/ci-test # 임시 브랜치명으로 사용하세요
 jobs:
   build-and-push:
     name: Build & Push to AWS ECR
     runs-on: ubuntu-latest
-    
+
     env:
       AWS_REGION: ap-northeast-2
       SERVICE: backend
       ENVIRONMENT: prod
-      
+
+
     steps:
       - name: Checkout source code
         uses: actions/checkout@v3
-       
+
       - name: Set image tags and URI
         run: |
-          # 시간 기반 태그
           TIME_TAG="${{ env.ENVIRONMENT }}-$(TZ=Asia/Seoul date +'%Y%m%d-%H%M')"
           echo "TIME_TAG=$TIME_TAG" >> $GITHUB_ENV
-          
-          # 브랜치별 태그
-          BRANCH_NAME=${GITHUB_REF##*/}
-          BRANCH_TAG="${{ env.ENVIRONMENT }}-${BRANCH_NAME}"
-          echo "BRANCH_TAG=$BRANCH_TAG" >> $GITHUB_ENV
-          
-          # 커밋 해시 태그 (짧은 버전)
-          COMMIT_TAG="${{ env.ENVIRONMENT }}-$(echo $GITHUB_SHA | cut -c1-7)"
-          echo "COMMIT_TAG=$COMMIT_TAG" >> $GITHUB_ENV
-          
-          # ECR URI
+
           IMAGE_URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.SERVICE }}"
           echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
-          
-          # 사용자 정의 버전이 있으면 사용
-          if [ "${{ github.event.inputs.version }}" != "" ]; then
-            CUSTOM_TAG="${{ github.event.inputs.version }}"
-            echo "CUSTOM_TAG=$CUSTOM_TAG" >> $GITHUB_ENV
-          fi
-       
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-       
+
       - name: Login to Amazon ECR
         run: |
           aws ecr get-login-password --region ${{ env.AWS_REGION }} \
           | docker login --username AWS \
             --password-stdin "${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
-       
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-       
+
       - name: Gradle Build
         env:
           CI: true
         run: ./gradlew clean build --no-daemon
-       
+
       - name: Build and Push Docker Image to ECR
         run: |
-          # 여러 태그로 동시에 빌드 및 푸시
-          TAGS=(
-            "${IMAGE_URI}:${TIME_TAG}"
-            "${IMAGE_URI}:${BRANCH_TAG}"
-            "${IMAGE_URI}:${COMMIT_TAG}"
-          )
-          
-          # main 브랜치인 경우 latest 태그도 추가
-          if [ "${GITHUB_REF##*/}" = "main" ]; then
-            TAGS+=("${IMAGE_URI}:latest")
-          fi
-          
-          # 사용자 정의 태그가 있으면 추가
-          if [ -n "$CUSTOM_TAG" ]; then
-            TAGS+=("${IMAGE_URI}:${CUSTOM_TAG}")
-          fi
-          
-          # 태그 목록을 docker buildx 명령어 형식으로 변환
-          TAG_ARGS=""
-          for tag in "${TAGS[@]}"; do
-            TAG_ARGS="${TAG_ARGS} -t ${tag}"
-          done
-          
-          echo "Building with tags: ${TAGS[*]}"
-          
-          docker buildx build \
-            --platform linux/amd64 \
-            ${TAG_ARGS} \
-            --push .
-            
-      - name: Output image info
-        run: |
-          echo "### 🐋 Built Docker Images" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Repository:** \`${{ env.IMAGE_URI }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Tags:**" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ env.TIME_TAG }}\` (시간 기반)" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ env.BRANCH_TAG }}\` (브랜치 기반)" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ env.COMMIT_TAG }}\` (커밋 기반)" >> $GITHUB_STEP_SUMMARY
-          
-          if [ "${GITHUB_REF##*/}" = "main" ]; then
-            echo "- \`latest\` (최신)" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            echo "- \`${{ github.event.inputs.version }}\` (사용자 정의)" >> $GITHUB_STEP_SUMMARY
-          fi
+          docker build -t "${IMAGE_URI}:${TIME_TAG}" .
+          docker push "${IMAGE_URI}:${TIME_TAG}"
