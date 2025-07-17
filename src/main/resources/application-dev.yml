@@ -75,3 +75,9 @@ sentry:
   send-default-pii: false
   enable-tracing: true
   enabled: true
+
+server:
+  tomcat:
+    threads:
+      max: 50
+      min-spare: 5
