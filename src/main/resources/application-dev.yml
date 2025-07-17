@@ -10,6 +10,9 @@ spring:
       port: ${REDIS_PORT:6379}
       timeout: 2s
       password: ${REDIS_PASSWORD}
+      lettuce:
+        pool:
+          max-active: 8
 
   jpa:
     hibernate:
