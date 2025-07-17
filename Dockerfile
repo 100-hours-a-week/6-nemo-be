@@ -6,21 +6,13 @@ WORKDIR /app
 RUN mkdir -p /app/heapdumps
 ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.3.0/opentelemetry-javaagent.jar opentelemetry-javaagent.jar
 
+# 시작 스크립트 복사 및 실행 권한 부여
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
 COPY build/libs/*.jar app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT [
-  "java",
-  "-XX:+HeapDumpOnOutOfMemoryError",
-  "-XX:HeapDumpPath=/app/heapdumps/",
-  "-Xms${JAVA_MIN_HEAP:-256m}",
-  "-Xmx${JAVA_MAX_HEAP:-512m}",
-  "-javaagent:/app/opentelemetry-javaagent.jar",
-  "-Dotel.service.name=backend-service",
-  "-Dotel.exporter.otlp.endpoint=http://35.216.67.116:4317",
-  "-Dotel.exporter.otlp.protocol=grpc",
-  "-Dotel.resource.attributes=deployment.environment=dev",
-  "-Dotel.instrumentation.jvm-metrics.enabled=true",
-  "-Dotel.instrumentation.runtime-telemetry.enabled=true",
-  "-jar", "app.jar"]
+# exec form으로 스크립트 실행
+ENTRYPOINT ["/app/start.sh"]
