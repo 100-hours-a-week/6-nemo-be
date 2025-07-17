@@ -30,7 +30,7 @@ spring:
       auto-offset-reset: earliest  # 개발시 최신 메시지만
   threads:
     virtual:
-      enabled: true
+      enabled: false
 
 management:
   tracing:
