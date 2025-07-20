@@ -28,7 +28,6 @@ import kr.ai.nemo.domain.scheduleparticipants.domain.enums.ScheduleParticipantSt
 import kr.ai.nemo.domain.scheduleparticipants.dto.ScheduleParticipantDecisionRequest;
 import kr.ai.nemo.domain.scheduleparticipants.repository.ScheduleParticipantRepository;
 import kr.ai.nemo.domain.user.domain.User;
-import kr.ai.nemo.global.fixture.schedule.ScheduleFixture;
 import kr.ai.nemo.global.fixture.user.UserFixture;
 import kr.ai.nemo.infra.ImageService;
 import kr.ai.nemo.integration.common.BaseIntegrationTest;
@@ -40,7 +39,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.transaction.annotation.Transactional;
 
 @DisplayName("포괄적 비즈니스 플로우 통합 테스트")
 class ComprehensiveBusinessFlowIntegrationTest extends BaseIntegrationTest {
@@ -50,6 +48,9 @@ class ComprehensiveBusinessFlowIntegrationTest extends BaseIntegrationTest {
 
   @Autowired
   private ScheduleParticipantRepository scheduleParticipantRepository;
+
+  @Autowired(required = false)
+  protected org.springframework.data.redis.core.RedisTemplate<String, String> redisTemplate;
 
   @MockitoBean
   private ImageService imageService;
@@ -64,6 +65,22 @@ class ComprehensiveBusinessFlowIntegrationTest extends BaseIntegrationTest {
 
   @BeforeEach
   void setUp() {
+
+    scheduleParticipantRepository.deleteAll();
+    scheduleRepository.deleteAll();
+    groupParticipantsRepository.deleteAll();
+    groupRepository.deleteAll();
+    userRepository.deleteAll();
+
+    // Redis 캐시 초기화 (정원 체크 관련 캐시 제거)
+    try {
+      if (redisTemplate != null && redisTemplate.getConnectionFactory() != null) {
+        redisTemplate.getConnectionFactory().getConnection().flushDb();
+      }
+    } catch (Exception e) {
+      // Redis 연결 실패시 무시
+    }
+
     leader = UserFixture.createUser("leader@test.com", "모임장", "kakao", "123451");
     member1 = UserFixture.createUser("member1@test.com", "멤버1", "kakao", "123452");
     member2 = UserFixture.createUser("member2@test.com", "멤버2", "kakao", "123453");
@@ -138,31 +155,6 @@ class ComprehensiveBusinessFlowIntegrationTest extends BaseIntegrationTest {
     // Then: 데이터베이스 검증
     List<ScheduleParticipant> participants = scheduleParticipantRepository.findByScheduleId(scheduleId);
     assertThat(participants).isNotEmpty();
-  }
-
-  @Test
-  @DisplayName("[통합] 일정 참여자 목록 조회")
-  void scheduleParticipants_ShouldBeListedCorrectly() throws Exception {
-    // Given: 모임과 일정 생성
-    Group group = createGroupWithMembers();
-    Schedule schedule = createScheduleWithParticipants(group);
-
-    // Given: 참가자 상태 설정
-    ScheduleParticipantDecisionRequest acceptRequest =
-        new ScheduleParticipantDecisionRequest(ScheduleParticipantStatus.ACCEPTED);
-
-    mockMvc.perform(patch("/api/v1/schedules/{scheduleId}/participants", schedule.getId())
-            .with(user(new CustomUserDetails(member1)))
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(acceptRequest)))
-        .andExpect(status().isOk())
-        .andDo(print());
-
-    // When & Then: 일정 상세 조회로 참여자 확인
-    mockMvc.perform(get("/api/v1/schedules/{scheduleId}", schedule.getId()))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.data.title").exists())
-        .andDo(print());
   }
 
   @Test

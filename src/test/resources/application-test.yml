@@ -23,6 +23,10 @@ spring:
       enabled: true
       path: /h2-console
 
+  threads:
+    virtual:
+      enabled: true
+
   data:
     redis:
       host: localhost

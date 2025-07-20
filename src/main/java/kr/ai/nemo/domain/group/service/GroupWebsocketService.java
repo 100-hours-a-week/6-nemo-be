@@ -84,6 +84,8 @@ public class GroupWebsocketService extends TextWebSocketHandler {
     try {
       WebSocketClient client = new StandardWebSocketClient();
       URI uri = URI.create(groupChatbotUri);
+      
+      log.info("AI 서버 연결 시도: {} (sessionId: {})", groupChatbotUri, sessionId);
 
       WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
       headers.add("X-CHATBOT-KEY", sessionId);
@@ -91,10 +93,10 @@ public class GroupWebsocketService extends TextWebSocketHandler {
       CompletableFuture<WebSocketSession> sessionFuture = client.execute(this, headers, uri);
       WebSocketSession session = sessionFuture.get(10, TimeUnit.SECONDS);
 
-      log.info("Created websocket session: {}", sessionId);
+      log.info("WebSocket 연결 성공: sessionId={}, isOpen={}", sessionId, session.isOpen());
       return session;
     } catch (Exception e) {
-      log.error("failed to create AI connection for sessionId {}", sessionId, e);
+      log.error("AI 서버 연결 실패 for sessionId {}, URI: {}", sessionId, groupChatbotUri, e);
       throw new CustomException(CommonErrorCode.AI_SERVER_CONNECTION_FAILED);
     }
   }
@@ -250,8 +252,16 @@ public class GroupWebsocketService extends TextWebSocketHandler {
   private void sendQuestionRequest(WebSocketSession session,
       GroupRecommendQuestionRequest aiRequest) {
     try {
+      // WebSocket 세션 상태 확인
+      if (session == null || !session.isOpen()) {
+        log.error("WebSocket 세션이 닫혀있거나 null입니다. 세션: {}",
+            session != null ? session.getId() : "null");
+        throw new RuntimeException("WebSocket 세션이 사용할 수 없는 상태입니다.");
+      }
+
       String message = objectMapper.writeValueAsString(aiRequest);
       session.sendMessage(new TextMessage(message));
+      log.debug("WebSocket 메시지 전송 성공: {}", session.getId());
     } catch (Exception e) {
       log.error("WebSocket 메시지 전송 실패", e);
       throw new RuntimeException("메시지 전송 실패", e);
