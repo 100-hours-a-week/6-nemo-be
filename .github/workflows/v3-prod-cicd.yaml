@@ -8,7 +8,8 @@ on:
         required: true
   push:
     branches:
-      - infra/ci-test # 임시 브랜치명으로 사용하세요
+      - infra/ci-test # 브랜치명 수정
+
 jobs:
   build-and-push:
     name: Build & Push to AWS ECR
@@ -18,7 +19,6 @@ jobs:
       AWS_REGION: ap-northeast-2
       SERVICE: backend
       ENVIRONMENT: prod
-
 
     steps:
       - name: Checkout source code
@@ -41,6 +41,22 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get secrets from AWS Secrets Manager
+        run: |
+          # Sentry 관련 환경변수들 가져오기
+          SECRET_VALUE=$(aws secretsmanager get-secret-value \
+            --secret-id "backend-env-prod" \
+            --query SecretString --output text)
+          
+          # JSON에서 각 값들 추출
+          echo "SENTRY_AUTH_TOKEN=$(echo $SECRET_VALUE | jq -r '.SENTRY_AUTH_TOKEN')" >> $GITHUB_ENV
+          echo "SENTRY_DSN=$(echo $SECRET_VALUE | jq -r '.SENTRY_DSN')" >> $GITHUB_ENV
+          echo "SENTRY_ENV=$(echo $SECRET_VALUE | jq -r '.SENTRY_ENV')" >> $GITHUB_ENV
+          echo "SENTRY_RELEASE=$(echo $SECRET_VALUE | jq -r '.SENTRY_RELEASE')" >> $GITHUB_ENV
+          echo "SENTRY_SAMPLE_RATE=$(echo $SECRET_VALUE | jq -r '.SENTRY_SAMPLE_RATE')" >> $GITHUB_ENV
+          echo "SENTRY_SEND_PII=$(echo $SECRET_VALUE | jq -r '.SENTRY_SEND_PII')" >> $GITHUB_ENV
+          echo "SPRING_PROFILES_ACTIVE=$(echo $SECRET_VALUE | jq -r '.SPRING_PROFILES_ACTIVE')" >> $GITHUB_ENV
 
       - name: Login to Amazon ECR
         run: |
