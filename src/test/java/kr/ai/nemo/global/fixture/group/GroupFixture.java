@@ -22,7 +22,7 @@ public class GroupFixture {
                 .location("서울시 강남구")
                 .completedScheduleTotal(0)
                 .imageUrl("https://example.com/group-image.jpg")
-                .currentUserCount(1)
+                .currentUserCount(0)
                 .maxUserCount(maxUserCount)
                 .status(GroupStatus.ACTIVE)
                 .build();
