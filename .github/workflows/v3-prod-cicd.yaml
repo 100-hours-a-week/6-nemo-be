@@ -9,7 +9,6 @@ on:
   push:
     branches:
       - infra/ci-test # 브랜치명 수정
-
 jobs:
   build-and-push:
     name: Build & Push to AWS ECR
