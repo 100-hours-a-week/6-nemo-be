@@ -35,10 +35,6 @@ public class ScheduleQueryService {
   private final GroupParticipantValidator groupParticipantValidator;
   private final ScheduleValidator scheduleValidator;
 
-  @Cacheable(
-      value = "schedule-detail",
-      key = "#scheduleId",
-      unless = "#result.status() != 'CLOSED'")
   @TimeTrace
   @Transactional(readOnly = true)
   public ScheduleDetailResponse getScheduleDetail(Long scheduleId, Long userId) {
