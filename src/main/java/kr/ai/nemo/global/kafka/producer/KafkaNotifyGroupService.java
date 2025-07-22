@@ -40,8 +40,7 @@ public class KafkaNotifyGroupService {
   }
 
   public void notifyGroupLeft(Long userId, Long groupId) {
-    GroupParticipantAiRequest data = new GroupParticipantAiRequest(userId, groupId);
-    GroupEvent event = GroupEvent.userLeft(data);
+    GroupEvent event = GroupEvent.userLeft(userId, groupId);
     sendEvent(event);
     log.info("[Kafka][GROUP_LEFT] Sent to topic {}: {}",
         KafkaTopic.GROUP_EVENT.getName(), event);

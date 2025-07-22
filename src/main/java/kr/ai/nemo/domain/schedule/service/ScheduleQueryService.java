@@ -2,6 +2,9 @@ package kr.ai.nemo.domain.schedule.service;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import kr.ai.nemo.domain.groupparticipants.exception.GroupParticipantErrorCode;
+import kr.ai.nemo.domain.groupparticipants.exception.GroupParticipantException;
+import kr.ai.nemo.domain.groupparticipants.validator.GroupParticipantValidator;
 import kr.ai.nemo.global.aop.logging.TimeTrace;
 import kr.ai.nemo.domain.group.validator.GroupValidator;
 import kr.ai.nemo.domain.schedule.domain.Schedule;
@@ -29,6 +32,7 @@ public class ScheduleQueryService {
   private final ScheduleRepository scheduleRepository;
   private final ScheduleParticipantRepository scheduleParticipantRepository;
   private final GroupValidator groupValidator;
+  private final GroupParticipantValidator groupParticipantValidator;
   private final ScheduleValidator scheduleValidator;
 
   @Cacheable(
@@ -37,8 +41,11 @@ public class ScheduleQueryService {
       unless = "#result.status() != 'CLOSED'")
   @TimeTrace
   @Transactional(readOnly = true)
-  public ScheduleDetailResponse getScheduleDetail(Long scheduleId) {
+  public ScheduleDetailResponse getScheduleDetail(Long scheduleId, Long userId) {
     Schedule schedule = scheduleValidator.findByIdOrThrow(scheduleId);
+    if(!groupParticipantValidator.validateIsJoinedMember(schedule.getGroup().getId(), userId)) {
+      throw new GroupParticipantException(GroupParticipantErrorCode.NOT_GROUP_MEMBER);
+    }
 
     List<ScheduleParticipant> participants = scheduleParticipantRepository.findByScheduleId(scheduleId);
     return ScheduleDetailResponse.from(schedule, participants);

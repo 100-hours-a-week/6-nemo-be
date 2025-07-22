@@ -48,6 +48,12 @@ public class TokenManager {
   }
 
   // 쿠키 설정 메서드들
+  public void setAccessTokenInCookie(HttpServletResponse response, String accessToken) {
+    int maxAge = (int) (jwtProvider.getAccessTokenValidity() / MILLISECONDS_TO_SECONDS);
+    ResponseCookie cookie = createCookie(AuthConstants.ACCESS_TOKEN_COOKIE_NAME, accessToken, maxAge);
+    response.addHeader(SET_COOKIE_HEADER, cookie.toString());
+  }
+
   public void setRefreshTokenInCookie(HttpServletResponse response, String refreshToken) {
     int maxAge = (int) (jwtProvider.getRefreshTokenValidity() / MILLISECONDS_TO_SECONDS);
     ResponseCookie cookie = createCookie(AuthConstants.REFRESH_TOKEN_COOKIE_NAME, refreshToken, maxAge);
@@ -67,6 +73,7 @@ public class TokenManager {
   // 공통 쿠키 생성 메서드
   private ResponseCookie createCookie(String name, String value, int maxAge) {
     return ResponseCookie.from(name, value)
+        .domain(".nemo.ai.kr")
         .httpOnly(true)
         .secure(true)
         .path("/")

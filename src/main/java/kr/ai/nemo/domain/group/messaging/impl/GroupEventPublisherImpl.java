@@ -61,8 +61,7 @@ public class GroupEventPublisherImpl implements GroupEventPublisher {
     
     @Override
     public void publishGroupLeft(Long userId, Long groupId) {
-        GroupParticipantAiRequest data = new GroupParticipantAiRequest(userId, groupId);
-        GroupEvent event = GroupEvent.userLeft(data);
+        GroupEvent event = GroupEvent.userLeft(groupId, userId);
         String key = UUID.randomUUID().toString();
         
         messagePublisher.publishAsync(KafkaTopic.GROUP_EVENT.getName(), key, event)
