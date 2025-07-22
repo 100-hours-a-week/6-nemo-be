@@ -39,9 +39,7 @@ public class ScheduleQueryService {
   @Transactional(readOnly = true)
   public ScheduleDetailResponse getScheduleDetail(Long scheduleId, Long userId) {
     Schedule schedule = scheduleValidator.findByIdOrThrow(scheduleId);
-    if(!groupParticipantValidator.validateIsJoinedMember(schedule.getGroup().getId(), userId)) {
-      throw new GroupParticipantException(GroupParticipantErrorCode.NOT_GROUP_MEMBER);
-    }
+    groupParticipantValidator.validateIsJoined(schedule.getGroup().getId(), userId);
 
     List<ScheduleParticipant> participants = scheduleParticipantRepository.findByScheduleId(scheduleId);
     return ScheduleDetailResponse.from(schedule, participants);
