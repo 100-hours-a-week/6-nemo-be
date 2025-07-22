@@ -71,8 +71,11 @@ public class ScheduleController {
   @ApiResponse(responseCode = "200", description = "요청이 성공적으로 처리되었습니다.", content = @Content(schema = @Schema(implementation = SwaggerScheduleDetailResponse.class)))
   @TimeTrace
   @GetMapping("/{scheduleId}")
-  public ResponseEntity<BaseApiResponse<ScheduleDetailResponse>> getScheduleDetail(@PathVariable Long scheduleId) {
-    return ResponseEntity.ok(BaseApiResponse.success(scheduleQueryService.getScheduleDetail(scheduleId)));
+  public ResponseEntity<BaseApiResponse<ScheduleDetailResponse>> getScheduleDetail(
+      @PathVariable Long scheduleId,
+      @AuthenticationPrincipal CustomUserDetails userDetails
+  ) {
+    return ResponseEntity.ok(BaseApiResponse.success(scheduleQueryService.getScheduleDetail(scheduleId, userDetails.getUserId())));
   }
 
   @Operation(summary = "나의 일정 리스트 조회", description = "나의 일정 리스트를 조회합니다.")
