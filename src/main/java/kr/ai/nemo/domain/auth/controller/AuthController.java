@@ -54,6 +54,7 @@ public class AuthController {
     String accessToken = oauthService.loginWithKakao(code, error, response);
     try {
       ResponseCookie accessTokenCookie = ResponseCookie.from(Token.ACCESS_TOKEN.getValue(), accessToken)
+          .domain(".nemo.ai.kr")
           .httpOnly(true)
           .secure(true)
           .path("/")
@@ -75,6 +76,7 @@ public class AuthController {
   ) {
     String newAccessToken = oauthService.reissueAccessToken(refreshToken);
     ResponseCookie cookie = ResponseCookie.from(Token.ACCESS_TOKEN.getValue(), newAccessToken)
+        .domain(".nemo.ai.kr")
         .httpOnly(true)
         .secure(true)
         .path("/")

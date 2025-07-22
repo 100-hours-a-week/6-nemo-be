@@ -24,7 +24,7 @@ public record GroupEvent(
     return new GroupEvent(EventType.GROUP_JOINED.name(), null, null, data, LocalDateTime.now());
   }
 
-  public static GroupEvent userLeft(Object data) {
-    return new GroupEvent(EventType.GROUP_LEFT.name(), null, null, data, LocalDateTime.now());
+  public static GroupEvent userLeft(Long groupId, Long userId) {
+    return new GroupEvent(EventType.GROUP_LEFT.name(), groupId, userId, null, LocalDateTime.now());
   }
 }
