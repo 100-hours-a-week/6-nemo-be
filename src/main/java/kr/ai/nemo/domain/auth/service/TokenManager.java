@@ -73,6 +73,7 @@ public class TokenManager {
   // 공통 쿠키 생성 메서드
   private ResponseCookie createCookie(String name, String value, int maxAge) {
     return ResponseCookie.from(name, value)
+        .domain(".nemo.ai.kr")
         .httpOnly(true)
         .secure(true)
         .path("/")
