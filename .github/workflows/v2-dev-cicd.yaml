@@ -71,7 +71,7 @@ jobs:
             .
 
       - name: Deploy via Bastion to Dev Server
-        uses: appleboy/ssh-actigiton@v1.0.0
+        uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.DEV_HOST }}
           username: ${{ secrets.DEV_USER }}
