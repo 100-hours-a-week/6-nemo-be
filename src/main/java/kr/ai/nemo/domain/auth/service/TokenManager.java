@@ -9,6 +9,7 @@ import kr.ai.nemo.domain.auth.security.JwtProvider;
 import kr.ai.nemo.global.util.AuthConstants;
 import kr.ai.nemo.domain.user.domain.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,15 @@ public class TokenManager {
 
   private final JwtProvider jwtProvider;
   private final UserTokenService userTokenService;
+
+  @Value("${cookie.domain:}")
+  private String cookieDomain;
+
+  @Value("${cookie.secure:true}")
+  private boolean cookieSecure;
+
+  @Value("${cookie.same-site:None}")
+  private String cookieSameSite;
 
   // 토큰 생성 메서드들
   public String createAccessToken(Long userId) {
@@ -72,13 +82,18 @@ public class TokenManager {
 
   // 공통 쿠키 생성 메서드
   private ResponseCookie createCookie(String name, String value, int maxAge) {
-    return ResponseCookie.from(name, value)
-        .domain(".nemo.ai.kr")
+    ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(name, value)
         .httpOnly(true)
-        .secure(true)
+        .secure(cookieSecure)
         .path("/")
         .maxAge(maxAge)
-        .sameSite("None")
-        .build();
+        .sameSite(cookieSameSite);
+
+    // 도메인이 설정되어 있을 때만 적용
+    if (cookieDomain != null && !cookieDomain.isEmpty()) {
+      builder.domain(cookieDomain);
+    }
+
+    return builder.build();
   }
 }
