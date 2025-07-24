@@ -48,6 +48,7 @@ spring:
       properties:
         socket.send.buffer.bytes: 102400
         socket.receive.buffer.bytes: 102400
+      retries: 3
 
     # Consumer 설정
     consumer:
