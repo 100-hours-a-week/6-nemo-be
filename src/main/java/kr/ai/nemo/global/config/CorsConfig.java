@@ -13,7 +13,7 @@ public class CorsConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of("https://dev.nemo.ai.kr", "http://localhost:3000", "http://localhost:8000", "https://localhost:3000", "https://onurivit01.store", "https://local.dev.nemo.ai.kr:3000"));
+    configuration.setAllowedOrigins(List.of("https://dev.nemo.ai.kr", "https://dev3.nemo.ai.kr", "http://localhost:3000", "http://localhost:8000", "https://localhost:3000", "https://onurivit01.store", "https://local.dev.nemo.ai.kr:3000"));
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setAllowCredentials(true);

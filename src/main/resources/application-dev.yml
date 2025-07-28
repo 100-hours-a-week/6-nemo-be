@@ -83,6 +83,6 @@ server:
       min-spare: 5
 
 cookie:
-  domain: ".dev.nemo.ai.kr"
+  domain: ".nemo.ai.kr"
   secure: true
   same-site: "None"
