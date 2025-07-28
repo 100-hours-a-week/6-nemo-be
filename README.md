@@ -1,7 +1,7 @@
 # 🟩 NE:MO - 모임 매칭 서비스
 
 **NE:MO**는 조건에 맞는 스터디/모임을 탐색하고 실시간으로 참여할 수 있는 매칭 플랫폼입니다.  
-WebSocket + SSE 기반의 AI 모임 추천, Redis 캐싱, kafka 등 다양한 기술을 도입하여 효율적이고 반응성 높은 서비스를 제공합니다.
+kafka를 통합 데이터 정합성, WebSocket + SSE 기반의 빠른 AI 모임 추천, Redis 캐싱 등 다양한 기술을 도입하여 효율적이고 반응성 높은 서비스를 제공합니다.
 
 ---
 
@@ -58,25 +58,32 @@ WebSocket + SSE 기반의 AI 모임 추천, Redis 캐싱, kafka 등 다양한 �
 
 ## 🧠 기술 블로그 기반 주요 고민 & 해결 전략
 
-### 1. HeapDump 분석으로 메모리 누수 해결
+### 1. Kafka 도입
+- **문제**: 외부 API 호출 지연에 따른 Thread 점유로 BE 에러율 70%, AI의 Chroma DB와의 정합성 깨짐
+- **해결**: Kafka 기반 비동기 이벤트 구조로 전환
+- **결과**: 정합성 확보, 에러율 감소
+
+📎 [관련 블로그](https://medium.com/@oij3115/tech-which-is-a-better-choice-between-rabbitmq-and-kafka-97721abb410b)
+
+### 2. HeapDump 분석으로 메모리 누수 해결
 - **문제**: Full GC가 자주 발생하고, GC 이후에도 Heap 메모리 사용률이 회수되지 않음
 - **접근**: MAT를 활용한 HeapDump 분석을 통해 `byte[]`, `char[]`, `Thread`, `AgentBuilder` 등의 비정상 객체를 추적
-- **해결**: OpenTelemetry와 ByteBuddy Agent 설정 조정, GC 튜닝 → 불필요한 객체 할당 제거
-- **결과**: 힙 메모리 사용률 감소, Full GC 빈도 대폭 감소
+- **해결**: OpenTelemetry와 ByteBuddy Agent 설정 조정 → 불필요한 객체 할당 제거
+- **결과**: 힙 메모리 사용률 감소, Full GC 빈도 5~7회 -> 4회 미만으로 감소
 
 📎 [관련 블로그](https://medium.com/@oij3115/tech-%EB%A9%94%EB%AA%A8%EB%A6%AC-%EB%88%84%EC%88%98-%ED%95%B4%EA%B2%B0%ED%95%98%EA%B8%B0-heapdump-%EB%B6%84%EC%84%9D-b6c5fe093e94)
 
 
-### 2. 테스트 코드 성능 최적화 및 프로파일링
+### 3. 테스트 코드 성능 최적화 및 프로파일링
 - **문제**: 테스트 코드 실행 시간이 10초 이상으로 비효율적
 - **접근**: IntelliJ Profiler로 테스트 성능 분석 → `Thread.sleep`, `NettyEventLoop`, 외부 API 호출이 병목
-- **해결**: MockServer 도입, 불필요한 sleep 제거, Redis TTL + Jitter, Kafka 비동기 호출 등으로 병목 해소
-- **결과**: 테스트 실행 시간 12.4s → 5.9s로 단축, 이벤트 루프 처리 시간 60% 감소
+- **해결**: WebClient를 Mock으로 대체, Thread Pool 조절로 개선
+- **결과**: 테스트 실행 시간 10s → 6s 512ms로 단축
 
 📎 [관련 블로그](https://medium.com/@oij3115/tech-%EB%8A%90%EB%A6%B0-%ED%85%8C%EC%8A%A4%ED%8A%B8-%EC%BD%94%EB%93%9C-%ED%94%84%EB%A1%9C%ED%8C%8C%EC%9D%BC%EB%A7%81%EA%B3%BC-%EC%84%B1%EB%8A%A5-%EC%B5%9C%EC%A0%81%ED%99%94%ED%95%98%EA%B8%B0-12fbea6d3e8d)
 
 
-### 3. Redis 캐시 TTL + Jitter 전략
+### 4. Redis 캐시 TTL + Jitter 전략
 - **문제**: 캐시 만료 시점에 트래픽 집중 (Cache Stampede) → Redis 부하 및 성능 저하
 - **해결**: TTL 설정 시 `Jitter(Random)` 적용 및 null 캐싱 활용하여 트래픽 분산
 - **결과**: TTL 충돌 시점 완화, 조회 응답 속도 평균 58ms → 1ms
@@ -84,51 +91,29 @@ WebSocket + SSE 기반의 AI 모임 추천, Redis 캐싱, kafka 등 다양한 �
 📎 [관련 블로그](https://medium.com/@oij3115/tech-redis-3-redis-ttl-%EC%8A%A4%ED%83%AC%ED%94%BC%EB%93%9C-penetration-%EB%B0%A9%EC%96%B4-%EC%A0%84%EB%9E%B5-jitter%EC%99%80-null-%EC%BA%90%EC%8B%B1-%ED%99%9C%EC%9A%A9-c5ccfa202870)
 
 
-### 4. Redis 기반 분산락으로 동시성 제어
-- **문제**: 모임 신청, 일정 참여 등에서 동시 요청 충돌 발생
+### 5. Redisson 분산락으로 동시성 제어
+- **문제**: 모임 신청에서 동시 요청으로 인해 데이터 정합성이 깨지는 문제 발생
 - **접근**: Redisson Lock 기반의 분산락 도입, `tryLock`과 `waitTime` 조절
 - **결과**: race condition 방지, 분산환경에서의 데이터 무결성 확보
 
 📎 [관련 블로그](https://medium.com/@oij3115/tech-redis-2-redisson-%EB%B6%84%EC%82%B0%EB%9D%BD%EC%9C%BC%EB%A1%9C-%EB%8F%99%EC%8B%9C%EC%84%B1-%EC%A0%9C%EC%96%B4%ED%95%98%EA%B3%A0-%EC%8A%A4%ED%83%AC%ED%94%BC%EB%93%9C-%ED%95%B4%EA%B2%B0%ED%95%98%EA%B8%B0-with-lettuce-34553cc73bdf)
 
 
-### 5. Redis 성능 향상 및 병목 해결
-- **문제**: 캐시 서버에 부하가 집중되며 동시 처리량 한계 발생
-- **해결**: Redis 커넥션 풀 튜닝, Lettuce 클라이언트의 비동기 처리 전략 적용
-- **결과**: 동시 처리 성능 200% 증가, 메모리 사용률 감소
+### 6. Redis 성능 향상 및 병목 해결
+- **문제**: MySQL에 불필요하게 연결이 발생하며 병목과 커넥션 낭비가 빈번
+- **해결**: Redis 커넥션 풀 설정 최적화, Lettuce 비동기 처리 전략 적용
+- **결과**: 동시 처리 성능 **2배 증가**, 메모리 사용률 감소로 시스템 안정화
 
 📎 [관련 블로그](https://medium.com/@oij3115/tech-redis%EB%A1%9C-%EC%84%B1%EB%8A%A5-%ED%96%A5%EC%83%81%EA%B3%BC-%EB%8F%99%EC%8B%9C%EC%84%B1-%EB%AC%B8%EC%A0%9C-%ED%95%B4%EA%B2%B0%ED%95%98%EA%B8%B0-9c3f01aea5e7)
 
 
-### 6. API 병목 개선을 위한 전략
-- **문제**: AI 서버 및 DB 호출 지연으로 전체 API 응답 속도 저하
-- **해결**: Kafka 기반 비동기 아키텍처 전환, 외부 호출 큐잉 처리, 캐시 계층 추가
-- **결과**: 응답 시간 단축, 서버 처리량 증가, DLQ 기반 안정성 확보
+### 7. API 병목 개선을 위한 전략
+- **문제**: AI 서버 및 DB 호출 지연으로 인해 전체 API 응답 속도 저하
+- **해결**: Index 최적화 (불필요한 Index 제거, 컬럼 재정렬로 Range Scan 개선)
+- **결과**: 응답 시간 단축, 서버 처리량 증가 및 트래픽 대응력 향상
 
 📎 [관련 블로그](https://medium.com/@oij3115/tech-api-%EB%B3%91%EB%AA%A9-%EA%B0%9C%EC%84%A0%ED%95%98%EA%B8%B0-59ba3d60f065)
 
-
-### 7. Kafka vs RabbitMQ: 메시지 시스템 선택
-- **비교 대상**: 메시지 순서 보장, 확장성, 메시지 내구성, 운영 편의성 등
-- **결론**: NE:MO 서비스는 대용량 비동기 메시징과 로그 저장에 최적화된 Kafka 채택
-- **추가 구성**: DLQ, Retry Topic, Batch Consumer 설정을 통해 안정성 강화
-
-📎 [관련 블로그](https://medium.com/@oij3115/tech-which-is-a-better-choice-between-rabbitmq-and-kafka-97721abb410b)
-
----
-
-## 📊 성능 및 부하 테스트
-
-| 항목 | 결과 |
-|------|------|
-| 평균 응답 속도 | **5.5s → 450ms** |
-| 최대 처리량 | **~440 req/s** |
-| 실패율 | **0.02% 이하** |
-
-### 💡 개선 사항
-- Redis TTL + Jitter → 캐시 스탬피드 방지
-- Kafka Consumer 병렬 처리 개선
-- Virtual Thread 도입 → Thread 점유 문제 해결
 
 ---
 
