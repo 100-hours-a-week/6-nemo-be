@@ -92,6 +92,6 @@ ai:
   service:
     url: ${AI_SERVICE_URL}
     endpoints:
-      group-generate: /ai/v1/groups/information
+      group-generate: ${AI_GROUP_GENERATE_URI}
       group-chatbot:
         group-recommend-freeform: /ai
