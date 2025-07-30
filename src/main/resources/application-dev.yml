@@ -10,6 +10,9 @@ spring:
       port: ${REDIS_PORT:6379}
       timeout: 2s
       password: ${REDIS_PASSWORD}
+      lettuce:
+        pool:
+          max-active: 8
 
   jpa:
     hibernate:
@@ -72,3 +75,14 @@ sentry:
   send-default-pii: false
   enable-tracing: true
   enabled: true
+
+server:
+  tomcat:
+    threads:
+      max: 50
+      min-spare: 5
+
+cookie:
+  domain: ".nemo.ai.kr"
+  secure: true
+  same-site: "None"

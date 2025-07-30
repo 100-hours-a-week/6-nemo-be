@@ -77,3 +77,8 @@ sentry:
   send-default-pii: ${SENTRY_SEND_PII:false}
   enable-tracing: true
   enabled: true
+
+cookie:
+  domain: ".nemo.ai.kr"
+  secure: true
+  same-site: "None"

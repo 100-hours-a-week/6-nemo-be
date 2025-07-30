@@ -53,14 +53,7 @@ public class AuthController {
       HttpServletResponse response) {
     String accessToken = oauthService.loginWithKakao(code, error, response);
     try {
-      ResponseCookie accessTokenCookie = ResponseCookie.from(Token.ACCESS_TOKEN.getValue(), accessToken)
-          .httpOnly(true)
-          .secure(true)
-          .path("/")
-          .maxAge(Duration.ofHours(1))
-          .sameSite("None")
-          .build();
-      response.addHeader("Set-Cookie", accessTokenCookie.toString());
+      tokenManager.setAccessTokenInCookie(response, accessToken);
       response.sendRedirect(uriGenerator.login(state).toString());
     } catch (IOException e) {
       throw new CustomException(CommonErrorCode.REDIRECT_FAIL);
@@ -74,15 +67,7 @@ public class AuthController {
       HttpServletResponse response
   ) {
     String newAccessToken = oauthService.reissueAccessToken(refreshToken);
-    ResponseCookie cookie = ResponseCookie.from(Token.ACCESS_TOKEN.getValue(), newAccessToken)
-        .httpOnly(true)
-        .secure(true)
-        .path("/")
-        .maxAge(Duration.ofMinutes(60))
-        .sameSite("None")
-        .build();
-
-    response.addHeader("Set-Cookie", cookie.toString());
+    tokenManager.setAccessTokenInCookie(response, newAccessToken);
     return ResponseEntity.noContent().build();
   }
 

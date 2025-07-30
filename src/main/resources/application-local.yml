@@ -31,6 +31,10 @@ spring:
       group-id: nemo-group-local
       auto-offset-reset: latest  # 개발시 최신 메시지만
 
+  threads:
+    virtual:
+      enabled: true
+     
 management:
   tracing:
     sampling:
@@ -59,3 +63,10 @@ logging:
 
 sentry:
   enabled: false
+
+GROUP_CHATBOT_URI: ws://3.39.105.108:8000/ai/v2/chatbot
+
+cookie:
+  domain: # 빈 값 (localhost에서는 도메인 설정 안함)
+  secure: false
+  same-site: "Lax"

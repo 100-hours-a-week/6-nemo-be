@@ -27,26 +27,30 @@ public interface ScheduleParticipantRepository extends JpaRepository<SchedulePar
   Optional<ScheduleParticipant> findByScheduleIdAndUserId(Long scheduleId, Long userId);
 
   @Query("""
-            SELECT new kr.ai.nemo.domain.schedule.dto.response.ScheduleInfoProjection(
-        sp.schedule.id,
-        sp.schedule.title,
-        sp.schedule.description,
-        sp.schedule.address,
-        sp.schedule.status,
-        sp.schedule.currentUserCount,
-        sp.schedule.group.id,
-        sp.schedule.group.name,
-        sp.schedule.owner.nickname,
-        sp.schedule.startAt,
+    SELECT new kr.ai.nemo.domain.schedule.dto.response.ScheduleInfoProjection(
+        s.id,
+        s.title,
+        s.description,
+        s.address,
+        s.status,
+        s.currentUserCount,
+        g.id,
+        g.name,
+        o.nickname,
+        s.startAt,
         sp.status
+    )
+    FROM ScheduleParticipant sp
+    JOIN sp.schedule s
+    JOIN s.group g
+    JOIN s.owner o
+    WHERE sp.user.id = :userId
+      AND s.status = 'RECRUITING'
+      AND EXISTS (
+        SELECT 1 FROM GroupParticipants gp
+        WHERE gp.group.id = g.id AND gp.user.id = :userId
       )
-      FROM ScheduleParticipant sp
-      JOIN sp.schedule s
-      JOIN s.group g
-      JOIN s.owner o
-      WHERE sp.user.id = :userId
-        AND sp.schedule.status = 'RECRUITING'
-      ORDER BY sp.updatedAt ASC
-      """)
+    ORDER BY sp.updatedAt ASC
+""")
   List<ScheduleInfoProjection> findUserRecruitingSchedules(Long userId);
 }

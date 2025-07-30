@@ -79,7 +79,7 @@ class ScheduleQueryServiceTest {
     willReturn(participants).given(scheduleParticipantRepository).findByScheduleId(scheduleId);
 
     // when
-    ScheduleDetailResponse response = scheduleQueryService.getScheduleDetail(scheduleId);
+    ScheduleDetailResponse response = scheduleQueryService.getScheduleDetail(scheduleId, user.getId());
 
     // then
     assertThat(response.group().name()).isEqualTo(group.getName());

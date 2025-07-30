@@ -185,7 +185,7 @@ class ScheduleControllerTest {
     Long scheduleId = 1L;
     ScheduleDetailResponse response = mock(ScheduleDetailResponse.class);
     
-    given(scheduleQueryService.getScheduleDetail(eq(scheduleId)))
+    given(scheduleQueryService.getScheduleDetail(anyLong(), anyLong()))
         .willReturn(response);
 
     // when & then
@@ -199,7 +199,7 @@ class ScheduleControllerTest {
     // given
     Long nonExistentScheduleId = 999L;
     
-    given(scheduleQueryService.getScheduleDetail(eq(nonExistentScheduleId)))
+    given(scheduleQueryService.getScheduleDetail(anyLong(), anyLong()))
         .willThrow(new ScheduleException(ScheduleErrorCode.SCHEDULE_NOT_FOUND));
 
     // when & then
