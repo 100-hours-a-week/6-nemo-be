@@ -1,9 +1,19 @@
 spring:
+  # 이미지 파일 s3 사용
+  cloud:
+    aws:
+      s3:
+        bucket: ${BUCKET_NAME}
+      credentials:
+        access-key: ${CLOUD_AWS_CREDENTIALS_ACCESS_KEY}
+        secret-key: ${CLOUD_AWS_CREDENTIALS_SECRET_KEY}
+      region:
+        static: ${AWS_REGION:ap-northeast-2}
+
   # MySQL 주소
   datasource:
     url: jdbc:mysql://localhost:3306/nemo_db?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: ${USERNAME}
-    password: ${PASSWORD}
 
   # redis 주소
   data:
@@ -67,6 +77,5 @@ sentry:
 GROUP_CHATBOT_URI: ws://3.39.105.108:8000/ai/v2/chatbot
 
 cookie:
-  domain: # 빈 값 (localhost에서는 도메인 설정 안함)
   secure: false
   same-site: "Lax"

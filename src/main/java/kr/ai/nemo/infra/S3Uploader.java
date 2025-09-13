@@ -16,7 +16,7 @@ public class S3Uploader {
 
   private final AmazonS3 amazonS3;
 
-  @Value("${cloud.aws.s3.bucket}")
+  @Value("${spring.cloud.aws.s3.bucket}")
   private String bucket;
 
   public String upload(MultipartFile file, String dirName) {

@@ -11,11 +11,13 @@ import kr.ai.nemo.domain.auth.exception.KakaoOAuthErrorCode;
 import kr.ai.nemo.domain.auth.exception.AuthException;
 import kr.ai.nemo.domain.user.domain.User;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OauthService {
   private final KakaoOauthClient kakaoClient;
   private final OauthUserService userService;
@@ -44,6 +46,7 @@ public class OauthService {
       String accessToken = tokenManager.createAccessToken(user.getId());
       String refreshToken = tokenManager.createRefreshToken(user.getId());
 
+      log.info("Kakao access token: {}, refresh token: {}", accessToken, refreshToken);
       tokenManager.saveOrUpdateToken(
           user,
           OAuthProvider.KAKAO.name(),
@@ -51,7 +54,7 @@ public class OauthService {
           LoginDevice.WEB.name(),
           LocalDateTime.now().plusDays(30)
       );
-
+      log.info("Kakao access token: {}, refresh token: {}", accessToken, refreshToken);
       tokenManager.setRefreshTokenInCookie(response, refreshToken);
 
       return accessToken;

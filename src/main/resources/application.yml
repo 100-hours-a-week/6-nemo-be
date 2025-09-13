@@ -76,16 +76,6 @@ jwt:
 server:
   forward-headers-strategy: framework
 
-# 이미지 파일 s3 사용
-cloud:
-  aws:
-    s3:
-      bucket: ${BUCKET_NAME}
-    credentials:
-      access-key: ${CLOUD_AWS_CREDENTIALS_ACCESS_KEY}
-      secret-key: ${CLOUD_AWS_CREDENTIALS_SECRET_KEY}
-    region:
-      static: ${AWS_REGION:ap-northeast-2}
 
 # AI 서버 주소
 ai:

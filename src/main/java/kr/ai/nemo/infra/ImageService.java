@@ -22,7 +22,7 @@ public class ImageService {
 
   private final AmazonS3 amazonS3;
 
-  @Value("${cloud.aws.s3.bucket}")
+  @Value("${spring.cloud.aws.s3.bucket}")
   private String bucket;
 
   private static final String MIME_TYPE_JPEG = "image/jpeg";
